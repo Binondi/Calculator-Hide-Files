@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="black">#FF000000</color>
+    <color name="white">#FFFFFFFF</color>
+    
+    <!-- Material You dynamic colors -->
+    <color name="primary">@android:color/system_accent1_600</color>
+    <color name="on_primary">@android:color/system_accent1_0</color>
+    <color name="primary_container">@android:color/system_accent1_100</color>
+    <color name="on_primary_container">@android:color/system_accent1_900</color>
+    
+    <color name="secondary">@android:color/system_accent2_600</color>
+    <color name="on_secondary">@android:color/system_accent2_0</color>
+    <color name="secondary_container">@android:color/system_accent2_100</color>
+    <color name="on_secondary_container">@android:color/system_accent2_900</color>
+    
+    <color name="surface">@android:color/system_neutral1_50</color>
+    <color name="on_surface">@android:color/system_neutral1_900</color>
+</resources>
