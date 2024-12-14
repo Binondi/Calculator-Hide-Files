@@ -1,25 +1,24 @@
-<resources xmlns:tools="http://schemas.android.com/tools">
-    <!-- Base application theme. -->
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
     <style name="Base.Theme.Calculator" parent="Theme.Material3.DayNight.NoActionBar">
         <!-- Primary brand color -->
         <item name="colorPrimary">@android:color/system_accent1_600</item>
         <item name="colorPrimaryVariant">@android:color/system_accent1_700</item>
         <item name="colorOnPrimary">@color/white</item>
         <item name="fontFamily">@font/ubuntu_regular</item>
-        
+
         <!-- Secondary brand color -->
         <item name="colorSecondary">@android:color/system_accent2_600</item>
         <item name="colorSecondaryVariant">@android:color/system_accent2_700</item>
         <item name="colorOnSecondary">@color/black</item>
-        
+
         <!-- Status bar color -->
         <item name="android:statusBarColor">@android:color/transparent</item>
         <item name="android:navigationBarColor">@android:color/transparent</item>
-        
+
         <!-- Enable window decor fitting -->
         <item name="android:windowLightStatusBar">true</item>
         <item name="android:windowLightNavigationBar">true</item>
     </style>
-
-    <style name="Theme.Calculator" parent="Base.Theme.Calculator" />
 </resources>

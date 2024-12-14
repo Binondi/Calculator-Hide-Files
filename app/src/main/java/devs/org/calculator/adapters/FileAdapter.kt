@@ -1,5 +1,7 @@
 package devs.org.calculator.adapters
 
+import android.content.Context
+import android.content.Intent
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -9,10 +11,12 @@ import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import devs.org.calculator.R
+import devs.org.calculator.activities.PreviewActivity
 import devs.org.calculator.utils.FileManager
+import kotlinx.coroutines.NonDisposableHandle.parent
 import java.io.File
 
-class FileAdapter(private val fileType: FileManager.FileType) :
+class FileAdapter(private val fileType: FileManager.FileType, var context: Context) :
     ListAdapter<File, FileAdapter.FileViewHolder>(FileDiffCallback()) {
 
     private val selectedItems = mutableSetOf<Int>()
@@ -45,7 +49,29 @@ class FileAdapter(private val fileType: FileManager.FileType) :
                     imageView.setImageResource(resourceId)
                 }
             }
-            itemView.setOnClickListener { }
+            itemView.setOnClickListener {
+
+                var fileTypes = when(fileType){
+
+                    FileManager.FileType.IMAGE -> {
+                        "IMAGE"
+                    }
+                    FileManager.FileType.VIDEO -> {
+                        "VIDEO"
+                    }
+                    FileManager.FileType.AUDIO -> {
+                        "AUDIO"
+                    }
+                    else -> "DOCUMENT"
+
+                }
+                val intent = Intent(context, PreviewActivity::class.java).apply {
+                    putExtra("type", fileTypes)
+                    putExtra("position", position)
+                }
+                context.startActivity(intent)
+
+            }
         }
     }
 

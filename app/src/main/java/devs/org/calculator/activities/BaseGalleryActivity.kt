@@ -52,7 +52,8 @@ abstract class BaseGalleryActivity : AppCompatActivity() {
     private fun setupRecyclerView() {
         binding.recyclerView.layoutManager = GridLayoutManager(this, 3)
         adapter = FileAdapter(
-            fileType
+            fileType,
+            this
         )
         binding.recyclerView.adapter = adapter
     }

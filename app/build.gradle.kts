@@ -55,4 +55,5 @@ dependencies {
     implementation("androidx.documentfile:documentfile:1.0.1")
     implementation("com.github.chrisbanes:PhotoView:2.3.0")
     implementation("androidx.viewpager:viewpager:1.0.0")
+    implementation("com.jsibbold:zoomage:1.3.1")
 }
