@@ -57,6 +57,7 @@ class MainActivity : AppCompatActivity() {
         binding.btnDot.setOnClickListener { addDecimal() }
         binding.btnEquals.setOnClickListener { calculateResult() }
         binding.btnPercent.setOnClickListener { calculatePercentage() }
+        binding.cut.setOnClickListener { cutNumbers() }
     }
 
     private fun launchBaseDirectoryPicker() {
@@ -162,11 +163,23 @@ class MainActivity : AppCompatActivity() {
             hasDecimal = currentExpression.contains(".")
             updateDisplay()
         } catch (e: Exception) {
-            binding.display.text = "Error"
+            binding.display.text = "Invalid Value"
         }
     }
 
     private fun updateDisplay() {
         binding.display.text = currentExpression
     }
+    private fun cutNumbers() {
+        if (currentExpression.isNotEmpty()){
+            if (currentExpression.length == 1){
+                currentExpression = currentExpression.substring(0, currentExpression.length - 1)
+                currentExpression = "0"
+            }else currentExpression = currentExpression.substring(0, currentExpression.length - 1)
+        }else currentExpression = "0"
+        updateDisplay()
+
+    }
 }
+
+

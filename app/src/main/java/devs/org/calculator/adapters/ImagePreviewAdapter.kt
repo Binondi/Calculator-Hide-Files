@@ -6,28 +6,35 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.MediaController
+import androidx.recyclerview.widget.AsyncListDiffer
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
+import devs.org.calculator.adapters.FileAdapter.FileDiffCallback
 import devs.org.calculator.databinding.ViewpagerItemsBinding
 import devs.org.calculator.utils.FileManager
 import java.io.File
 
 class ImagePreviewAdapter(
     private val context: Context,
-    private val images: List<File>,
     private var fileType: FileManager.FileType
 ) : RecyclerView.Adapter<ImagePreviewAdapter.ImageViewHolder>() {
 
+    // Use AsyncListDiffer for managing the list
+    private val differ = AsyncListDiffer(this, FileDiffCallback())
+
+    // Expose data management through differ
+    var images: List<File>
+        get() = differ.currentList
+        set(value) = differ.submitList(value)
+
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ImageViewHolder {
-        val binding = ViewpagerItemsBinding.inflate(LayoutInflater.from(context), parent, false
-        )
+        val binding = ViewpagerItemsBinding.inflate(LayoutInflater.from(context), parent, false)
         return ImageViewHolder(binding)
     }
 
     override fun onBindViewHolder(holder: ImageViewHolder, position: Int) {
         val imageUrl = images[position]
         holder.bind(imageUrl)
-
     }
 
     override fun getItemCount(): Int = images.size
@@ -39,31 +46,27 @@ class ImagePreviewAdapter(
                     binding.imageView.visibility = View.GONE
                     binding.videoView.visibility = View.VISIBLE
 
-                    // Set up the VideoView with the current video file
                     val videoUri = Uri.fromFile(file)
                     binding.videoView.setVideoURI(videoUri)
                     binding.videoView.start()
 
-                    // Create and attach MediaController
                     val mediaController = MediaController(context)
                     mediaController.setAnchorView(binding.videoView)
                     binding.videoView.setMediaController(mediaController)
 
-                    // Handle the "Next" button logic
                     mediaController.setPrevNextListeners(
-                        { // Next button clicked
-                            val nextPosition = (adapterPosition + 1) % images.size // Loop to start if last
+                        {
+                            val nextPosition = (adapterPosition + 1) % images.size
                             playVideoAtPosition(nextPosition)
                         },
-                        { // Previous button clicked
+                        {
                             val prevPosition = if (adapterPosition - 1 < 0) images.size - 1 else adapterPosition - 1
                             playVideoAtPosition(prevPosition)
                         }
                     )
 
-                    // Play next video automatically when the current one finishes
                     binding.videoView.setOnCompletionListener {
-                        val nextPosition = (adapterPosition + 1) % images.size // Loop to start if last
+                        val nextPosition = (adapterPosition + 1) % images.size
                         playVideoAtPosition(nextPosition)
                     }
                 }
@@ -92,7 +95,5 @@ class ImagePreviewAdapter(
             }
         }
     }
-
-
-
 }
+

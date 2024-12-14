@@ -74,7 +74,7 @@ class DialogUtil(private val context: Context, private var lifecycleOwner: Lifec
                     val deleted = documentFile.delete()
                     withContext(Dispatchers.Main) {
                         if (deleted) {
-                            Toast.makeText(context, "File deleted successfully", Toast.LENGTH_SHORT).show()
+//                            Toast.makeText(context, "File deleted successfully", Toast.LENGTH_SHORT).show()
                         } else {
                             Toast.makeText(context, "Failed to delete file", Toast.LENGTH_SHORT).show()
                         }

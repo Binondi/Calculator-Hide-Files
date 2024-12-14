@@ -6,6 +6,8 @@ import android.content.Intent
 import android.net.Uri
 import android.os.Build
 import android.os.Environment
+import android.provider.ContactsContract
+import android.provider.ContactsContract.Directory
 import android.provider.DocumentsContract
 import android.provider.MediaStore
 import android.webkit.MimeTypeMap
@@ -15,6 +17,7 @@ import androidx.activity.result.IntentSenderRequest
 import androidx.documentfile.provider.DocumentFile
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.lifecycleScope
+import devs.org.calculator.activities.VideoGalleryActivity
 import devs.org.calculator.adapters.FileAdapter
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -95,6 +98,46 @@ class FileManager(private val context: Context, private val lifecycleOwner: Life
             null
         }
     }
+    fun copyFileToNormalDir(uri: Uri): File? {
+        return try {
+            val contentResolver = context.contentResolver
+
+            // Get the target directory
+            val targetDir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS)
+            targetDir.mkdirs()
+
+            // Create target file
+            val mimeType = contentResolver.getType(uri)
+            val extension = MimeTypeMap.getSingleton()
+                .getExtensionFromMimeType(mimeType) ?: ""
+            val fileName = "${System.currentTimeMillis()}.${extension}"
+            val targetFile = File(targetDir, fileName)
+
+            // Copy file using DocumentFile
+            contentResolver.openInputStream(uri)?.use { input ->
+                targetFile.outputStream().use { output ->
+                    input.copyTo(output)
+                }
+            }
+
+            // Verify copy success
+            if (!targetFile.exists() || targetFile.length() == 0L) {
+                throw Exception("File copy failed")
+            }
+
+            // Media scan the new file to hide it
+            val mediaScanIntent = Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE)
+            mediaScanIntent.data = Uri.fromFile(targetDir)
+            context.sendBroadcast(mediaScanIntent)
+            lifecycleOwner.lifecycleScope.launch {
+                deletePhotoFromExternalStorage(uri)
+            }
+            targetFile
+        } catch (e: Exception) {
+            e.printStackTrace()
+            null
+        }
+    }
 
 
 
@@ -108,9 +151,9 @@ class FileManager(private val context: Context, private val lifecycleOwner: Life
                     val deleted = documentFile.delete()
                     withContext(Dispatchers.Main) {
                         if (deleted) {
-                            Toast.makeText(context, "File deleted successfully", Toast.LENGTH_SHORT).show()
+//                            Toast.makeText(context, "File deleted successfully", Toast.LENGTH_SHORT).show()
                         } else {
-                            Toast.makeText(context, "Failed to delete file", Toast.LENGTH_SHORT).show()
+                            Toast.makeText(context, "Failed to hide/unhide file", Toast.LENGTH_SHORT).show()
                         }
                     }
                     return@withContext
@@ -120,7 +163,7 @@ class FileManager(private val context: Context, private val lifecycleOwner: Life
                 try {
                     context.contentResolver.delete(photoUri, null, null)
                     withContext(Dispatchers.Main) {
-                        Toast.makeText(context, "File deleted successfully", Toast.LENGTH_SHORT).show()
+//                        Toast.makeText(context, "File deleted successfully", Toast.LENGTH_SHORT).show()
                     }
                 } catch (e: SecurityException) {
                     // Handle security exception for Android 10 and above
@@ -145,7 +188,7 @@ class FileManager(private val context: Context, private val lifecycleOwner: Life
                 withContext(Dispatchers.Main) {
                     Toast.makeText(
                         context,
-                        "Error deleting file: ${e.message}",
+                        "Error hiding/unhiding file: ${e.message}",
                         Toast.LENGTH_LONG
                     ).show()
                 }
@@ -195,6 +238,31 @@ class FileManager(private val context: Context, private val lifecycleOwner: Life
         }
     }
 
+
+    suspend fun processMultipleFiles(
+        uriList: List<Uri>,
+        fileType: FileType,
+        callback: FileProcessCallback
+    ) {
+        withContext(Dispatchers.IO) {
+            val copiedFiles = mutableListOf<File>()
+            for (uri in uriList) {
+                try {
+                    val file = copyFileToHiddenDir(uri, fileType)
+                    file?.let { copiedFiles.add(it) }
+                } catch (e: Exception) {
+                    e.printStackTrace()
+                }
+            }
+            withContext(Dispatchers.Main) {
+                if (copiedFiles.isNotEmpty()) {
+                    callback.onFilesProcessedSuccessfully(copiedFiles)
+                } else {
+                    callback.onFileProcessFailed()
+                }
+            }
+        }
+    }
 
 
 

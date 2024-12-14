@@ -86,7 +86,7 @@ class FileAdapter(private val fileType: FileManager.FileType, var context: Conte
 
                 MaterialAlertDialogBuilder(context)
                     .setTitle("Details")
-                    .setMessage("File Name: $filesName\\n\\nYou can delete or unghide this file\", \"Delete")
+                    .setMessage("File Name: $filesName\n\nYou can delete or Unhide this file.")
                     .setPositiveButton("Delete") { dialog, _ ->
                         // Handle positive button click
                         lifecycleOwner.lifecycleScope.launch{
@@ -100,7 +100,11 @@ class FileAdapter(private val fileType: FileManager.FileType, var context: Conte
                     }
                     .setNegativeButton("Unhide") { dialog, _ ->
                         // Handle negative button click
-
+                        FileManager(context, context as LifecycleOwner).copyFileToNormalDir(fileUri)
+                        val currentList = currentList.toMutableList()
+                        currentList.remove(file)
+                        submitList(currentList)
+                        dialog.dismiss()
                         dialog.dismiss()
                     }
                     .show()
@@ -109,11 +113,6 @@ class FileAdapter(private val fileType: FileManager.FileType, var context: Conte
             }
 
         }
-    }
-    fun reloadList(file: File){
-        val currentList = currentList.toMutableList()
-        currentList.remove(file)
-        submitList(currentList)
     }
 
 

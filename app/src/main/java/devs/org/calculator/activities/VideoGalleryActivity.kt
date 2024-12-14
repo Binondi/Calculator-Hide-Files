@@ -6,12 +6,18 @@ import android.os.Bundle
 import android.widget.Toast
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.lifecycle.lifecycleScope
+import devs.org.calculator.activities.ImageGalleryActivity
 import devs.org.calculator.utils.FileManager
+import devs.org.calculator.utils.FileProcessCallback
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import java.io.File
 
-class VideoGalleryActivity : BaseGalleryActivity() {
+class VideoGalleryActivity : BaseGalleryActivity(), FileProcessCallback {
     override val fileType = FileManager.FileType.VIDEO
-    private lateinit var pickVideoLauncher: ActivityResultLauncher<Intent>
+    private lateinit var pickLauncher: ActivityResultLauncher<Intent>
     private var selectedUri: Uri? = null
 
 
@@ -19,27 +25,39 @@ class VideoGalleryActivity : BaseGalleryActivity() {
         super.onCreate(savedInstanceState)
         setupFabButton()
 
-        pickVideoLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
+        pickLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
             if (result.resultCode == RESULT_OK) {
-                val uri = result.data?.data
-                if (uri != null) {
-                    selectedUri = uri
-                    try {
-                        val file = fileManager.copyFileToHiddenDir(selectedUri!!, fileType)
-                        if (file != null && file.exists()) {
-                            Toast.makeText(this, "File hidden successfully", Toast.LENGTH_SHORT).show()
-                            loadFiles()
-                        } else {
-                            Toast.makeText(this, "Failed to hide file", Toast.LENGTH_SHORT).show()
-                        }
-                    } catch (e: Exception) {
-                        Toast.makeText(this, "Error: ${e.message}", Toast.LENGTH_SHORT).show()
+                val clipData = result.data?.clipData
+                val uriList = mutableListOf<Uri>()
+
+                if (clipData != null) {
+                    for (i in 0 until clipData.itemCount) {
+                        val uri = clipData.getItemAt(i).uri
+                        uriList.add(uri)
                     }
                 } else {
-                    Toast.makeText(this, "No video selected", Toast.LENGTH_SHORT).show()
+                    result.data?.data?.let { uriList.add(it) } // Single file selected
+                }
+
+                if (uriList.isNotEmpty()) {
+                    lifecycleScope.launch {
+                        FileManager(this@VideoGalleryActivity, this@VideoGalleryActivity)
+                            .processMultipleFiles(uriList, fileType,this@VideoGalleryActivity )
+                    }
+                } else {
+                    Toast.makeText(this, "No files selected", Toast.LENGTH_SHORT).show()
                 }
             }
         }
+    }
+
+    override fun onFilesProcessedSuccessfully(copiedFiles: List<File>) {
+        Toast.makeText(this@VideoGalleryActivity, "${copiedFiles.size} Videos hidden successfully", Toast.LENGTH_SHORT).show()
+        loadFiles()
+    }
+
+    override fun onFileProcessFailed() {
+        Toast.makeText(this@VideoGalleryActivity, "Failed to hide videos", Toast.LENGTH_SHORT).show()
     }
 
     private fun setupFabButton() {
@@ -47,11 +65,12 @@ class VideoGalleryActivity : BaseGalleryActivity() {
             val intent = Intent(Intent.ACTION_OPEN_DOCUMENT).apply {
                 type = "video/*"
                 addCategory(Intent.CATEGORY_OPENABLE)
+                putExtra(Intent.EXTRA_ALLOW_MULTIPLE, true)
                 addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
                 addFlags(Intent.FLAG_GRANT_WRITE_URI_PERMISSION)
                 addFlags(Intent.FLAG_GRANT_PERSISTABLE_URI_PERMISSION)
             }
-            pickVideoLauncher.launch(intent)
+            pickLauncher.launch(intent)
         }
     }
 

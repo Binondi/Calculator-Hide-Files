@@ -48,18 +48,6 @@
             style="@style/Widget.MaterialComponents.Button.OutlinedButton"/>
 
         <com.google.android.material.button.MaterialButton
-            android:id="@+id/btnParentheses"
-            android:layout_width="0dp"
-            android:layout_height="0dp"
-            android:layout_rowWeight="1"
-            android:layout_columnWeight="1"
-            android:textSize="30sp"
-            android:layout_margin="4dp"
-            android:text="( )"
-            app:cornerRadius="15dp"
-            style="@style/Widget.MaterialComponents.Button.OutlinedButton"/>
-
-        <com.google.android.material.button.MaterialButton
             android:id="@+id/btnPercent"
             android:layout_width="0dp"
             android:layout_height="0dp"
@@ -81,8 +69,20 @@
             android:layout_margin="4dp"
             android:text="÷"
             app:cornerRadius="15dp"
-            style="@style/Widget.MaterialComponents.Button"/>
+            style="@style/Widget.MaterialComponents.Button.OutlinedButton"/>
 
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/cut"
+            android:layout_height="0dp"
+            android:layout_width="0dp"
+            android:layout_rowWeight="1"
+            android:layout_columnWeight="1"
+            android:textSize="30sp"
+            android:layout_margin="4dp"
+            app:icon="@drawable/backspace"
+
+            app:iconSize="30dp"
+            app:cornerRadius="15dp"/>
         <!-- Row 2 -->
         <com.google.android.material.button.MaterialButton
             android:id="@+id/btn7"

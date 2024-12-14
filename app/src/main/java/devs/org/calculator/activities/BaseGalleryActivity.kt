@@ -22,21 +22,33 @@ abstract class BaseGalleryActivity : AppCompatActivity() {
     protected lateinit var binding: ActivityGalleryBinding
     protected lateinit var fileManager: FileManager
     protected lateinit var adapter: FileAdapter
+    protected lateinit var files: List<File>
 
     private lateinit var intentSenderLauncher: ActivityResultLauncher<IntentSenderRequest>
+    private val storagePermissionLauncher = registerForActivityResult(
+        ActivityResultContracts.RequestMultiplePermissions()
+    ) { permissions ->
+        val granted = permissions.values.all { it }
+        if (granted || Build.VERSION.SDK_INT >= Build.VERSION_CODES.R && Environment.isExternalStorageManager()) {
+            loadFiles()
+        } else {
+            // Handle permission denial case
+            showPermissionDeniedDialog()
+        }
+    }
 
     abstract val fileType: FileManager.FileType
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setupIntentSenderLauncher()
-        checkPermissions()
         binding = ActivityGalleryBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
         fileManager = FileManager(this, this)
+
         setupRecyclerView()
-        loadFiles()
+        checkPermissionsAndLoadFiles()
     }
 
     private fun setupIntentSenderLauncher() {
@@ -51,51 +63,54 @@ abstract class BaseGalleryActivity : AppCompatActivity() {
 
     private fun setupRecyclerView() {
         binding.recyclerView.layoutManager = GridLayoutManager(this, 3)
-        adapter = FileAdapter(
-            fileType,
-            this, this
-        )
+        adapter = FileAdapter(fileType, this, this)
         binding.recyclerView.adapter = adapter
     }
 
-    protected fun loadFiles() {
-        val files = fileManager.getFilesInHiddenDir(fileType)
-        adapter.submitList(files)
-        adapter.notifyDataSetChanged()
-    }
-
-    abstract fun openPreview()
-
-    private fun checkPermissions() {
+    private fun checkPermissionsAndLoadFiles() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
             if (!Environment.isExternalStorageManager()) {
                 val intent = Intent(Settings.ACTION_MANAGE_APP_ALL_FILES_ACCESS_PERMISSION)
-                intent.addCategory("android.intent.category.DEFAULT")
-                intent.data = Uri.parse("package:${applicationContext.packageName}")
+                    .addCategory("android.intent.category.DEFAULT")
+                    .setData(Uri.parse("package:${applicationContext.packageName}"))
                 startActivityForResult(intent, 2296)
+            } else {
+                loadFiles()
             }
         } else {
-            if (checkSelfPermission(Manifest.permission.READ_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED ||
-                checkSelfPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
-                requestPermissions(
-                    arrayOf(
-                        Manifest.permission.READ_EXTERNAL_STORAGE,
-                        Manifest.permission.WRITE_EXTERNAL_STORAGE
-                    ),
-                    1001
-                )
+            val permissions = arrayOf(
+                Manifest.permission.READ_EXTERNAL_STORAGE,
+                Manifest.permission.WRITE_EXTERNAL_STORAGE
+            )
+            if (permissions.any { checkSelfPermission(it) != PackageManager.PERMISSION_GRANTED }) {
+                storagePermissionLauncher.launch(permissions)
+            } else {
+                loadFiles()
             }
         }
     }
 
+    protected open fun loadFiles() {
+        files = fileManager.getFilesInHiddenDir(fileType)
+        adapter.submitList(files)
+    }
+
+    override fun onResume() {
+        super.onResume()
+        loadFiles()
+    }
+
+    abstract fun openPreview()
+
+    private fun showPermissionDeniedDialog() {
+        // Show a dialog or a message informing the user about the importance of permissions
+    }
+
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
-        if (requestCode == 2296) {
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
-                if (Environment.isExternalStorageManager()) {
-                    // Permission granted
-                    loadFiles()
-                }
+        if (requestCode == 2296 && Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+            if (Environment.isExternalStorageManager()) {
+                loadFiles()
             }
         }
     }
