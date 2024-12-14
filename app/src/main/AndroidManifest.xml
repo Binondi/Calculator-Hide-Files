@@ -40,9 +40,6 @@
         <activity
             android:name=".activities.SetupPasswordActivity"
             android:exported="false" />
-        <activity
-            android:name=".activities.SplashActivity"
-            android:exported="true"/>
 
         <activity
             android:name=".activities.MainActivity"
