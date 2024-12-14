@@ -58,7 +58,6 @@
             android:exported="true" />
         <activity
             android:name=".activities.PreviewActivity"
-            android:theme="@style/Theme.AppCompat.NoActionBar"
             android:configChanges="orientation|screenSize"/>
     </application>
 
