@@ -2,21 +2,28 @@ package devs.org.calculator.adapters
 
 import android.content.Context
 import android.content.Intent
+import android.net.Uri
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
+import androidx.lifecycle.LifecycleOwner
+import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import devs.org.calculator.R
+import devs.org.calculator.activities.BaseGalleryActivity
 import devs.org.calculator.activities.PreviewActivity
+import devs.org.calculator.utils.DialogUtil
 import devs.org.calculator.utils.FileManager
-import kotlinx.coroutines.NonDisposableHandle.parent
+import kotlinx.coroutines.launch
 import java.io.File
+import kotlin.collections.remove
 
-class FileAdapter(private val fileType: FileManager.FileType, var context: Context) :
+class FileAdapter(private val fileType: FileManager.FileType, var context: Context, private var lifecycleOwner: LifecycleOwner) :
     ListAdapter<File, FileAdapter.FileViewHolder>(FileDiffCallback()) {
 
     private val selectedItems = mutableSetOf<Int>()
@@ -72,8 +79,43 @@ class FileAdapter(private val fileType: FileManager.FileType, var context: Conte
                 context.startActivity(intent)
 
             }
+            itemView.setOnLongClickListener{
+
+                val fileUri = FileManager.FileManager().getContentUri(context, file)
+                val filesName = FileManager.FileName(context).getFileNameFromUri(fileUri!!).toString()
+
+                MaterialAlertDialogBuilder(context)
+                    .setTitle("Details")
+                    .setMessage("File Name: $filesName\\n\\nYou can delete or unghide this file\", \"Delete")
+                    .setPositiveButton("Delete") { dialog, _ ->
+                        // Handle positive button click
+                        lifecycleOwner.lifecycleScope.launch{
+                            FileManager(context, context as LifecycleOwner).deletePhotoFromExternalStorage(fileUri)
+                        }
+
+                        val currentList = currentList.toMutableList()
+                        currentList.remove(file)
+                        submitList(currentList)
+                        dialog.dismiss()
+                    }
+                    .setNegativeButton("Unhide") { dialog, _ ->
+                        // Handle negative button click
+
+                        dialog.dismiss()
+                    }
+                    .show()
+
+               return@setOnLongClickListener true
+            }
+
         }
     }
+    fun reloadList(file: File){
+        val currentList = currentList.toMutableList()
+        currentList.remove(file)
+        submitList(currentList)
+    }
+
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): FileViewHolder {
         val view = LayoutInflater.from(parent.context)

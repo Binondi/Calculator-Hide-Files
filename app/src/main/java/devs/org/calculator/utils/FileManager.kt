@@ -15,6 +15,7 @@ import androidx.activity.result.IntentSenderRequest
 import androidx.documentfile.provider.DocumentFile
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.lifecycleScope
+import devs.org.calculator.adapters.FileAdapter
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -51,23 +52,6 @@ class FileManager(private val context: Context, private val lifecycleOwner: Life
         } else {
             emptyList()
         }
-    }
-
-    fun hideFile(uri: Uri, type: FileType): File {
-        val inputStream = context.contentResolver.openInputStream(uri)
-        val targetDir = File(getHiddenDirectory(), type.dirName)
-        targetDir.mkdirs()
-
-        val fileName = "${System.currentTimeMillis()}_${uri.lastPathSegment}"
-        val targetFile = File(targetDir, fileName)
-
-        inputStream?.use { input ->
-            targetFile.outputStream().use { output ->
-                input.copyTo(output)
-            }
-        }
-
-        return targetFile
     }
 
     fun copyFileToHiddenDir(uri: Uri, type: FileType): File? {
@@ -112,7 +96,10 @@ class FileManager(private val context: Context, private val lifecycleOwner: Life
         }
     }
 
-    private suspend fun deletePhotoFromExternalStorage(photoUri: Uri) {
+
+
+
+    suspend fun deletePhotoFromExternalStorage(photoUri: Uri) {
         withContext(Dispatchers.IO) {
             try {
                 // First try to delete using DocumentFile
@@ -166,25 +153,50 @@ class FileManager(private val context: Context, private val lifecycleOwner: Life
         }
     }
 
-    private fun deleteOriginalFile(uri: Uri) {
-        try {
+
+
+    class FileName(private val context: Context) {
+        fun getFileNameFromUri(uri: Uri): String? {
             val contentResolver = context.contentResolver
-            when {
-                DocumentsContract.isDocumentUri(context, uri) -> {
-                    DocumentsContract.deleteDocument(contentResolver, uri)
+            var fileName: String? = null
+
+            if (uri.scheme == "content") {
+                val cursor = contentResolver.query(uri, null, null, null, null)
+                cursor?.use {
+                    if (it.moveToFirst()) {
+                        val nameIndex = it.getColumnIndex(MediaStore.MediaColumns.DISPLAY_NAME)
+                        if (nameIndex != -1) {
+                            fileName = it.getString(nameIndex)
+                        }
+                    }
                 }
-                isMediaStoreUri(uri) -> {
-                    contentResolver.delete(uri, null, null)
+            } else if (uri.scheme == "file") {
+                fileName = File(uri.path ?: "").name
+            }
+
+            return fileName
+        }
+
+    }
+    class FileManager(){
+        fun getContentUri(context: Context, file: File): Uri? {
+            val projection = arrayOf(MediaStore.MediaColumns._ID)
+            val selection = "${MediaStore.MediaColumns.DATA} = ?"
+            val selectionArgs = arrayOf(file.absolutePath)
+            val queryUri = MediaStore.Files.getContentUri("external")
+
+            context.contentResolver.query(queryUri, projection, selection, selectionArgs, null)?.use { cursor ->
+                if (cursor.moveToFirst()) {
+                    val id = cursor.getLong(cursor.getColumnIndexOrThrow(MediaStore.MediaColumns._ID))
+                    return Uri.withAppendedPath(queryUri, id.toString())
                 }
             }
-        } catch (e: Exception) {
-            e.printStackTrace()
+            return null
         }
     }
 
-    private fun isMediaStoreUri(uri: Uri): Boolean {
-        return uri.authority?.startsWith("com.android.providers.media") == true
-    }
+
+
 
     enum class FileType(val dirName: String) {
         IMAGE(IMAGES_DIR),

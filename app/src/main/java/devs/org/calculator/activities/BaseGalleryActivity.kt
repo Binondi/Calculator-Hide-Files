@@ -53,7 +53,7 @@ abstract class BaseGalleryActivity : AppCompatActivity() {
         binding.recyclerView.layoutManager = GridLayoutManager(this, 3)
         adapter = FileAdapter(
             fileType,
-            this
+            this, this
         )
         binding.recyclerView.adapter = adapter
     }
@@ -61,6 +61,7 @@ abstract class BaseGalleryActivity : AppCompatActivity() {
     protected fun loadFiles() {
         val files = fileManager.getFilesInHiddenDir(fileType)
         adapter.submitList(files)
+        adapter.notifyDataSetChanged()
     }
 
     abstract fun openPreview()
