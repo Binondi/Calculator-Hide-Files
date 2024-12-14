@@ -1,3 +1,4 @@
+![Calculator Hide File App Logo](app/src/main/assets/logo.png)
 # Calculator Hide File App
 
 Welcome to the **Calculator Hide File App**! This app is a unique and secure way to hide your sensitive files under the disguise of a fully functional calculator.
