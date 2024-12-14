@@ -1,36 +1,33 @@
+package devs.org.calculator.adapters
+
 import android.content.Context
-import android.view.View
+import android.view.LayoutInflater
 import android.view.ViewGroup
-import androidx.viewpager.widget.PagerAdapter
+import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
-import com.github.chrisbanes.photoview.PhotoView
+import devs.org.calculator.databinding.ItemFileBinding
 import java.io.File
 
 class ImagePreviewAdapter(
     private val context: Context,
     private val images: List<File>
-) : PagerAdapter() {
+) : RecyclerView.Adapter<ImagePreviewAdapter.ImageViewHolder>() {
 
-    override fun instantiateItem(container: ViewGroup, position: Int): Any {
-        val photoView = PhotoView(context)
-        photoView.layoutParams = ViewGroup.LayoutParams(
-            ViewGroup.LayoutParams.MATCH_PARENT,
-            ViewGroup.LayoutParams.MATCH_PARENT
+    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ImageViewHolder {
+        val binding = ItemFileBinding.inflate(
+            LayoutInflater.from(context), parent, false
         )
+        return ImageViewHolder(binding)
+    }
 
+    override fun onBindViewHolder(holder: ImageViewHolder, position: Int) {
+        val imageUrl = images[position]
         Glide.with(context)
-            .load(images[position])
-            .into(photoView)
-
-        container.addView(photoView)
-        return photoView
+            .load(imageUrl)
+            .into(holder.binding.imageView)
     }
 
-    override fun destroyItem(container: ViewGroup, position: Int, obj: Any) {
-        container.removeView(obj as View)
-    }
+    override fun getItemCount(): Int = images.size
 
-    override fun getCount(): Int = images.size
-
-    override fun isViewFromObject(view: View, obj: Any): Boolean = view === obj
-} 
+    inner class ImageViewHolder(val binding: ItemFileBinding) : RecyclerView.ViewHolder(binding.root)
+}

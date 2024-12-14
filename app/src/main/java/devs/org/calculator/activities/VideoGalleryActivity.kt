@@ -55,10 +55,9 @@ class VideoGalleryActivity : BaseGalleryActivity() {
         }
     }
 
-    override fun openPreview(file: File) {
+    override fun openPreview() {
         val intent = Intent(this, PreviewActivity::class.java).apply {
-            putExtra(PreviewActivity.EXTRA_FILE_PATH, file.absolutePath)
-            putExtra(PreviewActivity.EXTRA_FILE_TYPE, fileType.name)
+            putExtra("type", fileType)
         }
         startActivity(intent)
     }

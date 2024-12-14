@@ -1,21 +1,13 @@
 package devs.org.calculator.activities
 
-import ImagePreviewAdapter
+
 import android.os.Bundle
-import android.view.View
-import android.widget.MediaController
 import androidx.appcompat.app.AppCompatActivity
-import com.bumptech.glide.Glide
+import devs.org.calculator.adapters.ImagePreviewAdapter
 import devs.org.calculator.databinding.ActivityPreviewBinding
-import devs.org.calculator.utils.FileManager
 import java.io.File
 
 class PreviewActivity : AppCompatActivity() {
-
-    companion object {
-        const val EXTRA_FILE_PATH = "file_path"
-        const val EXTRA_FILE_TYPE = "file_type"
-    }
 
     private lateinit var binding: ActivityPreviewBinding
     private var currentPosition: Int = 0
@@ -41,7 +33,6 @@ class PreviewActivity : AppCompatActivity() {
     private fun setupImagePreview() {
         val adapter = ImagePreviewAdapter(this, files)
         binding.viewPager.adapter = adapter
-        binding.viewPager.currentItem = currentPosition
     }
 
     override fun onSupportNavigateUp(): Boolean {

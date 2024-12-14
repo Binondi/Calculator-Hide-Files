@@ -54,7 +54,7 @@ class AudioGalleryActivity : BaseGalleryActivity() {
         }
     }
 
-    override fun openPreview(file: File) {
+    override fun openPreview() {
         // Implement audio preview
     }
 }

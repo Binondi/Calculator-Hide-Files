@@ -1,7 +1,6 @@
 package devs.org.calculator.activities
 
 import android.app.RecoverableSecurityException
-import android.content.Context
 import android.content.Intent
 import android.net.Uri
 import android.os.Build
@@ -14,10 +13,8 @@ import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.IntentSenderRequest
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.documentfile.provider.DocumentFile
-import androidx.lifecycle.lifecycleScope
 import devs.org.calculator.utils.FileManager
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.io.File
 
@@ -27,62 +24,6 @@ class ImageGalleryActivity : BaseGalleryActivity() {
     private lateinit var intentSenderLauncher: ActivityResultLauncher<IntentSenderRequest>
     private var selectedImageUri: Uri? = null
     private lateinit var pickImageLauncher: ActivityResultLauncher<Intent>
-
-    private suspend fun deletePhotoFromExternalStorage(photoUri: Uri) {
-        withContext(Dispatchers.IO) {
-            try {
-                // First try to delete using DocumentFile
-                val documentFile = DocumentFile.fromSingleUri(this@ImageGalleryActivity, photoUri)
-                if (documentFile?.exists() == true && documentFile.canWrite()) {
-                    val deleted = documentFile.delete()
-                    withContext(Dispatchers.Main) {
-                        if (deleted) {
-                            Toast.makeText(this@ImageGalleryActivity, "File deleted successfully", Toast.LENGTH_SHORT).show()
-                            selectedImageUri = null
-                        } else {
-                            Toast.makeText(this@ImageGalleryActivity, "Failed to delete file", Toast.LENGTH_SHORT).show()
-                        }
-                    }
-                    return@withContext
-                }
-
-                // If DocumentFile approach fails, try content resolver
-                try {
-                    contentResolver.delete(photoUri, null, null)
-                    withContext(Dispatchers.Main) {
-                        Toast.makeText(this@ImageGalleryActivity, "File deleted successfully", Toast.LENGTH_SHORT).show()
-                    }
-                } catch (e: SecurityException) {
-                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-                        val intentSender = when {
-                            Build.VERSION.SDK_INT >= Build.VERSION_CODES.R -> {
-                                MediaStore.createDeleteRequest(contentResolver, listOf(photoUri)).intentSender
-                            }
-                            else -> {
-                                val recoverableSecurityException = e as? RecoverableSecurityException
-                                recoverableSecurityException?.userAction?.actionIntent?.intentSender
-                            }
-                        }
-                        intentSender?.let { sender ->
-                            withContext(Dispatchers.Main) {
-                                intentSenderLauncher.launch(
-                                    IntentSenderRequest.Builder(sender).build()
-                                )
-                            }
-                        }
-                    }
-                }
-            } catch (e: Exception) {
-                withContext(Dispatchers.Main) {
-                    Toast.makeText(
-                        this@ImageGalleryActivity,
-                        "Error deleting file: ${e.message}",
-                        Toast.LENGTH_LONG
-                    ).show()
-                }
-            }
-        }
-    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -156,10 +97,9 @@ class ImageGalleryActivity : BaseGalleryActivity() {
         }
     }
 
-    override fun openPreview(file: File) {
+    override fun openPreview() {
         val intent = Intent(this, PreviewActivity::class.java).apply {
-            putExtra(PreviewActivity.EXTRA_FILE_PATH, file.absolutePath)
-            putExtra(PreviewActivity.EXTRA_FILE_TYPE, fileType.name)
+            putExtra("type", fileType)
         }
         startActivity(intent)
     }
