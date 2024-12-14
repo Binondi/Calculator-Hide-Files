@@ -62,7 +62,7 @@ abstract class BaseGalleryActivity : AppCompatActivity() {
         adapter.submitList(files)
     }
 
-    abstract fun openPreview(file: File)
+    abstract fun openPreview()
 
     private fun checkPermissions() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {

@@ -54,7 +54,7 @@ class DocumentsActivity : BaseGalleryActivity() {
         }
     }
 
-    override fun openPreview(file: File) {
+    override fun openPreview() {
         // Implement document preview
     }
 }
