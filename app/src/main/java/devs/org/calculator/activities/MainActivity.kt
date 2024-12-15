@@ -1,14 +1,11 @@
 package devs.org.calculator.activities
 
-import android.app.Activity
-import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.os.Environment
-import android.provider.Settings
 import android.util.Log
 import android.widget.Toast
 import androidx.activity.result.ActivityResultLauncher
@@ -40,7 +37,6 @@ class MainActivity : AppCompatActivity(), DialogActionsCallback {
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        // Initialize ActivityResultLauncher
         launcher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
             handleActivityResult(result)
         }
@@ -57,7 +53,6 @@ class MainActivity : AppCompatActivity(), DialogActionsCallback {
                 this
             )
         }
-        // Number buttons
         setupNumberButton(binding.btn0, "0")
         setupNumberButton(binding.btn1, "1")
         setupNumberButton(binding.btn2, "2")
@@ -68,14 +63,11 @@ class MainActivity : AppCompatActivity(), DialogActionsCallback {
         setupNumberButton(binding.btn7, "7")
         setupNumberButton(binding.btn8, "8")
         setupNumberButton(binding.btn9, "9")
-
-        // Operator buttons
         setupOperatorButton(binding.btnPlus, "+")
         setupOperatorButton(binding.btnMinus, "-")
-        setupOperatorButton(binding.btnMultiply, "*")
+        setupOperatorButton(binding.btnMultiply, "×")
         setupOperatorButton(binding.btnDivide, "/")
 
-        // Special buttons
         binding.btnClear.setOnClickListener { clearDisplay() }
         binding.btnDot.setOnClickListener { addDecimal() }
         binding.btnEquals.setOnClickListener { calculateResult() }
@@ -88,8 +80,6 @@ class MainActivity : AppCompatActivity(), DialogActionsCallback {
             result.data?.data?.let { uri ->
                 baseDocumentTreeUri = uri
                 val takeFlags = Intent.FLAG_GRANT_READ_URI_PERMISSION or Intent.FLAG_GRANT_WRITE_URI_PERMISSION
-
-                // Take persistable Uri Permission for future use
                 contentResolver.takePersistableUriPermission(uri, takeFlags)
 
                 val preferences = getSharedPreferences("com.example.fileutility", MODE_PRIVATE)
@@ -115,13 +105,17 @@ class MainActivity : AppCompatActivity(), DialogActionsCallback {
     private fun setupOperatorButton(button: MaterialButton, operator: String) {
         button.setOnClickListener {
             if (!lastWasOperator) {
-                currentExpression += operator
+                currentExpression += when (operator) {
+                    "×" -> "*"
+                    else -> operator
+                }
                 lastWasOperator = true
                 hasDecimal = false
             }
             updateDisplay()
         }
     }
+
 
     private fun clearDisplay() {
         currentExpression = "0"
@@ -150,8 +144,7 @@ class MainActivity : AppCompatActivity(), DialogActionsCallback {
     }
 
     private fun calculateResult() {
-        // Check for secret code
-        if (currentExpression == "123456") { // Replace with your desired code
+        if (currentExpression == "123456") {
             val intent = Intent(this, SetupPasswordActivity::class.java)
             intent.putExtra("password", currentExpression)
             startActivity(intent)
@@ -159,7 +152,6 @@ class MainActivity : AppCompatActivity(), DialogActionsCallback {
             return
         }
 
-        // Validate password
         if (PrefsUtil(this).validatePassword(currentExpression)) {
             val intent = Intent(this, HiddenVaultActivity::class.java)
             intent.putExtra("password", currentExpression)
@@ -169,6 +161,7 @@ class MainActivity : AppCompatActivity(), DialogActionsCallback {
         }
 
         try {
+            currentExpression = currentExpression.replace("×", "*")
             val expression = ExpressionBuilder(currentExpression).build()
             val result = expression.evaluate()
 
@@ -180,25 +173,26 @@ class MainActivity : AppCompatActivity(), DialogActionsCallback {
 
             lastWasOperator = false
             hasDecimal = currentExpression.contains(".")
+
             updateDisplay()
+            binding.total.text = ""
         } catch (e: Exception) {
             binding.display.text = getString(R.string.invalid_message)
         }
     }
 
-    private fun updateDisplay() {
-        binding.display.text = currentExpression
 
-        if (currentExpression == "0"){
+    private fun updateDisplay() {
+        binding.display.text = currentExpression.replace("*", "×")
+
+        if (currentExpression == "0") {
             binding.total.text = ""
             return
         }
-        // Evaluate the expression and update total
+
         try {
             val expression = ExpressionBuilder(currentExpression).build()
             val result = expression.evaluate()
-
-            // Format the result and update total.text
             val formattedResult = if (result.toLong().toDouble() == result) {
                 result.toLong().toString()
             } else {
@@ -207,10 +201,10 @@ class MainActivity : AppCompatActivity(), DialogActionsCallback {
 
             binding.total.text = formattedResult
         } catch (e: Exception) {
-            // Show a blank or placeholder for invalid expressions
             binding.total.text = ""
         }
     }
+
 
     private fun cutNumbers() {
         if (currentExpression.isNotEmpty()){
