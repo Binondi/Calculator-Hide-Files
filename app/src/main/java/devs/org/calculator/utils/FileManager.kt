@@ -141,10 +141,7 @@ class FileManager(private val context: Context, private val lifecycleOwner: Life
             null
         }
     }
-
-
-
-
+    
     suspend fun deletePhotoFromExternalStorage(photoUri: Uri) {
         withContext(Dispatchers.IO) {
             try {
@@ -274,11 +271,6 @@ class FileManager(private val context: Context, private val lifecycleOwner: Life
             )
         }
     }
-
-
-
-
-
 
     suspend fun processMultipleFiles(
         uriList: List<Uri>,

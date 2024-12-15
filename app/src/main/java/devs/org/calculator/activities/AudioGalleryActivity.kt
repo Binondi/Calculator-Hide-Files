@@ -20,37 +20,47 @@ class AudioGalleryActivity : BaseGalleryActivity(), FileProcessCallback {
         super.onCreate(savedInstanceState)
         setupFabButton()
 
-        pickAudioLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
-            if (result.resultCode == RESULT_OK) {
-                val clipData = result.data?.clipData
-                val uriList = mutableListOf<Uri>()
+        pickAudioLauncher =
+            registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
+                if (result.resultCode == RESULT_OK) {
+                    val clipData = result.data?.clipData
+                    val uriList = mutableListOf<Uri>()
 
-                if (clipData != null) {
-                    for (i in 0 until clipData.itemCount) {
-                        val uri = clipData.getItemAt(i).uri
-                        uriList.add(uri)
+                    if (clipData != null) {
+                        for (i in 0 until clipData.itemCount) {
+                            val uri = clipData.getItemAt(i).uri
+                            uriList.add(uri)
+                        }
+                    } else {
+                        result.data?.data?.let { uriList.add(it) } // Single file selected
                     }
-                } else {
-                    result.data?.data?.let { uriList.add(it) } // Single file selected
-                }
 
-                if (uriList.isNotEmpty()) {
-                    lifecycleScope.launch {
-                        FileManager(this@AudioGalleryActivity, this@AudioGalleryActivity).processMultipleFiles(uriList, fileType,this@AudioGalleryActivity )
+                    if (uriList.isNotEmpty()) {
+                        lifecycleScope.launch {
+                            FileManager(
+                                this@AudioGalleryActivity,
+                                this@AudioGalleryActivity
+                            ).processMultipleFiles(uriList, fileType, this@AudioGalleryActivity)
+                        }
+                    } else {
+                        Toast.makeText(this, "No files selected", Toast.LENGTH_SHORT).show()
                     }
-                } else {
-                    Toast.makeText(this, "No files selected", Toast.LENGTH_SHORT).show()
                 }
             }
-        }
     }
+
     override fun onFilesProcessedSuccessfully(copiedFiles: List<File>) {
-        Toast.makeText(this@AudioGalleryActivity, "${copiedFiles.size} Audios hidden successfully", Toast.LENGTH_SHORT).show()
+        Toast.makeText(
+            this@AudioGalleryActivity,
+            "${copiedFiles.size} Audios hidden successfully",
+            Toast.LENGTH_SHORT
+        ).show()
         loadFiles()
     }
 
     override fun onFileProcessFailed() {
-        Toast.makeText(this@AudioGalleryActivity, "Failed to hide Audios", Toast.LENGTH_SHORT).show()
+        Toast.makeText(this@AudioGalleryActivity, "Failed to hide Audios", Toast.LENGTH_SHORT)
+            .show()
     }
 
     private fun setupFabButton() {
