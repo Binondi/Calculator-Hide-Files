@@ -3,25 +3,38 @@ package devs.org.calculator.activities
 import android.app.Activity
 import android.content.Context
 import android.content.Intent
+import android.content.pm.PackageManager
 import android.net.Uri
+import android.os.Build
 import android.os.Bundle
+import android.os.Environment
+import android.provider.Settings
 import android.util.Log
+import android.widget.Toast
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
 import com.google.android.material.button.MaterialButton
+import devs.org.calculator.R
+import devs.org.calculator.callbacks.DialogActionsCallback
 import devs.org.calculator.databinding.ActivityMainBinding
+import devs.org.calculator.utils.DialogUtil
+import devs.org.calculator.utils.FileManager
 import devs.org.calculator.utils.PrefsUtil
 import net.objecthunter.exp4j.ExpressionBuilder
 
-class MainActivity : AppCompatActivity() {
+class MainActivity : AppCompatActivity(), DialogActionsCallback {
     private lateinit var binding: ActivityMainBinding
     private var currentExpression = "0"
     private var lastWasOperator = false
     private var hasDecimal = false
     private lateinit var launcher: ActivityResultLauncher<Intent>
     private lateinit var baseDocumentTreeUri: Uri
+    private val dialogUtil = DialogUtil(this)
+    private val fileManager = FileManager(this, this)
 
+    @RequiresApi(Build.VERSION_CODES.R)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityMainBinding.inflate(layoutInflater)
@@ -32,8 +45,18 @@ class MainActivity : AppCompatActivity() {
             handleActivityResult(result)
         }
 
-        // Ask for base directory picker on startup
-
+        // Ask permission
+        if(!Environment.isExternalStorageManager()) {
+            dialogUtil.showMaterialDialog(
+                "Storage Permission",
+                "To ensure the app works properly and allows you to easily hide or unhide your private files, please grant storage access permission.\n" +
+                        "\n" +
+                        "For devices running Android 11 or higher, you'll need to grant the 'All Files Access' permission.",
+                "Grant",
+                "Cancel",
+                this
+            )
+        }
         // Number buttons
         setupNumberButton(binding.btn0, "0")
         setupNumberButton(binding.btn1, "1")
@@ -60,13 +83,8 @@ class MainActivity : AppCompatActivity() {
         binding.cut.setOnClickListener { cutNumbers() }
     }
 
-    private fun launchBaseDirectoryPicker() {
-        val intent = Intent(Intent.ACTION_OPEN_DOCUMENT_TREE)
-        launcher.launch(intent)
-    }
-
     private fun handleActivityResult(result: androidx.activity.result.ActivityResult) {
-        if (result.resultCode == Activity.RESULT_OK) {
+        if (result.resultCode == RESULT_OK) {
             result.data?.data?.let { uri ->
                 baseDocumentTreeUri = uri
                 val takeFlags = Intent.FLAG_GRANT_READ_URI_PERMISSION or Intent.FLAG_GRANT_WRITE_URI_PERMISSION
@@ -74,7 +92,7 @@ class MainActivity : AppCompatActivity() {
                 // Take persistable Uri Permission for future use
                 contentResolver.takePersistableUriPermission(uri, takeFlags)
 
-                val preferences = getSharedPreferences("com.example.fileutility", Context.MODE_PRIVATE)
+                val preferences = getSharedPreferences("com.example.fileutility", MODE_PRIVATE)
                 preferences.edit().putString("filestorageuri", uri.toString()).apply()
             }
         } else {
@@ -126,7 +144,7 @@ class MainActivity : AppCompatActivity() {
             currentExpression = (value / 100).toString()
             updateDisplay()
         } catch (e: Exception) {
-            binding.display.text = "Error"
+            binding.display.text = getString(R.string.invalid_message)
         }
     }
 
@@ -163,7 +181,7 @@ class MainActivity : AppCompatActivity() {
             hasDecimal = currentExpression.contains(".")
             updateDisplay()
         } catch (e: Exception) {
-            binding.display.text = "Invalid Value"
+            binding.display.text = getString(R.string.invalid_message)
         }
     }
 
@@ -179,6 +197,29 @@ class MainActivity : AppCompatActivity() {
         }else currentExpression = "0"
         updateDisplay()
 
+    }
+
+    override fun onPositiveButtonClicked() {
+        fileManager.askPermission(this)
+    }
+
+    override fun onNegativeButtonClicked() {
+
+    }
+
+    override fun onNaturalButtonClicked() {
+
+    }
+
+    override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
+        if (requestCode == 6767) {
+            if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                Toast.makeText(this, "Permission granted", Toast.LENGTH_SHORT).show()
+            } else {
+                Toast.makeText(this, "Permission denied", Toast.LENGTH_SHORT).show()
+            }
+        }
     }
 }
 

@@ -15,13 +15,10 @@ import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.lifecycleScope
 import devs.org.calculator.utils.FileManager
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 import java.io.File
 import android.Manifest
-import devs.org.calculator.activities.AudioGalleryActivity
-import devs.org.calculator.utils.FileProcessCallback
+import devs.org.calculator.callbacks.FileProcessCallback
 
 class ImageGalleryActivity : BaseGalleryActivity(), FileProcessCallback  {
     override val fileType = FileManager.FileType.IMAGE

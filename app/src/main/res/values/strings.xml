@@ -1,3 +1,4 @@
 <resources>
     <string name="app_name">Calculator</string>
+    <string name="invalid_message">Invalid Value Entered</string>
 </resources>

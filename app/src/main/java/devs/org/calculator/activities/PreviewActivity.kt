@@ -69,12 +69,11 @@ class PreviewActivity : AppCompatActivity() {
 
         val fileUri = Uri.fromFile(files[currentPosition])
         val fileName = FileManager.FileName(this).getFileNameFromUri(fileUri).toString()
-        binding.title.text = fileName
     }
 
     private fun clickListeners() {
         binding.delete.setOnClickListener {
-            val fileUri = FileManager.FileManager().getContentUri(this, files[binding.viewPager.currentItem])
+            val fileUri = FileManager.FileManager().getContentUri(this, files[binding.viewPager.currentItem], filetype)
             if (fileUri != null) {
                 MaterialAlertDialogBuilder(this)
                     .setTitle("Delete File")
@@ -94,7 +93,7 @@ class PreviewActivity : AppCompatActivity() {
         }
 
         binding.unHide.setOnClickListener {
-            val fileUri = FileManager.FileManager().getContentUri(this, files[binding.viewPager.currentItem])
+            val fileUri = FileManager.FileManager().getContentUri(this, files[binding.viewPager.currentItem], filetype)
             if (fileUri != null) {
                 MaterialAlertDialogBuilder(this)
                     .setTitle("Unhide File")

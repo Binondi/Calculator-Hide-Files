@@ -7,6 +7,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
+import android.widget.Toast
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.DiffUtil
@@ -33,6 +34,7 @@ class FileAdapter(private val fileType: FileManager.FileType, var context: Conte
         private val imageView: ImageView = view.findViewById(R.id.imageView)
 
         fun bind(file: File) {
+
             when (fileType) {
                 FileManager.FileType.IMAGE -> {
                     Glide.with(imageView)
@@ -58,6 +60,7 @@ class FileAdapter(private val fileType: FileManager.FileType, var context: Conte
             }
             itemView.setOnClickListener {
 
+
                 var fileTypes = when(fileType){
 
                     FileManager.FileType.IMAGE -> {
@@ -79,38 +82,39 @@ class FileAdapter(private val fileType: FileManager.FileType, var context: Conte
                 context.startActivity(intent)
 
             }
-            itemView.setOnLongClickListener{
+            itemView.setOnLongClickListener {
+                val fileUri = FileManager.FileManager().getContentUri(context, file, fileType)
+                if (fileUri == null) {
+                    Toast.makeText(context, "Unable to access file: $file", Toast.LENGTH_SHORT).show()
+                    return@setOnLongClickListener true
+                }
 
-                val fileUri = FileManager.FileManager().getContentUri(context, file)
-                val filesName = FileManager.FileName(context).getFileNameFromUri(fileUri!!).toString()
+                val fileName = FileManager.FileName(context).getFileNameFromUri(fileUri)?.toString() ?: "Unknown File"
 
                 MaterialAlertDialogBuilder(context)
                     .setTitle("Details")
-                    .setMessage("File Name: $filesName\n\nYou can delete or Unhide this file.")
+                    .setMessage("File Name: $fileName\n\nYou can delete or unhide this file.")
                     .setPositiveButton("Delete") { dialog, _ ->
-                        // Handle positive button click
-                        lifecycleOwner.lifecycleScope.launch{
-                            FileManager(context, context as LifecycleOwner).deletePhotoFromExternalStorage(fileUri)
+                        lifecycleOwner.lifecycleScope.launch {
+                            FileManager(context, lifecycleOwner).deletePhotoFromExternalStorage(fileUri)
                         }
-
                         val currentList = currentList.toMutableList()
                         currentList.remove(file)
                         submitList(currentList)
                         dialog.dismiss()
                     }
                     .setNegativeButton("Unhide") { dialog, _ ->
-                        // Handle negative button click
-                        FileManager(context, context as LifecycleOwner).copyFileToNormalDir(fileUri)
+                        FileManager(context, lifecycleOwner).copyFileToNormalDir(fileUri)
                         val currentList = currentList.toMutableList()
                         currentList.remove(file)
                         submitList(currentList)
                         dialog.dismiss()
-                        dialog.dismiss()
                     }
                     .show()
 
-               return@setOnLongClickListener true
+                return@setOnLongClickListener true
             }
+
 
         }
     }
@@ -137,4 +141,6 @@ class FileAdapter(private val fileType: FileManager.FileType, var context: Conte
             return oldItem == newItem
         }
     }
+
+
 }

@@ -18,6 +18,14 @@ class PrefsUtil(context: Context) {
             .apply()
     }
 
+    fun resetPassword(){
+        prefs.edit()
+            .remove("password")
+            .remove("security_question")
+            .remove("security_answer")
+            .apply()
+    }
+
     fun validatePassword(input: String): Boolean {
         val stored = prefs.getString("password", "") ?: ""
         return stored == hashPassword(input)

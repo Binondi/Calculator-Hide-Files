@@ -7,12 +7,9 @@ import android.widget.Toast
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.lifecycle.lifecycleScope
-import devs.org.calculator.activities.AudioGalleryActivity
 import devs.org.calculator.utils.FileManager
-import devs.org.calculator.utils.FileProcessCallback
-import kotlinx.coroutines.Dispatchers
+import devs.org.calculator.callbacks.FileProcessCallback
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 import java.io.File
 
 class DocumentsActivity : BaseGalleryActivity(), FileProcessCallback {
