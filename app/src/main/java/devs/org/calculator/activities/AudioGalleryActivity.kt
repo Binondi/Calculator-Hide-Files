@@ -32,7 +32,7 @@ class AudioGalleryActivity : BaseGalleryActivity(), FileProcessCallback {
                             uriList.add(uri)
                         }
                     } else {
-                        result.data?.data?.let { uriList.add(it) } // Single file selected
+                        result.data?.data?.let { uriList.add(it) }
                     }
 
                     if (uriList.isNotEmpty()) {

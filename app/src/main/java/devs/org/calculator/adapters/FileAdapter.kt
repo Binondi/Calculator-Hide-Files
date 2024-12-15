@@ -16,6 +16,8 @@ import com.bumptech.glide.Glide
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import devs.org.calculator.R
 import devs.org.calculator.activities.PreviewActivity
+import devs.org.calculator.callbacks.DialogActionsCallback
+import devs.org.calculator.utils.DialogUtil
 import devs.org.calculator.utils.FileManager
 import kotlinx.coroutines.launch
 import java.io.File
@@ -30,6 +32,23 @@ class FileAdapter(
     private val selectedItems = mutableSetOf<Int>()
     private var isSelectionMode = false
     private var fileName = "Unknown File"
+    private var fileTypes = when (fileType) {
+
+        FileManager.FileType.IMAGE -> {
+            "IMAGE"
+        }
+
+        FileManager.FileType.VIDEO -> {
+            "VIDEO"
+        }
+
+        FileManager.FileType.AUDIO -> {
+            "AUDIO"
+        }
+
+        else -> "DOCUMENT"
+
+    }
 
     inner class FileViewHolder(view: View) : RecyclerView.ViewHolder(view) {
         private val imageView: ImageView = view.findViewById(R.id.imageView)
@@ -63,24 +82,6 @@ class FileAdapter(
             }
             itemView.setOnClickListener {
 
-
-                var fileTypes = when (fileType) {
-
-                    FileManager.FileType.IMAGE -> {
-                        "IMAGE"
-                    }
-
-                    FileManager.FileType.VIDEO -> {
-                        "VIDEO"
-                    }
-
-                    FileManager.FileType.AUDIO -> {
-                        "AUDIO"
-                    }
-
-                    else -> "DOCUMENT"
-
-                }
                 val intent = Intent(context, PreviewActivity::class.java).apply {
                     putExtra("type", fileTypes)
                     putExtra("position", position)
@@ -101,29 +102,36 @@ class FileAdapter(
                 fileName = FileManager.FileName(context).getFileNameFromUri(fileUri)?.toString()
                     ?: "Unknown File"
 
-
-                MaterialAlertDialogBuilder(context)
-                    .setTitle("Details")
-                    .setMessage("File Name: $fileName\n\nFile Path: $file\n\nYou can delete or unhide this file.")
-                    .setPositiveButton("Delete") { dialog, _ ->
-                        lifecycleOwner.lifecycleScope.launch {
-                            FileManager(context, lifecycleOwner).deletePhotoFromExternalStorage(
-                                fileUri
-                            )
+                DialogUtil(context).showMaterialDialogWithNaturalButton(
+                    "$fileTypes DETAILS",
+                    "File Name: $fileName\n\nFile Path: $file\n\nYou can permanently delete or unhide this file.",
+                    "Delete Permanently",
+                    "Unhide",
+                    "Cancel",
+                    object : DialogActionsCallback {
+                        override fun onPositiveButtonClicked() {
+                            lifecycleOwner.lifecycleScope.launch {
+                                FileManager(context, lifecycleOwner).deletePhotoFromExternalStorage(
+                                    fileUri
+                                )
+                            }
+                            val currentList = currentList.toMutableList()
+                            currentList.remove(file)
+                            submitList(currentList)
                         }
-                        val currentList = currentList.toMutableList()
-                        currentList.remove(file)
-                        submitList(currentList)
-                        dialog.dismiss()
+
+                        override fun onNegativeButtonClicked() {
+                            FileManager(context, lifecycleOwner).copyFileToNormalDir(fileUri)
+                            val currentList = currentList.toMutableList()
+                            currentList.remove(file)
+                            submitList(currentList)
+                        }
+
+                        override fun onNaturalButtonClicked() {
+
+                        }
                     }
-                    .setNegativeButton("Unhide") { dialog, _ ->
-                        FileManager(context, lifecycleOwner).copyFileToNormalDir(fileUri)
-                        val currentList = currentList.toMutableList()
-                        currentList.remove(file)
-                        submitList(currentList)
-                        dialog.dismiss()
-                    }
-                    .show()
+                )
 
                 return@setOnLongClickListener true
             }
@@ -145,12 +153,10 @@ class FileAdapter(
 
     class FileDiffCallback : DiffUtil.ItemCallback<File>() {
         override fun areItemsTheSame(oldItem: File, newItem: File): Boolean {
-            // Compare based on file path or another unique identifier
             return oldItem.path == newItem.path
         }
 
         override fun areContentsTheSame(oldItem: File, newItem: File): Boolean {
-            // Compare the content of files if needed
             return oldItem == newItem
         }
     }

@@ -32,7 +32,6 @@ abstract class BaseGalleryActivity : AppCompatActivity() {
         if (granted || Build.VERSION.SDK_INT >= Build.VERSION_CODES.R && Environment.isExternalStorageManager()) {
             loadFiles()
         } else {
-            // Handle permission denial case
             showPermissionDeniedDialog()
         }
     }
@@ -47,6 +46,29 @@ abstract class BaseGalleryActivity : AppCompatActivity() {
 
         fileManager = FileManager(this, this)
 
+        binding.fabAdd.text = when(fileType){
+            FileManager.FileType.IMAGE -> {
+                 "Add Image"
+            }
+            FileManager.FileType.AUDIO -> {
+                "Add Audio"
+            }
+            FileManager.FileType.VIDEO -> {
+                "Add Video"
+            }
+            FileManager.FileType.DOCUMENT -> {
+                "Add Files"
+            }
+        }
+        binding.recyclerView.setOnScrollChangeListener { _, _, scrollY, _, oldScrollY ->
+            if (scrollY > oldScrollY && binding.fabAdd.isExtended) {
+
+                binding.fabAdd.shrink()
+            } else if (scrollY < oldScrollY && !binding.fabAdd.isExtended) {
+
+                binding.fabAdd.extend()
+            }
+        }
         setupRecyclerView()
         checkPermissionsAndLoadFiles()
     }
@@ -56,7 +78,7 @@ abstract class BaseGalleryActivity : AppCompatActivity() {
             ActivityResultContracts.StartIntentSenderForResult()
         ) { result ->
             if (result.resultCode == RESULT_OK) {
-                loadFiles() // Refresh the list after deletion
+                loadFiles()
             }
         }
     }
@@ -103,7 +125,7 @@ abstract class BaseGalleryActivity : AppCompatActivity() {
     abstract fun openPreview()
 
     private fun showPermissionDeniedDialog() {
-        // Show a dialog or a message informing the user about the importance of permissions
+        // permission denied
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {

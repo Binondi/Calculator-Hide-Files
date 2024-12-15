@@ -9,23 +9,45 @@
     tools:context=".activities.MainActivity">
 
     <!-- Calculator Display -->
-    <TextView
-        android:id="@+id/display"
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="160dp"
         android:layout_margin="16dp"
         android:layout_weight="3"
         android:layout_marginTop="0dp"
         android:elevation="4dp"
-        android:gravity="end|bottom"
-        android:padding="10dp"
-        android:text="0"
-        android:textSize="48sp"
-        android:autoSizeTextType="uniform"
-        android:autoSizeMinTextSize="20sp"
-        android:autoSizeMaxTextSize="48sp"
-        android:autoSizeStepGranularity="2sp"
-        tools:ignore="Suspicious0dp" />
+        android:orientation="vertical"
+        android:gravity="right|bottom">
+        <TextView
+            android:id="@+id/display"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="end|bottom"
+            android:padding="10dp"
+            android:text="0"
+            android:textSize="48sp"
+            android:autoSizeTextType="uniform"
+            android:autoSizeMinTextSize="20sp"
+            android:autoSizeMaxTextSize="48sp"
+            android:autoSizeStepGranularity="2sp"
+            tools:ignore="Suspicious0dp" />
+
+        <TextView
+            android:id="@+id/total"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="end|bottom"
+            android:paddingRight="10dp"
+            android:paddingBottom="10dp"
+            android:text=""
+            android:textSize="26sp"
+            android:autoSizeTextType="uniform"
+            android:autoSizeMinTextSize="20sp"
+            android:autoSizeMaxTextSize="48sp"
+            android:autoSizeStepGranularity="2sp"
+            tools:ignore="Suspicious0dp" />
+    </LinearLayout>
+
 
 
 

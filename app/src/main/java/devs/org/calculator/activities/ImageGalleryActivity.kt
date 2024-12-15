@@ -33,11 +33,7 @@ class ImageGalleryActivity : BaseGalleryActivity(), FileProcessCallback  {
         setupFabButton()
 
         intentSenderLauncher = registerForActivityResult(ActivityResultContracts.StartIntentSenderForResult()){
-            if (it.resultCode == RESULT_OK){
-//                Toast.makeText(this, "Photo Deleted Successfully", Toast.LENGTH_SHORT).show()
-            }else{
-                Toast.makeText(this, "Failed to hide/unhide photo", Toast.LENGTH_SHORT).show()
-            }
+            if (it.resultCode != RESULT_OK) Toast.makeText(this, "Failed to hide/unhide photo", Toast.LENGTH_SHORT).show()
         }
 
         pickImageLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
@@ -51,7 +47,7 @@ class ImageGalleryActivity : BaseGalleryActivity(), FileProcessCallback  {
                         uriList.add(uri)
                     }
                 } else {
-                    result.data?.data?.let { uriList.add(it) } // Single file selected
+                    result.data?.data?.let { uriList.add(it) }
                 }
 
                 if (uriList.isNotEmpty()) {

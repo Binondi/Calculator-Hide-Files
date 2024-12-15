@@ -11,17 +11,33 @@ import com.google.android.material.textfield.TextInputEditText
 import devs.org.calculator.databinding.ActivitySetupPasswordBinding
 import devs.org.calculator.utils.PrefsUtil
 import devs.org.calculator.R
+import devs.org.calculator.databinding.ActivityChangePasswordBinding
 
 class SetupPasswordActivity : AppCompatActivity() {
     private lateinit var binding: ActivitySetupPasswordBinding
+    private lateinit var binding2: ActivityChangePasswordBinding
     private lateinit var prefsUtil: PrefsUtil
+    private var hasPassword = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivitySetupPasswordBinding.inflate(layoutInflater)
+        binding2 = ActivityChangePasswordBinding.inflate(layoutInflater)
         setContentView(binding.root)
-        prefsUtil = PrefsUtil(this)
 
+        prefsUtil = PrefsUtil(this)
+        hasPassword = prefsUtil.hasPassword()
+
+        if (hasPassword){
+            setContentView(binding2.root)
+        }else{
+            setContentView(binding.root)
+        }
+        clickListeners()
+
+    }
+
+    private fun clickListeners(){
         binding.btnSavePassword.setOnClickListener {
             val password = binding.etPassword.text.toString()
             val confirmPassword = binding.etConfirmPassword.text.toString()
@@ -62,7 +78,38 @@ class SetupPasswordActivity : AppCompatActivity() {
             else Toast.makeText(this, "Security question not set yet.", Toast.LENGTH_SHORT).show()
 
         }
+        binding2.btnChangePassword.setOnClickListener{
+            val oldPassword = binding2.etOldPassword.text.toString()
+            val newPassword = binding2.etNewPassword.text.toString()
+            if (oldPassword.isEmpty()) {
+                binding2.etOldPassword.error = "This field can't be empty"
+                return@setOnClickListener
+            }
+            if (newPassword.isEmpty()) {
+                binding2.etNewPassword.error = "This field can't be empty"
+                return@setOnClickListener
+            }
 
+            if (prefsUtil.validatePassword(oldPassword)){
+                if (oldPassword != newPassword){
+                    prefsUtil.savePassword(newPassword)
+                    Toast.makeText(this, "Password reset successfully", Toast.LENGTH_SHORT).show()
+                    startActivity(Intent(this, MainActivity::class.java))
+                    finish()
+
+                }else {
+                    Toast.makeText(this, "Old Password And New Password Not Be Same", Toast.LENGTH_SHORT).show()
+                    binding2.etNewPassword.error = "Old Password And New Password Not Be Same"
+                }
+            }else {
+                Toast.makeText(this, "Wrong password entered", Toast.LENGTH_SHORT).show()
+                binding2.etOldPassword.error = "Old Password Not Matching"
+            }
+        }
+        binding2.btnResetPassword.setOnClickListener{
+            if (prefsUtil.getSecurityQuestion() != null) showSecurityQuestionDialog(prefsUtil.getSecurityQuestion().toString())
+            else Toast.makeText(this, "Security question not set yet.", Toast.LENGTH_SHORT).show()
+        }
     }
 
     private fun showSecurityQuestionDialog(securityQuestion: String) {
@@ -70,6 +117,7 @@ class SetupPasswordActivity : AppCompatActivity() {
 
         val questionTextView: TextView = dialogView.findViewById(R.id.security_question)
         questionTextView.text = securityQuestion
+
 
         MaterialAlertDialogBuilder(this)
             .setTitle("Answer the Security Question!")

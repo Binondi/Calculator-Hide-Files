@@ -125,6 +125,7 @@ class MainActivity : AppCompatActivity(), DialogActionsCallback {
 
     private fun clearDisplay() {
         currentExpression = "0"
+        binding.total.text = ""
         lastWasOperator = false
         hasDecimal = false
         updateDisplay()
@@ -187,7 +188,30 @@ class MainActivity : AppCompatActivity(), DialogActionsCallback {
 
     private fun updateDisplay() {
         binding.display.text = currentExpression
+
+        if (currentExpression == "0"){
+            binding.total.text = ""
+            return
+        }
+        // Evaluate the expression and update total
+        try {
+            val expression = ExpressionBuilder(currentExpression).build()
+            val result = expression.evaluate()
+
+            // Format the result and update total.text
+            val formattedResult = if (result.toLong().toDouble() == result) {
+                result.toLong().toString()
+            } else {
+                String.format("%.2f", result)
+            }
+
+            binding.total.text = formattedResult
+        } catch (e: Exception) {
+            // Show a blank or placeholder for invalid expressions
+            binding.total.text = ""
+        }
     }
+
     private fun cutNumbers() {
         if (currentExpression.isNotEmpty()){
             if (currentExpression.length == 1){

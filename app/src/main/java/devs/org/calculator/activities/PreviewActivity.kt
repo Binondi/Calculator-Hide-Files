@@ -6,6 +6,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import devs.org.calculator.adapters.ImagePreviewAdapter
+import devs.org.calculator.callbacks.DialogActionsCallback
 import devs.org.calculator.databinding.ActivityPreviewBinding
 import devs.org.calculator.utils.DialogUtil
 import devs.org.calculator.utils.FileManager
@@ -21,6 +22,7 @@ class PreviewActivity : AppCompatActivity() {
     private lateinit var filetype: FileManager.FileType
     private lateinit var adapter: ImagePreviewAdapter
     private lateinit var fileManager: FileManager
+    private val dialogUtil = DialogUtil(this)
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -62,7 +64,7 @@ class PreviewActivity : AppCompatActivity() {
 
     private fun setupImagePreview() {
         adapter = ImagePreviewAdapter(this, filetype)
-        adapter.images = files // Set initial data
+        adapter.images = files
         binding.viewPager.adapter = adapter
 
         binding.viewPager.setCurrentItem(currentPosition, false)
@@ -75,40 +77,58 @@ class PreviewActivity : AppCompatActivity() {
         binding.delete.setOnClickListener {
             val fileUri = FileManager.FileManager().getContentUriImage(this, files[binding.viewPager.currentItem], filetype)
             if (fileUri != null) {
-                MaterialAlertDialogBuilder(this)
-                    .setTitle("Delete File")
-                    .setMessage("Are you sure you want to Delete this file?")
-                    .setPositiveButton("Delete") { dialog, _ ->
-                        lifecycleScope.launch {
-                            FileManager(this@PreviewActivity, this@PreviewActivity).deletePhotoFromExternalStorage(fileUri)
-                            removeFileFromList(binding.viewPager.currentItem)
+                dialogUtil.showMaterialDialog(
+                    "Delete File",
+                    "Are you sure to Delete this file permanently?",
+                    "Delete Permanently",
+                    "Cancel",
+                    object : DialogActionsCallback{
+                        override fun onPositiveButtonClicked() {
+                            lifecycleScope.launch {
+                                FileManager(this@PreviewActivity, this@PreviewActivity).deletePhotoFromExternalStorage(fileUri)
+                                removeFileFromList(binding.viewPager.currentItem)
+                            }
                         }
-                        dialog.dismiss()
+
+                        override fun onNegativeButtonClicked() {
+
+                        }
+
+                        override fun onNaturalButtonClicked() {
+
+                        }
+
                     }
-                    .setNegativeButton("Cancel") { dialog, _ ->
-                        dialog.dismiss()
-                    }
-                    .show()
+                )
             }
         }
 
         binding.unHide.setOnClickListener {
             val fileUri = FileManager.FileManager().getContentUriImage(this, files[binding.viewPager.currentItem], filetype)
             if (fileUri != null) {
-                MaterialAlertDialogBuilder(this)
-                    .setTitle("Unhide File")
-                    .setMessage("Are you sure you want to Unhide this file?")
-                    .setPositiveButton("Unhide") { dialog, _ ->
-                        lifecycleScope.launch {
-                            FileManager(this@PreviewActivity, this@PreviewActivity).copyFileToNormalDir(fileUri)
-                            removeFileFromList(binding.viewPager.currentItem)
+                dialogUtil.showMaterialDialog(
+                    "Unhide File",
+                    "Are you sure you want to Unhide this file?",
+                    "Unhide",
+                    "Cancel",
+                    object : DialogActionsCallback{
+                        override fun onPositiveButtonClicked() {
+                            lifecycleScope.launch {
+                                FileManager(this@PreviewActivity, this@PreviewActivity).copyFileToNormalDir(fileUri)
+                                removeFileFromList(binding.viewPager.currentItem)
+                            }
                         }
-                        dialog.dismiss()
+
+                        override fun onNegativeButtonClicked() {
+
+                        }
+
+                        override fun onNaturalButtonClicked() {
+
+                        }
+
                     }
-                    .setNegativeButton("Cancel") { dialog, _ ->
-                        dialog.dismiss()
-                    }
-                    .show()
+                )
             }
         }
     }
