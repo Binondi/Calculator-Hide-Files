@@ -24,6 +24,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.io.File
 import android.Manifest
+import androidx.core.content.FileProvider
 
 class FileManager(private val context: Context, private val lifecycleOwner: LifecycleOwner) {
     private lateinit var intentSenderLauncher: ActivityResultLauncher<IntentSenderRequest>
@@ -224,69 +225,29 @@ class FileManager(private val context: Context, private val lifecycleOwner: Life
 
     }
     class FileManager(){
-        fun getContentUri(context: Context, file: File, fileType: FileType): Uri? {
-            when(fileType){
-                FileType.IMAGE -> {
-                    val projection = arrayOf(MediaStore.MediaColumns._ID)
-                    val selection = "${MediaStore.MediaColumns.DATA} = ?"
-                    val selectionArgs = arrayOf(file.absolutePath)
-                    val queryUri = MediaStore.Files.getContentUri("external")
+        fun getContentUriImage(context: Context, file: File, fileType: FileType): Uri? {
 
-                    context.contentResolver.query(queryUri, projection, selection, selectionArgs, null)?.use { cursor ->
-                        if (cursor.moveToFirst()) {
-                            val id = cursor.getLong(cursor.getColumnIndexOrThrow(MediaStore.MediaColumns._ID))
-                            return Uri.withAppendedPath(queryUri, id.toString())
-                        }
-                    }
-                    return null
-                }
+            // Query MediaStore for the file
+            val projection = arrayOf(MediaStore.MediaColumns._ID)
+            val selection = "${MediaStore.MediaColumns.DATA} = ?"
+            val selectionArgs = arrayOf(file.absolutePath)
+            val queryUri = MediaStore.Files.getContentUri("external")
 
-                FileType.VIDEO -> {
-                    val projection = arrayOf(MediaStore.Video.Media._ID)
-                    val selection = "${MediaStore.Video.Media.DATA} = ?"
-                    val selectionArgs = arrayOf(file.absolutePath)
-                    val queryUri = MediaStore.Video.Media.EXTERNAL_CONTENT_URI
-
-                    context.contentResolver.query(queryUri, projection, selection, selectionArgs, null)?.use { cursor ->
-                        if (cursor.moveToFirst()) {
-                            val id = cursor.getLong(cursor.getColumnIndexOrThrow(MediaStore.Video.Media._ID))
-                            return Uri.withAppendedPath(queryUri, id.toString())
-                        }
-                    }
-                    return null
-                }
-                FileType.AUDIO -> {
-                    val projection = arrayOf(MediaStore.Audio.Media._ID)
-                    val selection = "${MediaStore.Audio.Media.DATA} = ?"
-                    val selectionArgs = arrayOf(file.absolutePath)
-                    val queryUri = MediaStore.Audio.Media.EXTERNAL_CONTENT_URI
-
-                    context.contentResolver.query(queryUri, projection, selection, selectionArgs, null)?.use { cursor ->
-                        if (cursor.moveToFirst()) {
-                            val id = cursor.getLong(cursor.getColumnIndexOrThrow(MediaStore.Audio.Media._ID))
-                            return Uri.withAppendedPath(queryUri, id.toString())
-                        }
-                    }
-                    return null
-                }
-                FileType.DOCUMENT -> {
-                    val projection = arrayOf(MediaStore.Files.FileColumns._ID)
-                    val selection = "${MediaStore.Files.FileColumns.DATA} = ?"
-                    val selectionArgs = arrayOf(file.absolutePath)
-                    val queryUri = MediaStore.Files.getContentUri("external")
-
-                    context.contentResolver.query(queryUri, projection, selection, selectionArgs, null)?.use { cursor ->
-                        if (cursor.moveToFirst()) {
-                            val id = cursor.getLong(cursor.getColumnIndexOrThrow(MediaStore.Files.FileColumns._ID))
-                            return Uri.withAppendedPath(queryUri, id.toString())
-                        }
-                    }
-
-                    return null
+            context.contentResolver.query(queryUri, projection, selection, selectionArgs, null)?.use { cursor ->
+                if (cursor.moveToFirst()) {
+                    val id = cursor.getLong(cursor.getColumnIndexOrThrow(MediaStore.MediaColumns._ID))
+                    return Uri.withAppendedPath(queryUri, id.toString())
                 }
             }
 
+            // If the file is not found in MediaStore, fallback to FileProvider for hidden files
+            return if (file.exists()) {
+                FileProvider.getUriForFile(context, "devs.org.calculator.fileprovider", file)
+            } else {
+                null
+            }
         }
+
     }
 
 

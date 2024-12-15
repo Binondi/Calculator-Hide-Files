@@ -59,6 +59,19 @@
         <activity
             android:name=".activities.PreviewActivity"
             android:configChanges="orientation|screenSize"/>
+
+        <provider
+            android:name="androidx.core.content.FileProvider"
+            android:authorities="devs.org.calculator.fileprovider"
+            android:exported="false"
+            android:grantUriPermissions="true">
+            <meta-data
+                android:name="android.support.FILE_PROVIDER_PATHS"
+                android:resource="@xml/file_paths" />
+        </provider>
+
+
     </application>
+
 
 </manifest>

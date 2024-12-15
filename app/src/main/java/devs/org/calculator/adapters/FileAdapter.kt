@@ -2,7 +2,6 @@ package devs.org.calculator.adapters
 
 import android.content.Context
 import android.content.Intent
-import android.net.Uri
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -16,19 +15,21 @@ import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import devs.org.calculator.R
-import devs.org.calculator.activities.BaseGalleryActivity
 import devs.org.calculator.activities.PreviewActivity
-import devs.org.calculator.utils.DialogUtil
 import devs.org.calculator.utils.FileManager
 import kotlinx.coroutines.launch
 import java.io.File
-import kotlin.collections.remove
 
-class FileAdapter(private val fileType: FileManager.FileType, var context: Context, private var lifecycleOwner: LifecycleOwner) :
+class FileAdapter(
+    private val fileType: FileManager.FileType,
+    var context: Context,
+    private var lifecycleOwner: LifecycleOwner
+) :
     ListAdapter<File, FileAdapter.FileViewHolder>(FileDiffCallback()) {
 
     private val selectedItems = mutableSetOf<Int>()
     private var isSelectionMode = false
+    private var fileName = "Unknown File"
 
     inner class FileViewHolder(view: View) : RecyclerView.ViewHolder(view) {
         private val imageView: ImageView = view.findViewById(R.id.imageView)
@@ -42,6 +43,7 @@ class FileAdapter(private val fileType: FileManager.FileType, var context: Conte
                         .centerCrop()
                         .into(imageView)
                 }
+
                 FileManager.FileType.VIDEO -> {
                     Glide.with(imageView)
                         .asBitmap()
@@ -49,6 +51,7 @@ class FileAdapter(private val fileType: FileManager.FileType, var context: Conte
                         .centerCrop()
                         .into(imageView)
                 }
+
                 else -> {
                     val resourceId = when (fileType) {
                         FileManager.FileType.AUDIO -> R.drawable.ic_audio
@@ -61,17 +64,20 @@ class FileAdapter(private val fileType: FileManager.FileType, var context: Conte
             itemView.setOnClickListener {
 
 
-                var fileTypes = when(fileType){
+                var fileTypes = when (fileType) {
 
                     FileManager.FileType.IMAGE -> {
                         "IMAGE"
                     }
+
                     FileManager.FileType.VIDEO -> {
                         "VIDEO"
                     }
+
                     FileManager.FileType.AUDIO -> {
                         "AUDIO"
                     }
+
                     else -> "DOCUMENT"
 
                 }
@@ -83,20 +89,27 @@ class FileAdapter(private val fileType: FileManager.FileType, var context: Conte
 
             }
             itemView.setOnLongClickListener {
-                val fileUri = FileManager.FileManager().getContentUri(context, file, fileType)
-                if (fileUri == null) {
-                    Toast.makeText(context, "Unable to access file: $file", Toast.LENGTH_SHORT).show()
-                    return@setOnLongClickListener true
-                }
 
-                val fileName = FileManager.FileName(context).getFileNameFromUri(fileUri)?.toString() ?: "Unknown File"
+                val fileUri = FileManager.FileManager().getContentUriImage(context, file, fileType)
+                if (fileUri == null) {
+                    Toast.makeText(context, "Unable to access file: $file", Toast.LENGTH_SHORT)
+                        .show()
+
+                    return@setOnLongClickListener true
+
+                }
+                fileName = FileManager.FileName(context).getFileNameFromUri(fileUri)?.toString()
+                    ?: "Unknown File"
+
 
                 MaterialAlertDialogBuilder(context)
                     .setTitle("Details")
-                    .setMessage("File Name: $fileName\n\nYou can delete or unhide this file.")
+                    .setMessage("File Name: $fileName\n\nFile Path: $file\n\nYou can delete or unhide this file.")
                     .setPositiveButton("Delete") { dialog, _ ->
                         lifecycleOwner.lifecycleScope.launch {
-                            FileManager(context, lifecycleOwner).deletePhotoFromExternalStorage(fileUri)
+                            FileManager(context, lifecycleOwner).deletePhotoFromExternalStorage(
+                                fileUri
+                            )
                         }
                         val currentList = currentList.toMutableList()
                         currentList.remove(file)
