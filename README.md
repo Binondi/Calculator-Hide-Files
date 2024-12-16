@@ -1,9 +1,10 @@
 <div align="center">
   <img src="app/src/main/assets/logo.png" alt="Calculator Hide File App Logo" width="200" />
-</div>
+
 
 # Calculator Hide File App
-
+</div>
+---
 Welcome to the **Calculator Hide File App**! This app is a unique and secure way to hide your sensitive files under the disguise of a fully functional calculator.
 
 ---
