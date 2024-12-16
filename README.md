@@ -3,7 +3,21 @@
 
 
 # Calculator Hide File App
+
+<a href="https://github.com/Binondi/Calculator-Hide-Files/releases/latest">
+      <img alt="Latest release" src="https://img.shields.io/badge/Releases-v1.0-blue?logo=github&style=for-the-badge">
+</a>
+
+<a href="https://github.com/Binondi/Calculator-Hide-Files/releases/latest">
+      <img alt="Latest release" src="https://img.shields.io/badge/Downloads-1.2k-blue?logo=github&style=for-the-badge">
+</a>
+
+<a href="https://github.com/Darkempire78/OpenCalc/releases/latest">
+      <img alt="Latest release" src="https://img.shields.io/badge/Downloads-1.2k-blue?logo=github&style=for-the-badge">
+</a>
+
 </div>
+
 ---
 Welcome to the **Calculator Hide File App**! This app is a unique and secure way to hide your sensitive files under the disguise of a fully functional calculator.
 
