@@ -82,11 +82,42 @@ class FileAdapter(
             }
             itemView.setOnClickListener {
 
-                val intent = Intent(context, PreviewActivity::class.java).apply {
-                    putExtra("type", fileTypes)
-                    putExtra("position", position)
+
+                when(fileType){
+                    FileManager.FileType.AUDIO -> {
+                        // Create an intent to play audio using available audio players
+                        val intent = Intent(Intent.ACTION_VIEW).apply {
+                            setDataAndType(FileManager.FileManager().getContentUriImage(context, file, fileType), "audio/*")
+                            addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+                        }
+                        try {
+                            context.startActivity(intent)
+                        } catch (e: Exception) {
+                            Toast.makeText(context, "No audio player found!", Toast.LENGTH_SHORT).show()
+                        }
+                    }
+
+                    FileManager.FileType.DOCUMENT -> {
+                        // Create an intent to open the document using available viewers or file managers
+                        val intent = Intent(Intent.ACTION_VIEW).apply {
+                            setDataAndType(FileManager.FileManager().getContentUriImage(context, file, fileType), "*/*")
+                            addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+                        }
+                        try {
+                            context.startActivity(intent)
+                        } catch (e: Exception) {
+                            Toast.makeText(context, "No suitable app found to open this document!", Toast.LENGTH_SHORT).show()
+                        }
+                    }
+                    else -> {
+                        val intent = Intent(context, PreviewActivity::class.java).apply {
+                            putExtra("type", fileTypes)
+                            putExtra("position", position)
+                        }
+                        context.startActivity(intent)
+                    }
                 }
-                context.startActivity(intent)
+
 
             }
             itemView.setOnLongClickListener {

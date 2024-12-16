@@ -1,11 +1,15 @@
 package devs.org.calculator.adapters
 
 import android.content.Context
+import android.media.MediaPlayer
 import android.net.Uri
+import android.os.Handler
+import android.os.Looper
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.MediaController
+import android.widget.SeekBar
 import androidx.recyclerview.widget.AsyncListDiffer
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
@@ -13,16 +17,20 @@ import devs.org.calculator.adapters.FileAdapter.FileDiffCallback
 import devs.org.calculator.databinding.ViewpagerItemsBinding
 import devs.org.calculator.utils.FileManager
 import java.io.File
+import devs.org.calculator.R
 
 class ImagePreviewAdapter(
     private val context: Context,
     private var fileType: FileManager.FileType
 ) : RecyclerView.Adapter<ImagePreviewAdapter.ImageViewHolder>() {
 
-    // Use AsyncListDiffer for managing the list
     private val differ = AsyncListDiffer(this, FileDiffCallback())
+    var currentMediaPlayer: MediaPlayer? = null
+    var isMediaPlayerPrepared = false
+    var currentViewHolder: ImageViewHolder? = null
+    private var currentPlayingPosition = -1
+    private var isPlaying = false
 
-    // Expose data management through differ
     var images: List<File>
         get() = differ.currentList
         set(value) = differ.submitList(value)
@@ -35,15 +43,35 @@ class ImagePreviewAdapter(
     override fun onBindViewHolder(holder: ImageViewHolder, position: Int) {
         val imageUrl = images[position]
         holder.bind(imageUrl)
+        currentViewHolder = holder
+
+        currentMediaPlayer?.let {
+            if (it.isPlaying) it.pause()
+            it.seekTo(0)
+        }
+        currentMediaPlayer = null
+        isMediaPlayerPrepared = false
+
+        if (currentMediaPlayer?.isPlaying == true) {
+            currentMediaPlayer?.stop()
+            currentMediaPlayer?.release()
+        }
+        currentMediaPlayer = null
     }
 
     override fun getItemCount(): Int = images.size
 
-    inner class ImageViewHolder(val binding: ViewpagerItemsBinding) : RecyclerView.ViewHolder(binding.root) {
+    inner class ImageViewHolder(private val binding: ViewpagerItemsBinding) : RecyclerView.ViewHolder(binding.root) {
+
+        private var mediaPlayer: MediaPlayer? = null
+        private var seekHandler = Handler(Looper.getMainLooper())
+        private var seekRunnable: Runnable? = null
+
         fun bind(file: File) {
             when (fileType) {
                 FileManager.FileType.VIDEO -> {
                     binding.imageView.visibility = View.GONE
+                    binding.audioBg.visibility = View.GONE
                     binding.videoView.visibility = View.VISIBLE
 
                     val videoUri = Uri.fromFile(file)
@@ -73,16 +101,128 @@ class ImagePreviewAdapter(
                 FileManager.FileType.IMAGE -> {
                     binding.imageView.visibility = View.VISIBLE
                     binding.videoView.visibility = View.GONE
+                    binding.audioBg.visibility = View.GONE
                     Glide.with(context)
                         .load(file)
                         .into(binding.imageView)
                 }
                 FileManager.FileType.AUDIO -> {
-                    // Handle audio if necessary
+                    binding.imageView.visibility = View.GONE
+                    binding.audioBg.visibility = View.VISIBLE
+                    binding.videoView.visibility = View.GONE
+                    binding.audioTitle.text = file.name
+
+                    setupAudioPlayer(file)
+                    setupSeekBar()
+                    setupPlaybackControls()
                 }
                 else -> {
-                    // Handle other types if necessary
+                    binding.imageView.visibility = View.VISIBLE
+                    binding.audioBg.visibility = View.GONE
+                    binding.videoView.visibility = View.GONE
                 }
+            }
+        }
+
+        private fun setupAudioPlayer(file: File) {
+            mediaPlayer = MediaPlayer().apply {
+                setDataSource(file.absolutePath)
+                setOnPreparedListener { mp ->
+                    binding.audioSeekBar.max = mp.duration
+                    isMediaPlayerPrepared = true
+                }
+                setOnCompletionListener {
+//                    isPlaying = false
+                    binding.playPause.setImageResource(R.drawable.play)
+                    binding.audioSeekBar.progress = 0
+                    seekHandler.removeCallbacks(seekRunnable!!)
+                }
+                prepareAsync()
+            }
+        }
+
+        private fun setupSeekBar() {
+            binding.audioSeekBar.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
+                override fun onProgressChanged(seekBar: SeekBar?, progress: Int, fromUser: Boolean) {
+                    if (fromUser) {
+                        mediaPlayer?.seekTo(progress)
+                    }
+                }
+
+                override fun onStartTrackingTouch(seekBar: SeekBar?) {}
+                override fun onStopTrackingTouch(seekBar: SeekBar?) {}
+            })
+
+            seekRunnable = Runnable {
+                mediaPlayer?.let { mp ->
+                    if (mp.isPlaying) {
+                        binding.audioSeekBar.progress = mp.currentPosition
+                        seekHandler.postDelayed(seekRunnable!!, 100)
+                    }
+                }
+            }
+        }
+
+        private fun setupPlaybackControls() {
+            binding.playPause.setOnClickListener {
+                if (isPlaying) {
+                    pauseAudio()
+                } else {
+                    playAudio()
+                }
+            }
+
+            binding.preview.setOnClickListener {
+                mediaPlayer?.let { mp ->
+                    val newPosition = mp.currentPosition - 10000
+                    mp.seekTo(maxOf(0, newPosition))
+                    binding.audioSeekBar.progress = mp.currentPosition
+                }
+            }
+
+            binding.next.setOnClickListener {
+                mediaPlayer?.let { mp ->
+                    val newPosition = mp.currentPosition + 10000
+                    mp.seekTo(minOf(mp.duration, newPosition))
+                    binding.audioSeekBar.progress = mp.currentPosition
+                }
+            }
+        }
+
+        private fun playAudio() {
+            mediaPlayer?.let { mp ->
+                if (currentPlayingPosition != -1 && currentPlayingPosition != adapterPosition) {
+                    currentViewHolder?.pauseAudio()
+                }
+                mp.start()
+                isPlaying = true
+                binding.playPause.setImageResource(R.drawable.pause)
+                seekHandler.post(seekRunnable!!)
+                currentPlayingPosition = adapterPosition
+                currentViewHolder = this
+            }
+        }
+
+        private fun pauseAudio() {
+            mediaPlayer?.let { mp ->
+                if (mp.isPlaying) {
+                    mp.pause()
+                    isPlaying = false
+                    binding.playPause.setImageResource(R.drawable.play)
+                    seekHandler.removeCallbacks(seekRunnable!!)
+                }
+            }
+        }
+
+        fun releaseMediaPlayer() {
+            mediaPlayer?.let { mp ->
+                if (mp.isPlaying) {
+                    mp.stop()
+                }
+                mp.release()
+                mediaPlayer = null
+                isPlaying = false
+                seekHandler.removeCallbacks(seekRunnable!!)
             }
         }
 
@@ -94,6 +234,11 @@ class ImagePreviewAdapter(
                 binding.videoView.start()
             }
         }
+    }
+
+    override fun onViewRecycled(holder: ImageViewHolder) {
+        super.onViewRecycled(holder)
+        holder.releaseMediaPlayer()
     }
 }
 

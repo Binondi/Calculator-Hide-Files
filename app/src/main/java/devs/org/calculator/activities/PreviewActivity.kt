@@ -4,7 +4,8 @@ import android.net.Uri
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
-import com.google.android.material.dialog.MaterialAlertDialogBuilder
+import androidx.viewpager.widget.ViewPager
+import androidx.viewpager2.widget.ViewPager2
 import devs.org.calculator.adapters.ImagePreviewAdapter
 import devs.org.calculator.callbacks.DialogActionsCallback
 import devs.org.calculator.databinding.ActivityPreviewBinding
@@ -12,6 +13,7 @@ import devs.org.calculator.utils.DialogUtil
 import devs.org.calculator.utils.FileManager
 import kotlinx.coroutines.launch
 import java.io.File
+import devs.org.calculator.R
 
 class PreviewActivity : AppCompatActivity() {
 
@@ -39,6 +41,14 @@ class PreviewActivity : AppCompatActivity() {
 
         setupImagePreview()
         clickListeners()
+
+        binding.viewPager.registerOnPageChangeCallback(object : ViewPager2.OnPageChangeCallback() {
+            override fun onPageSelected(position: Int) {
+                super.onPageSelected(position)
+                
+            }
+        })
+
     }
 
     private fun setupFileType() {
@@ -72,6 +82,25 @@ class PreviewActivity : AppCompatActivity() {
         val fileUri = Uri.fromFile(files[currentPosition])
         val fileName = FileManager.FileName(this).getFileNameFromUri(fileUri).toString()
     }
+
+
+    override fun onPause() {
+        super.onPause()
+        if (filetype == FileManager.FileType.AUDIO) {
+            (binding.viewPager.adapter as? ImagePreviewAdapter)?.currentMediaPlayer?.pause()
+        }
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        if (filetype == FileManager.FileType.AUDIO) {
+            (binding.viewPager.adapter as? ImagePreviewAdapter)?.let { adapter ->
+                adapter.currentMediaPlayer?.release()
+                adapter.currentMediaPlayer = null
+            }
+        }
+    }
+
 
     private fun clickListeners() {
         binding.delete.setOnClickListener {
@@ -147,4 +176,6 @@ class PreviewActivity : AppCompatActivity() {
         onBackPressed()
         return true
     }
+
+
 }
