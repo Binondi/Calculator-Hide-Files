@@ -34,27 +34,20 @@ Welcome to the **Calculator Hide File App**! This app is a unique and secure way
 ---
 
 ## Screenshots
+<div>
+  
+  <img src="app/src/main/assets/Screenshot_1.jpg" alt="Screenshot 1" width="24%">
+  <img src="app/src/main/assets/Screenshot_2.jpg" alt="Screenshot 2" width="24%">
+  <img src="app/src/main/assets/Screenshot_3.jpg" alt="Screenshot 3" width="24%">
+  <img src="app/src/main/assets/Screenshot_4.jpg" alt="Screenshot 4" width="24%">
 
-<p align="center">
-  <img src="app/src/main/assets/Screenshot_1.jpg" alt="Screenshot 1" width="45%">
-  <img src="app/src/main/assets/Screenshot_2.jpg" alt="Screenshot 2" width="45%">
-</p>
-
-<p align="center">
-  <img src="app/src/main/assets/Screenshot_3.jpg" alt="Screenshot 3" width="45%">
-  <img src="app/src/main/assets/Screenshot_4.jpg" alt="Screenshot 4" width="45%">
-</p>
-
-<p align="center">
-  <img src="app/src/main/assets/Screenshot_5.jpg" alt="Screenshot 5" width="45%">
-  <img src="app/src/main/assets/Screenshot_6.jpg" alt="Screenshot 6" width="45%">
-</p>
-
-<p align="center">
-  <img src="app/src/main/assets/Screenshot_7.jpg" alt="Screenshot 7" width="45%">
-  <img src="app/src/main/assets/Screenshot_8.jpg" alt="Screenshot 8" width="45%">
-</p>
-
+  </div>
+  <div>
+  <img src="app/src/main/assets/Screenshot_5.jpg" alt="Screenshot 5" width="24%">
+  <img src="app/src/main/assets/Screenshot_6.jpg" alt="Screenshot 6" width="24%">
+  <img src="app/src/main/assets/Screenshot_7.jpg" alt="Screenshot 7" width="24%">
+  <img src="app/src/main/assets/Screenshot_8.jpg" alt="Screenshot 8" width="24%">
+</div>
 ---
 
 ## How It Works
@@ -71,6 +64,20 @@ Welcome to the **Calculator Hide File App**! This app is a unique and secure way
 
 ---
 
+## ☕ Support
+
+Support OpenCalc development by donating money. Thank you very much for your help! ❤️
+
+[<img src="https://img.shields.io/badge/sponsor-30363D?style=for-the-badge&logo=GitHub-Sponsors&logoColor=#EA4AAA"
+alt="Sponsor the project on GitHub"
+height="40">](https://github.com/sponsors/Binondi/Calculator-Hide-Files) [<img src="https://img.shields.io/badge/PayPal-00457C?style=for-the-badge&logo=paypal&logoColor=white"
+alt="Donate with PayPal"
+height="40">](https://paypal.me/binondi) [<img src="https://img.shields.io/badge/Buy%20Me%20a%20Coffee-ffdd00?style=for-the-badge&logo=buy-me-a-coffee&logoColor=black"
+alt="Donate with buymeacoffee"
+height="40">](https://buymeacoffee.com/binondi)
+
+
+---
 ## Installation
 
 ### Prerequisites
