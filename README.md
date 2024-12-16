@@ -20,7 +20,25 @@ Welcome to the **Calculator Hide File App**! This app is a unique and secure way
 
 ## Screenshots
 
-*(Add screenshots here to showcase the app functionality and interface)*
+<p align="center">
+  <img src="app/src/main/assets/Screenshot_1.jpg" alt="Screenshot 1" width="45%">
+  <img src="app/src/main/assets/Screenshot_2.jpg" alt="Screenshot 2" width="45%">
+</p>
+
+<p align="center">
+  <img src="app/src/main/assets/Screenshot_3.jpg" alt="Screenshot 3" width="45%">
+  <img src="app/src/main/assets/Screenshot_4.jpg" alt="Screenshot 4" width="45%">
+</p>
+
+<p align="center">
+  <img src="app/src/main/assets/Screenshot_5.jpg" alt="Screenshot 5" width="45%">
+  <img src="app/src/main/assets/Screenshot_6.jpg" alt="Screenshot 6" width="45%">
+</p>
+
+<p align="center">
+  <img src="app/src/main/assets/Screenshot_7.jpg" alt="Screenshot 7" width="45%">
+  <img src="app/src/main/assets/Screenshot_8.jpg" alt="Screenshot 8" width="45%">
+</p>
 
 ---
 
