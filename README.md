@@ -66,13 +66,13 @@ Welcome to the **Calculator Hide File App**! This app is a unique and secure way
 
 ## ☕ Support
 
-Support OpenCalc development by donating money. Thank you very much for your help! ❤️
+Support My development by donating money. Thank you very much for your help! ❤️
 
 [<img src="https://img.shields.io/badge/sponsor-30363D?style=for-the-badge&logo=GitHub-Sponsors&logoColor=#EA4AAA"
 alt="Sponsor the project on GitHub"
 height="40">](https://github.com/sponsors/Binondi/Calculator-Hide-Files) [<img src="https://img.shields.io/badge/PayPal-00457C?style=for-the-badge&logo=paypal&logoColor=white"
 alt="Donate with PayPal"
-height="40">](https://paypal.me/binondi) [<img src="https://img.shields.io/badge/Buy%20Me%20a%20Coffee-ffdd00?style=for-the-badge&logo=buy-me-a-coffee&logoColor=black"
+height="40">](https://www.paypal.me/BinondiBorthakur56) [<img src="https://img.shields.io/badge/Buy%20Me%20a%20Coffee-ffdd00?style=for-the-badge&logo=buy-me-a-coffee&logoColor=black"
 alt="Donate with buymeacoffee"
 height="40">](https://buymeacoffee.com/binondi)
 
