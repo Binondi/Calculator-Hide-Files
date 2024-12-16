@@ -54,11 +54,10 @@ Welcome to the **Calculator Hide File App**! This app is a unique and secure way
 
 1. **Calculator Mode**:
    - Perform basic arithmetic operations just like any regular calculator.
-2. **Setup Password**:
-   - Enter `123456=` to setup your password. 
-3. **Hidden Mode**:
+2. **Hidden Mode**:
+   - Enter `123456` and hit the `=` button to setup your password. 
    - Enter your secret passcode and hit the `=` button to unlock the hidden file manager.
-5. **File Management**:
+4. **File Management**:
    - Add files to hide them securely.
    - Retrieve or unhide files as needed.
 
