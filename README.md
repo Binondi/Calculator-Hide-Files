@@ -19,6 +19,12 @@
 
 ---
 
+## 😍 Why Choose This App?  
+The **Calculator Hide File App** is an **open-source** application, allowing you to inspect the code yourself. This ensures **complete transparency** and guarantees that your **privacy remains uncompromised**. 🔒✅  
+
+
+---
+
 ## 🔥 About Calculator Hide File App
 
 The **Calculator Hide File App** is an innovative **Android file-hiding app** that disguises itself as a **fully functional calculator**. It helps you **securely store** private files and protect them with a **hidden passcode**.
