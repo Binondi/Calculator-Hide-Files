@@ -1,21 +1,70 @@
-# Add project specific ProGuard rules here.
-# You can control the set of applied configuration files using the
-# proguardFiles setting in build.gradle.
-#
-# For more details, see
-#   http://developer.android.com/guide/developing/tools/proguard.html
+# Keep your MainActivity and Application class
+-keep public class devs.org.calculator.activities.MainActivity
+-keep public class devs.org.calculator.activities.SetupPasswordActivity
+-keep public class devs.org.calculator.activities.HiddenVaultActivity
+-keep public class devs.org.calculator.** { *; }
 
-# If your project uses WebView with JS, uncomment the following
-# and specify the fully qualified class name to the JavaScript interface
-# class:
-#-keepclassmembers class fqcn.of.javascript.interface.for.webview {
-#   public *;
-#}
+# Keep exp4j library since it's used for expression evaluation
+-keep class net.objecthunter.exp4j.** { *; }
+-dontwarn net.objecthunter.exp4j.**
 
-# Uncomment this to preserve the line number information for
-# debugging stack traces.
-#-keepattributes SourceFile,LineNumberTable
+# Keep Google Material components
+-keep class com.google.android.material.** { *; }
+-dontwarn com.google.android.material.**
 
-# If you keep the line number information, uncomment this to
-# hide the original source file name.
-#-renamesourcefileattribute SourceFile
+# Keep Android X components
+-keep class androidx.** { *; }
+-keep interface androidx.** { *; }
+
+# Keep any classes with ViewBinding
+-keep class devs.org.calculator.databinding.** { *; }
+
+# Keep any callback interfaces
+-keep class devs.org.calculator.callbacks.** { *; }
+-keep interface devs.org.calculator.callbacks.** { *; }
+
+# Keep classes used for regex pattern matching
+-keep class java.util.regex.** { *; }
+
+# Keep annotation classes
+-keepattributes *Annotation*
+-keepattributes Signature
+-keepattributes SourceFile,LineNumberTable
+
+# Keep Parcelable classes (might be needed for Intent extras)
+-keep class * implements android.os.Parcelable {
+  public static final android.os.Parcelable$Creator *;
+}
+
+# Keep FileManager classes since they work with storage permissions
+-keep class devs.org.calculator.utils.FileManager { *; }
+
+# Keep DialogUtil since it's used for permission dialogs
+-keep class devs.org.calculator.utils.DialogUtil { *; }
+
+# Keep PrefsUtil since it's used for password validation
+-keep class devs.org.calculator.utils.PrefsUtil { *; }
+
+# General Android rules
+-keepclassmembers class * extends android.app.Activity {
+   public void *(android.view.View);
+}
+
+# Keep any classes that use reflection
+-keepattributes InnerClasses
+
+# Keep R classes and their fields
+-keepclassmembers class **.R$* {
+    public static <fields>;
+}
+
+# Keep enums
+-keepclassmembers enum * {
+    public static **[] values();
+    public static ** valueOf(java.lang.String);
+}
+
+# Keep specific activities with special code in onCreate
+-keepclassmembers class * extends android.app.Activity {
+    public void onCreate(android.os.Bundle);
+}
