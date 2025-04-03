@@ -13,7 +13,6 @@ import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
-import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import devs.org.calculator.R
 import devs.org.calculator.activities.PreviewActivity
 import devs.org.calculator.callbacks.DialogActionsCallback
@@ -35,18 +34,18 @@ class FileAdapter(
     private var fileTypes = when (fileType) {
 
         FileManager.FileType.IMAGE -> {
-            "IMAGE"
+            context.getString(R.string.image)
         }
 
         FileManager.FileType.VIDEO -> {
-            "VIDEO"
+            context.getString(R.string.video)
         }
 
         FileManager.FileType.AUDIO -> {
-            "AUDIO"
+            context.getString(R.string.audio)
         }
 
-        else -> "DOCUMENT"
+        else -> context.getString(R.string.document)
 
     }
 
@@ -93,7 +92,8 @@ class FileAdapter(
                         try {
                             context.startActivity(intent)
                         } catch (e: Exception) {
-                            Toast.makeText(context, "No audio player found!", Toast.LENGTH_SHORT).show()
+                            Toast.makeText(context,
+                                context.getString(R.string.no_audio_player_found), Toast.LENGTH_SHORT).show()
                         }
                     }
 
@@ -106,7 +106,8 @@ class FileAdapter(
                         try {
                             context.startActivity(intent)
                         } catch (e: Exception) {
-                            Toast.makeText(context, "No suitable app found to open this document!", Toast.LENGTH_SHORT).show()
+                            Toast.makeText(context,
+                                context.getString(R.string.no_suitable_app_found_to_open_this_document), Toast.LENGTH_SHORT).show()
                         }
                     }
                     else -> {
@@ -131,14 +132,14 @@ class FileAdapter(
 
                 }
                 fileName = FileManager.FileName(context).getFileNameFromUri(fileUri)?.toString()
-                    ?: "Unknown File"
+                    ?: context.getString(R.string.unknown_file)
 
                 DialogUtil(context).showMaterialDialogWithNaturalButton(
-                    "$fileTypes DETAILS",
-                    "File Name: $fileName\n\nFile Path: $file\n\nYou can permanently delete or unhide this file.",
-                    "Delete Permanently",
-                    "Unhide",
-                    "Cancel",
+                    context.getString(R.string.details, fileTypes),
+                    "File Name: $fileName\n\nFile Path: $file\n\nYou can permanently delete or un-hide this file.",
+                    context.getString(R.string.delete_permanently),
+                    context.getString(R.string.un_hide),
+                    context.getString(R.string.cancel),
                     object : DialogActionsCallback {
                         override fun onPositiveButtonClicked() {
                             lifecycleOwner.lifecycleScope.launch {

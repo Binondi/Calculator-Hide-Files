@@ -4,8 +4,8 @@ import android.net.Uri
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
-import androidx.viewpager.widget.ViewPager
 import androidx.viewpager2.widget.ViewPager2
+import devs.org.calculator.R
 import devs.org.calculator.adapters.ImagePreviewAdapter
 import devs.org.calculator.callbacks.DialogActionsCallback
 import devs.org.calculator.databinding.ActivityPreviewBinding
@@ -13,7 +13,6 @@ import devs.org.calculator.utils.DialogUtil
 import devs.org.calculator.utils.FileManager
 import kotlinx.coroutines.launch
 import java.io.File
-import devs.org.calculator.R
 
 class PreviewActivity : AppCompatActivity() {
 
@@ -55,19 +54,19 @@ class PreviewActivity : AppCompatActivity() {
         when (type) {
             "IMAGE" -> {
                 filetype = FileManager.FileType.IMAGE
-                binding.title.text = "Preview Images"
+                binding.title.text = getString(R.string.preview_images)
             }
             "VIDEO" -> {
                 filetype = FileManager.FileType.VIDEO
-                binding.title.text = "Preview Videos"
+                binding.title.text = getString(R.string.preview_videos)
             }
             "AUDIO" -> {
                 filetype = FileManager.FileType.AUDIO
-                binding.title.text = "Preview Audios"
+                binding.title.text = getString(R.string.preview_audios)
             }
             else -> {
                 filetype = FileManager.FileType.DOCUMENT
-                binding.title.text = "Preview Documents"
+                binding.title.text = getString(R.string.preview_documents)
             }
         }
     }
@@ -107,10 +106,10 @@ class PreviewActivity : AppCompatActivity() {
             val fileUri = FileManager.FileManager().getContentUriImage(this, files[binding.viewPager.currentItem], filetype)
             if (fileUri != null) {
                 dialogUtil.showMaterialDialog(
-                    "Delete File",
-                    "Are you sure to Delete this file permanently?",
-                    "Delete Permanently",
-                    "Cancel",
+                    getString(R.string.delete_file),
+                    getString(R.string.are_you_sure_to_delete_this_file_permanently),
+                    getString(R.string.delete_permanently),
+                    getString(R.string.cancel),
                     object : DialogActionsCallback{
                         override fun onPositiveButtonClicked() {
                             lifecycleScope.launch {
@@ -136,10 +135,10 @@ class PreviewActivity : AppCompatActivity() {
             val fileUri = FileManager.FileManager().getContentUriImage(this, files[binding.viewPager.currentItem], filetype)
             if (fileUri != null) {
                 dialogUtil.showMaterialDialog(
-                    "Unhide File",
-                    "Are you sure you want to Unhide this file?",
-                    "Unhide",
-                    "Cancel",
+                    getString(R.string.un_hide_file),
+                    getString(R.string.are_you_sure_you_want_to_un_hide_this_file),
+                    getString(R.string.un_hide),
+                    getString(R.string.cancel),
                     object : DialogActionsCallback{
                         override fun onPositiveButtonClicked() {
                             lifecycleScope.launch {
@@ -168,7 +167,7 @@ class PreviewActivity : AppCompatActivity() {
         adapter.images = updatedFiles // Update adapter with the new list
 
         // Update the ViewPager's position
-        if (!updatedFiles.isNotEmpty()) finish()
+        if (updatedFiles.isEmpty()) finish()
 
     }
 

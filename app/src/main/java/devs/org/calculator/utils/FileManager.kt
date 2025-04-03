@@ -188,7 +188,7 @@ class FileManager(private val context: Context, private val lifecycleOwner: Life
                 withContext(Dispatchers.Main) {
                     Toast.makeText(
                         context,
-                        "Error hiding/unhiding file: ${e.message}",
+                        "Error hiding/un-hiding file: ${e.message}",
                         Toast.LENGTH_LONG
                     ).show()
                 }

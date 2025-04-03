@@ -78,7 +78,7 @@ class AudioGalleryActivity : BaseGalleryActivity(), FileProcessCallback {
     }
 
     override fun openPreview() {
-        // Implement audio preview
+        // Not implemented audio preview
     }
 
 

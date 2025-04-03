@@ -45,28 +45,28 @@ class SetupPasswordActivity : AppCompatActivity() {
             val securityAnswer = binding.etSecurityAnswer.text.toString()
 
             if (password.isEmpty()){
-                binding.etPassword.error = "Enter password"
+                binding.etPassword.error = getString(R.string.enter_password)
                 return@setOnClickListener
             }
             if (confirmPassword.isEmpty()){
-                binding.etConfirmPassword.error = "Confirm password"
+                binding.etConfirmPassword.error = getString(R.string.confirm_password)
                 return@setOnClickListener
             }
             if (securityQuestion.isEmpty()){
-                binding.etSecurityQuestion.error = "Enter security question"
+                binding.etSecurityQuestion.error = getString(R.string.enter_security_question)
                 return@setOnClickListener
             }
             if (securityAnswer.isEmpty()){
-                binding.etSecurityAnswer.error = "Enter security answer"
+                binding.etSecurityAnswer.error = getString(R.string.enter_security_answer)
                 return@setOnClickListener
             }
             if (password != confirmPassword) {
-                binding.etPassword.error = "Passwords don't match"
+                binding.etPassword.error = getString(R.string.passwords_don_t_match)
                 return@setOnClickListener
             }
             prefsUtil.savePassword(password)
             prefsUtil.saveSecurityQA(securityQuestion, securityAnswer)
-            Toast.makeText(this, "Password set successfully", Toast.LENGTH_SHORT).show()
+            Toast.makeText(this, getString(R.string.password_set_successfully), Toast.LENGTH_SHORT).show()
             startActivity(Intent(this, MainActivity::class.java))
             finish()
         }
@@ -75,40 +75,43 @@ class SetupPasswordActivity : AppCompatActivity() {
             // Implement password reset logic
             // Could use security questions or email verification
             if (prefsUtil.getSecurityQuestion() != null) showSecurityQuestionDialog(prefsUtil.getSecurityQuestion().toString())
-            else Toast.makeText(this, "Security question not set yet.", Toast.LENGTH_SHORT).show()
+            else Toast.makeText(this,
+                getString(R.string.security_question_not_set_yet), Toast.LENGTH_SHORT).show()
 
         }
         binding2.btnChangePassword.setOnClickListener{
             val oldPassword = binding2.etOldPassword.text.toString()
             val newPassword = binding2.etNewPassword.text.toString()
             if (oldPassword.isEmpty()) {
-                binding2.etOldPassword.error = "This field can't be empty"
+                binding2.etOldPassword.error = getString(R.string.this_field_can_t_be_empty)
                 return@setOnClickListener
             }
             if (newPassword.isEmpty()) {
-                binding2.etNewPassword.error = "This field can't be empty"
+                binding2.etNewPassword.error = getString(R.string.this_field_can_t_be_empty)
                 return@setOnClickListener
             }
 
             if (prefsUtil.validatePassword(oldPassword)){
                 if (oldPassword != newPassword){
                     prefsUtil.savePassword(newPassword)
-                    Toast.makeText(this, "Password reset successfully", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(this,
+                        getString(R.string.password_reset_successfully), Toast.LENGTH_SHORT).show()
                     startActivity(Intent(this, MainActivity::class.java))
                     finish()
 
                 }else {
-                    Toast.makeText(this, "Old Password And New Password Not Be Same", Toast.LENGTH_SHORT).show()
-                    binding2.etNewPassword.error = "Old Password And New Password Not Be Same"
+                    Toast.makeText(this,
+                        getString(R.string.old_password_and_new_password_not_be_same), Toast.LENGTH_SHORT).show()
+                    binding2.etNewPassword.error = getString(R.string.old_password_and_new_password_not_be_same)
                 }
             }else {
-                Toast.makeText(this, "Wrong password entered", Toast.LENGTH_SHORT).show()
-                binding2.etOldPassword.error = "Old Password Not Matching"
+                Toast.makeText(this, getString(R.string.wrong_password_entered), Toast.LENGTH_SHORT).show()
+                binding2.etOldPassword.error = getString(R.string.old_password_not_matching)
             }
         }
         binding2.btnResetPassword.setOnClickListener{
             if (prefsUtil.getSecurityQuestion() != null) showSecurityQuestionDialog(prefsUtil.getSecurityQuestion().toString())
-            else Toast.makeText(this, "Security question not set yet.", Toast.LENGTH_SHORT).show()
+            else Toast.makeText(this, getString(R.string.this_field_can_t_be_empty), Toast.LENGTH_SHORT).show()
         }
     }
 
@@ -120,26 +123,28 @@ class SetupPasswordActivity : AppCompatActivity() {
 
 
         MaterialAlertDialogBuilder(this)
-            .setTitle("Answer the Security Question!")
+            .setTitle(getString(R.string.answer_the_security_question))
             .setView(dialogView)
-            .setPositiveButton("Verify") { dialog, _ ->
+            .setPositiveButton(getString(R.string.verify)) { dialog, _ ->
                 val inputEditText: TextInputEditText = dialogView.findViewById(R.id.text_input_edit_text)
                 val userAnswer = inputEditText.text.toString().trim()
 
                 if (userAnswer.isEmpty()) {
-                    Toast.makeText(this, "Answer cannot be empty!", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(this,
+                        getString(R.string.answer_cannot_be_empty), Toast.LENGTH_SHORT).show()
                 } else {
                     if (prefsUtil.validateSecurityAnswer(userAnswer)){
                         prefsUtil.resetPassword()
-                        Toast.makeText(this, "Password successfully reset.", Toast.LENGTH_SHORT).show()
+                        Toast.makeText(this,
+                            getString(R.string.password_successfully_reset), Toast.LENGTH_SHORT).show()
                         dialog.dismiss()
                     }else {
-                        Toast.makeText(this, "Invalid answer!", Toast.LENGTH_SHORT).show()
+                        Toast.makeText(this, getString(R.string.invalid_answer), Toast.LENGTH_SHORT).show()
                     }
 
                 }
             }
-            .setNegativeButton("Cancel") { dialog, _ ->
+            .setNegativeButton(getString(R.string.cancel)) { dialog, _ ->
 
                 dialog.dismiss()
             }

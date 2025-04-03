@@ -7,6 +7,7 @@ import android.widget.Toast
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.lifecycle.lifecycleScope
+import devs.org.calculator.R
 import devs.org.calculator.utils.FileManager
 import devs.org.calculator.callbacks.FileProcessCallback
 import kotlinx.coroutines.launch
@@ -15,7 +16,6 @@ import java.io.File
 class VideoGalleryActivity : BaseGalleryActivity(), FileProcessCallback {
     override val fileType = FileManager.FileType.VIDEO
     private lateinit var pickLauncher: ActivityResultLauncher<Intent>
-    private var selectedUri: Uri? = null
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -42,19 +42,21 @@ class VideoGalleryActivity : BaseGalleryActivity(), FileProcessCallback {
                             .processMultipleFiles(uriList, fileType,this@VideoGalleryActivity )
                     }
                 } else {
-                    Toast.makeText(this, "No files selected", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(this, getString(R.string.no_files_selected), Toast.LENGTH_SHORT).show()
                 }
             }
         }
     }
 
     override fun onFilesProcessedSuccessfully(copiedFiles: List<File>) {
-        Toast.makeText(this@VideoGalleryActivity, "${copiedFiles.size} Videos hidden successfully", Toast.LENGTH_SHORT).show()
+        Toast.makeText(this@VideoGalleryActivity, copiedFiles.size.toString() +
+            getString(R.string.videos_hidden_successfully), Toast.LENGTH_SHORT).show()
         loadFiles()
     }
 
     override fun onFileProcessFailed() {
-        Toast.makeText(this@VideoGalleryActivity, "Failed to hide videos", Toast.LENGTH_SHORT).show()
+        Toast.makeText(this@VideoGalleryActivity,
+            getString(R.string.failed_to_hide_videos), Toast.LENGTH_SHORT).show()
     }
 
     private fun setupFabButton() {
