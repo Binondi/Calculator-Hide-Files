@@ -77,3 +77,74 @@ The **Calculator Hide File App** is an innovative **Android file-hiding app** th
 ### 🔹 Installation Steps
 ```bash
 git clone https://github.com/Binondi/Calculator-Hide-Files.git
+```
+- Open **Android Studio** and build the project.  
+- Install the APK on your **Android device or emulator**.  
+
+---
+
+## 🛠️ Technologies Used
+
+- **Programming Language**: Kotlin & Java  
+- **UI Framework**: Jetpack Compose / XML Layouts  
+- **File Storage**: Secure internal storage & MediaStore API  
+- **Encryption**: Secure file protection algorithms  
+
+---
+
+## 🎯 Why Use Calculator Hide File App?
+
+- **No One Can Detect Your Files** – Works like a real calculator.  
+- **100% Secure** – Your private files stay hidden, even if someone opens the app.  
+- **Completely Free & Open Source** – Modify or contribute to the project.  
+
+---
+
+## ❤️ Support the Project
+
+If you find this app useful, please consider supporting the development. 🙏  
+
+[![Sponsor on GitHub](https://img.shields.io/badge/sponsor-30363D?style=for-the-badge&logo=GitHub-Sponsors&logoColor=#EA4AAA)](https://github.com/sponsors/Binondi)
+[![Donate via PayPal](https://img.shields.io/badge/PayPal-00457C?style=for-the-badge&logo=paypal&logoColor=white)](https://paypal.me/BinondiBorthakur56)
+[![Buy Me a Coffee](https://img.shields.io/badge/Buy%20Me%20a%20Coffee-ffdd00?style=for-the-badge&logo=buy-me-a-coffee&logoColor=black)](https://buymeacoffee.com/binondi)
+
+---
+
+## 🔧 Contributing
+
+We welcome contributions! To contribute:
+
+1. **Fork the repository**  
+2. **Create a new branch**  
+   ```bash
+   git checkout -b feature-name
+   ```
+3. **Commit your changes**  
+   ```bash
+   git commit -m "Add a new feature"
+   ```
+4. **Push to GitHub**  
+   ```bash
+   git push origin feature-name
+   ```
+5. **Create a Pull Request**  
+
+---
+
+## 📜 License
+
+This project is licensed under the **Apache License 2.0**.  
+See the full license [here](LICENSE).  
+
+---
+
+## 📧 Contact
+
+For any questions or feedback:  
+📩 **Email**: binondiborthakur56@gmail.com  
+🐙 **GitHub**: [Binondi](https://github.com/Binondi)  
+
+---
+
+### 🎉 Thank You for Using Calculator Hide File App! 🎉  
+🚀 **Keep your files secure and hidden!** 🚀
