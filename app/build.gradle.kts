@@ -11,8 +11,8 @@ android {
         applicationId = "devs.org.calculator"
         minSdk = 26
         targetSdk = 34
-        versionCode = 1
-        versionName = "1.0"
+        versionCode = 2
+        versionName = "1.1"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
@@ -45,15 +45,16 @@ dependencies {
     implementation(libs.material)
     implementation(libs.androidx.activity)
     implementation(libs.androidx.constraintlayout)
+    implementation(libs.androidx.gridlayout)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
 
     //custom dependencies
     implementation(libs.exp4j)
-    implementation("com.github.bumptech.glide:glide:4.16.0")
-    implementation("androidx.documentfile:documentfile:1.0.1")
-    implementation("com.github.chrisbanes:PhotoView:2.3.0")
-    implementation("androidx.viewpager:viewpager:1.0.0")
-    implementation("com.jsibbold:zoomage:1.3.1")
+    implementation(libs.glide)
+    implementation(libs.androidx.documentfile)
+    implementation(libs.photoview)
+    implementation(libs.androidx.viewpager)
+    implementation(libs.zoomage)
 }

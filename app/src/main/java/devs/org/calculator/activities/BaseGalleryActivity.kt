@@ -13,6 +13,7 @@ import androidx.activity.result.IntentSenderRequest
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.GridLayoutManager
+import devs.org.calculator.R
 import devs.org.calculator.adapters.FileAdapter
 import devs.org.calculator.databinding.ActivityGalleryBinding
 import devs.org.calculator.utils.FileManager
@@ -20,9 +21,9 @@ import java.io.File
 
 abstract class BaseGalleryActivity : AppCompatActivity() {
     protected lateinit var binding: ActivityGalleryBinding
-    protected lateinit var fileManager: FileManager
-    protected lateinit var adapter: FileAdapter
-    protected lateinit var files: List<File>
+    private lateinit var fileManager: FileManager
+    private lateinit var adapter: FileAdapter
+    private lateinit var files: List<File>
 
     private lateinit var intentSenderLauncher: ActivityResultLauncher<IntentSenderRequest>
     private val storagePermissionLauncher = registerForActivityResult(
@@ -48,16 +49,16 @@ abstract class BaseGalleryActivity : AppCompatActivity() {
 
         binding.fabAdd.text = when(fileType){
             FileManager.FileType.IMAGE -> {
-                 "Add Image"
+                getString(R.string.add_image)
             }
             FileManager.FileType.AUDIO -> {
-                "Add Audio"
+                getString(R.string.add_audio)
             }
             FileManager.FileType.VIDEO -> {
-                "Add Video"
+                getString(R.string.add_video)
             }
             FileManager.FileType.DOCUMENT -> {
-                "Add Files"
+                getString(R.string.add_files)
             }
         }
         binding.recyclerView.setOnScrollChangeListener { _, _, scrollY, _, oldScrollY ->
@@ -128,6 +129,7 @@ abstract class BaseGalleryActivity : AppCompatActivity() {
         // permission denied
     }
 
+    @Deprecated("This method has been deprecated in favor of using the Activity Result API\n      which brings increased type safety via an {@link ActivityResultContract} and the prebuilt\n      contracts for common intents available in\n      {@link androidx.activity.result.contract.ActivityResultContracts}, provides hooks for\n      testing, and allow receiving results in separate, testable classes independent from your\n      activity. Use\n      {@link #registerForActivityResult(ActivityResultContract, ActivityResultCallback)}\n      with the appropriate {@link ActivityResultContract} and handling the result in the\n      {@link ActivityResultCallback#onActivityResult(Object) callback}.")
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
         if (requestCode == 2296 && Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {

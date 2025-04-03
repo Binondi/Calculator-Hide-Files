@@ -18,6 +18,7 @@ import devs.org.calculator.utils.FileManager
 import kotlinx.coroutines.launch
 import java.io.File
 import android.Manifest
+import devs.org.calculator.R
 import devs.org.calculator.callbacks.FileProcessCallback
 
 class ImageGalleryActivity : BaseGalleryActivity(), FileProcessCallback  {
@@ -33,7 +34,8 @@ class ImageGalleryActivity : BaseGalleryActivity(), FileProcessCallback  {
         setupFabButton()
 
         intentSenderLauncher = registerForActivityResult(ActivityResultContracts.StartIntentSenderForResult()){
-            if (it.resultCode != RESULT_OK) Toast.makeText(this, "Failed to hide/unhide photo", Toast.LENGTH_SHORT).show()
+            if (it.resultCode != RESULT_OK) Toast.makeText(this,
+                getString(R.string.failed_to_hide_unhide_photo), Toast.LENGTH_SHORT).show()
         }
 
         pickImageLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
@@ -56,7 +58,7 @@ class ImageGalleryActivity : BaseGalleryActivity(), FileProcessCallback  {
                             .processMultipleFiles(uriList, fileType,this@ImageGalleryActivity )
                     }
                 } else {
-                    Toast.makeText(this, "No files selected", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(this, getString(R.string.no_files_selected), Toast.LENGTH_SHORT).show()
                 }
             }
         }
@@ -64,12 +66,14 @@ class ImageGalleryActivity : BaseGalleryActivity(), FileProcessCallback  {
     }
 
     override fun onFilesProcessedSuccessfully(copiedFiles: List<File>) {
-        Toast.makeText(this@ImageGalleryActivity, "${copiedFiles.size} Images hidden successfully", Toast.LENGTH_SHORT).show()
+        Toast.makeText(this@ImageGalleryActivity,  copiedFiles.size.toString() +
+            getString(R.string.images_hidden_successfully), Toast.LENGTH_SHORT).show()
         loadFiles()
     }
 
     override fun onFileProcessFailed() {
-        Toast.makeText(this@ImageGalleryActivity, "Failed to hide images", Toast.LENGTH_SHORT).show()
+        Toast.makeText(this@ImageGalleryActivity,
+            getString(R.string.failed_to_hide_images), Toast.LENGTH_SHORT).show()
     }
 
     private fun setupIntentSenderLauncher() {
@@ -125,9 +129,11 @@ class ImageGalleryActivity : BaseGalleryActivity(), FileProcessCallback  {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
         if (requestCode == STORAGE_PERMISSION_CODE) {
             if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                Toast.makeText(this, "Storage permissions granted", Toast.LENGTH_SHORT).show()
+                Toast.makeText(this,
+                    getString(R.string.storage_permissions_granted), Toast.LENGTH_SHORT).show()
             } else {
-                Toast.makeText(this, "Storage permissions denied", Toast.LENGTH_SHORT).show()
+                Toast.makeText(this,
+                    getString(R.string.storage_permissions_denied), Toast.LENGTH_SHORT).show()
             }
         }
     }

@@ -7,6 +7,7 @@ import android.widget.Toast
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.lifecycle.lifecycleScope
+import devs.org.calculator.R
 import devs.org.calculator.utils.FileManager
 import devs.org.calculator.callbacks.FileProcessCallback
 import kotlinx.coroutines.launch
@@ -15,7 +16,6 @@ import java.io.File
 class DocumentsActivity : BaseGalleryActivity(), FileProcessCallback {
     override val fileType = FileManager.FileType.DOCUMENT
     private lateinit var pickLauncher: ActivityResultLauncher<Intent>
-    private var selectedUri: Uri? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -40,19 +40,21 @@ class DocumentsActivity : BaseGalleryActivity(), FileProcessCallback {
                         FileManager(this@DocumentsActivity, this@DocumentsActivity).processMultipleFiles(uriList, fileType,this@DocumentsActivity )
                     }
                 } else {
-                    Toast.makeText(this, "No files selected", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(this, getString(R.string.no_files_selected), Toast.LENGTH_SHORT).show()
                 }
             }
         }
     }
 
     override fun onFilesProcessedSuccessfully(copiedFiles: List<File>) {
-        Toast.makeText(this@DocumentsActivity, "${copiedFiles.size} Documents hidden successfully", Toast.LENGTH_SHORT).show()
+        Toast.makeText(this@DocumentsActivity,copiedFiles.size.toString() +
+            getString(R.string.documents_hidden_successfully ), Toast.LENGTH_SHORT).show()
         loadFiles()
     }
 
     override fun onFileProcessFailed() {
-        Toast.makeText(this@DocumentsActivity, "Failed to hide Documents", Toast.LENGTH_SHORT).show()
+        Toast.makeText(this@DocumentsActivity,
+            getString(R.string.failed_to_hide_documents), Toast.LENGTH_SHORT).show()
     }
 
     private fun setupFabButton() {
@@ -70,6 +72,6 @@ class DocumentsActivity : BaseGalleryActivity(), FileProcessCallback {
     }
 
     override fun openPreview() {
-        // Implement document preview
+        //Not implemented document preview
     }
 }
