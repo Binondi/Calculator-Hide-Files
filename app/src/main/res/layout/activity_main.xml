@@ -13,47 +13,65 @@
         android:layout_width="0dp"
         android:layout_height="0dp"
         android:layout_margin="16dp"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHeight_percent="0.3">
+        app:layout_constraintHeight_percent="0.3"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent">
 
-        <TextView
-            android:id="@+id/display"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
+        <LinearLayout
+            android:id="@+id/scrollView"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:scrollbars="none"
             android:gravity="end|bottom"
-            android:padding="10dp"
-            android:text="0"
-            android:textSize="48sp"
-            android:autoSizeTextType="uniform"
-            android:autoSizeMinTextSize="16sp"
-            android:autoSizeMaxTextSize="48sp"
-            android:autoSizeStepGranularity="2sp"
             app:layout_constraintBottom_toTopOf="@+id/total"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintVertical_chainStyle="packed"
-            tools:ignore="Suspicious0dp" />
+            app:layout_constraintVertical_chainStyle="packed">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_gravity="bottom"
+                android:gravity="end|bottom"
+                android:orientation="vertical">
+
+                <TextView
+                    android:id="@+id/display"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:autoSizeMaxTextSize="48sp"
+                    android:autoSizeMinTextSize="16sp"
+                    android:autoSizeStepGranularity="2sp"
+                    android:gravity="end|bottom"
+                    android:autoSizeTextType="uniform"
+                    android:padding="10dp"
+                    android:text="0"
+                    android:textSize="48sp"
+                    tools:ignore="Suspicious0dp" />
+            </LinearLayout>
+
+
+        </LinearLayout>
 
         <TextView
             android:id="@+id/total"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
+            android:autoSizeMaxTextSize="26sp"
+            android:autoSizeMinTextSize="24sp"
+            android:autoSizeStepGranularity="2sp"
+            android:autoSizeTextType="uniform"
             android:gravity="end|bottom"
             android:paddingRight="10dp"
             android:paddingBottom="10dp"
             android:text=""
             android:textSize="26sp"
-            android:autoSizeTextType="uniform"
-            android:autoSizeMinTextSize="12sp"
-            android:autoSizeMaxTextSize="26sp"
-            android:autoSizeStepGranularity="2sp"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/display"
+            app:layout_constraintTop_toBottomOf="@+id/scrollView"
             tools:ignore="Suspicious0dp" />
     </androidx.constraintlayout.widget.ConstraintLayout>
 
@@ -64,209 +82,209 @@
         android:layout_height="0dp"
         android:layout_margin="8dp"
         app:columnCount="4"
-        app:rowCount="5"
-        app:layout_constraintTop_toBottomOf="@id/displayContainer"
         app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent">
+        app:layout_constraintTop_toBottomOf="@id/displayContainer"
+        app:rowCount="5">
 
         <!-- Row 1 -->
         <com.google.android.material.button.MaterialButton
             android:id="@+id/btnClear"
+            style="@style/Widget.MaterialComponents.Button.OutlinedButton"
             android:layout_width="0dp"
             android:layout_height="0dp"
-            app:layout_rowWeight="1"
-            app:layout_columnWeight="1"
             android:layout_margin="4dp"
-            android:textSize="30sp"
             android:text="C"
+            android:textSize="30sp"
             app:cornerRadius="15dp"
-            style="@style/Widget.MaterialComponents.Button.OutlinedButton"/>
+            app:layout_columnWeight="1"
+            app:layout_rowWeight="1" />
 
         <com.google.android.material.button.MaterialButton
             android:id="@+id/btnPercent"
+            style="@style/Widget.MaterialComponents.Button.OutlinedButton"
             android:layout_width="0dp"
             android:layout_height="0dp"
-            app:layout_rowWeight="1"
-            app:layout_columnWeight="1"
-            android:textSize="30sp"
             android:layout_margin="4dp"
             android:text="%"
+            android:textSize="30sp"
             app:cornerRadius="15dp"
-            style="@style/Widget.MaterialComponents.Button.OutlinedButton"/>
+            app:layout_columnWeight="1"
+            app:layout_rowWeight="1" />
 
         <com.google.android.material.button.MaterialButton
             android:id="@+id/btnDivide"
+            style="@style/Widget.MaterialComponents.Button.OutlinedButton"
             android:layout_width="0dp"
             android:layout_height="0dp"
-            app:layout_rowWeight="1"
-            app:layout_columnWeight="1"
-            android:textSize="30sp"
             android:layout_margin="4dp"
             android:text="÷"
+            android:textSize="30sp"
             app:cornerRadius="15dp"
-            style="@style/Widget.MaterialComponents.Button.OutlinedButton"/>
+            app:layout_columnWeight="1"
+            app:layout_rowWeight="1" />
 
         <com.google.android.material.button.MaterialButton
             android:id="@+id/cut"
             android:layout_width="0dp"
             android:layout_height="0dp"
-            app:layout_rowWeight="1"
-            app:layout_columnWeight="1"
-            android:textSize="30sp"
-            android:gravity="center"
             android:layout_margin="4dp"
-            app:icon="@drawable/backspace"
+            android:gravity="center"
             android:textAlignment="center"
+            android:textSize="30sp"
+            app:cornerRadius="15dp"
+            app:icon="@drawable/backspace"
             app:iconSize="32dp"
-            app:cornerRadius="15dp"/>
+            app:layout_columnWeight="1"
+            app:layout_rowWeight="1" />
 
         <!-- Row 2 -->
         <com.google.android.material.button.MaterialButton
             android:id="@+id/btn7"
+            style="@style/Widget.MaterialComponents.Button.OutlinedButton"
             android:layout_width="0dp"
             android:layout_height="0dp"
-            app:layout_rowWeight="1"
-            app:layout_columnWeight="1"
-            android:textSize="30sp"
             android:layout_margin="4dp"
             android:text="7"
+            android:textSize="30sp"
             app:cornerRadius="15dp"
-            style="@style/Widget.MaterialComponents.Button.OutlinedButton"/>
+            app:layout_columnWeight="1"
+            app:layout_rowWeight="1" />
 
         <com.google.android.material.button.MaterialButton
             android:id="@+id/btn8"
+            style="@style/Widget.MaterialComponents.Button.OutlinedButton"
             android:layout_width="0dp"
             android:layout_height="0dp"
-            app:layout_rowWeight="1"
-            app:layout_columnWeight="1"
-            android:textSize="30sp"
             android:layout_margin="4dp"
             android:text="8"
+            android:textSize="30sp"
             app:cornerRadius="15dp"
-            style="@style/Widget.MaterialComponents.Button.OutlinedButton"/>
+            app:layout_columnWeight="1"
+            app:layout_rowWeight="1" />
 
         <com.google.android.material.button.MaterialButton
             android:id="@+id/btn9"
+            style="@style/Widget.MaterialComponents.Button.OutlinedButton"
             android:layout_width="0dp"
             android:layout_height="0dp"
-            app:layout_rowWeight="1"
-            app:layout_columnWeight="1"
             android:layout_margin="4dp"
-            android:textSize="30sp"
             android:text="9"
+            android:textSize="30sp"
             app:cornerRadius="15dp"
-            style="@style/Widget.MaterialComponents.Button.OutlinedButton"/>
+            app:layout_columnWeight="1"
+            app:layout_rowWeight="1" />
 
         <com.google.android.material.button.MaterialButton
             android:id="@+id/btnMultiply"
+            style="@style/Widget.MaterialComponents.Button"
             android:layout_width="0dp"
             android:layout_height="0dp"
-            app:layout_rowWeight="1"
-            app:layout_columnWeight="1"
             android:layout_margin="4dp"
-            android:textSize="30sp"
             android:text="×"
+            android:textSize="30sp"
             app:cornerRadius="15dp"
-            style="@style/Widget.MaterialComponents.Button"/>
+            app:layout_columnWeight="1"
+            app:layout_rowWeight="1" />
 
         <!-- Row 3 -->
         <com.google.android.material.button.MaterialButton
             android:id="@+id/btn4"
+            style="@style/Widget.MaterialComponents.Button.OutlinedButton"
             android:layout_width="0dp"
             android:layout_height="0dp"
-            app:layout_rowWeight="1"
-            app:layout_columnWeight="1"
-            android:textSize="30sp"
             android:layout_margin="4dp"
-            app:cornerRadius="15dp"
             android:text="4"
-            style="@style/Widget.MaterialComponents.Button.OutlinedButton"/>
+            android:textSize="30sp"
+            app:cornerRadius="15dp"
+            app:layout_columnWeight="1"
+            app:layout_rowWeight="1" />
 
         <com.google.android.material.button.MaterialButton
             android:id="@+id/btn5"
+            style="@style/Widget.MaterialComponents.Button.OutlinedButton"
             android:layout_width="0dp"
             android:layout_height="0dp"
-            app:layout_rowWeight="1"
-            app:layout_columnWeight="1"
-            android:textSize="30sp"
             android:layout_margin="4dp"
             android:text="5"
+            android:textSize="30sp"
             app:cornerRadius="15dp"
-            style="@style/Widget.MaterialComponents.Button.OutlinedButton"/>
+            app:layout_columnWeight="1"
+            app:layout_rowWeight="1" />
 
         <com.google.android.material.button.MaterialButton
             android:id="@+id/btn6"
+            style="@style/Widget.MaterialComponents.Button.OutlinedButton"
             android:layout_width="0dp"
             android:layout_height="0dp"
-            app:layout_rowWeight="1"
-            app:layout_columnWeight="1"
-            android:textSize="30sp"
             android:layout_margin="4dp"
             android:text="6"
+            android:textSize="30sp"
             app:cornerRadius="15dp"
-            style="@style/Widget.MaterialComponents.Button.OutlinedButton"/>
+            app:layout_columnWeight="1"
+            app:layout_rowWeight="1" />
 
         <com.google.android.material.button.MaterialButton
             android:id="@+id/btnMinus"
+            style="@style/Widget.MaterialComponents.Button"
             android:layout_width="0dp"
             android:layout_height="0dp"
-            app:layout_rowWeight="1"
-            app:layout_columnWeight="1"
-            android:textSize="30sp"
             android:layout_margin="4dp"
             android:text="-"
+            android:textSize="30sp"
             app:cornerRadius="15dp"
-            style="@style/Widget.MaterialComponents.Button"/>
+            app:layout_columnWeight="1"
+            app:layout_rowWeight="1" />
 
         <!-- Row 4 -->
         <com.google.android.material.button.MaterialButton
             android:id="@+id/btn1"
+            style="@style/Widget.MaterialComponents.Button.OutlinedButton"
             android:layout_width="0dp"
             android:layout_height="0dp"
-            app:layout_rowWeight="1"
-            app:layout_columnWeight="1"
-            android:textSize="30sp"
             android:layout_margin="4dp"
             android:text="1"
+            android:textSize="30sp"
             app:cornerRadius="15dp"
-            style="@style/Widget.MaterialComponents.Button.OutlinedButton"/>
+            app:layout_columnWeight="1"
+            app:layout_rowWeight="1" />
 
         <com.google.android.material.button.MaterialButton
             android:id="@+id/btn2"
+            style="@style/Widget.MaterialComponents.Button.OutlinedButton"
             android:layout_width="0dp"
             android:layout_height="0dp"
-            app:layout_rowWeight="1"
-            app:layout_columnWeight="1"
-            android:textSize="30sp"
             android:layout_margin="4dp"
             android:text="2"
+            android:textSize="30sp"
             app:cornerRadius="15dp"
-            style="@style/Widget.MaterialComponents.Button.OutlinedButton"/>
+            app:layout_columnWeight="1"
+            app:layout_rowWeight="1" />
 
         <com.google.android.material.button.MaterialButton
             android:id="@+id/btn3"
+            style="@style/Widget.MaterialComponents.Button.OutlinedButton"
             android:layout_width="0dp"
             android:layout_height="0dp"
-            app:layout_rowWeight="1"
-            app:layout_columnWeight="1"
-            android:textSize="30sp"
             android:layout_margin="4dp"
             android:text="3"
+            android:textSize="30sp"
             app:cornerRadius="15dp"
-            style="@style/Widget.MaterialComponents.Button.OutlinedButton"/>
+            app:layout_columnWeight="1"
+            app:layout_rowWeight="1" />
 
         <com.google.android.material.button.MaterialButton
             android:id="@+id/btnPlus"
+            style="@style/Widget.MaterialComponents.Button"
             android:layout_width="0dp"
             android:layout_height="0dp"
-            app:layout_rowWeight="1"
-            app:layout_columnWeight="1"
-            android:textSize="30sp"
             android:layout_margin="4dp"
             android:text="+"
+            android:textSize="30sp"
             app:cornerRadius="15dp"
-            style="@style/Widget.MaterialComponents.Button"/>
+            app:layout_columnWeight="1"
+            app:layout_rowWeight="1" />
 
         <!-- Row 5 -->
         <com.google.android.material.button.MaterialButton
@@ -274,37 +292,37 @@
             style="@style/Widget.MaterialComponents.Button.OutlinedButton"
             android:layout_width="0dp"
             android:layout_height="0dp"
-            app:layout_rowWeight="1"
+            android:layout_margin="4dp"
+            android:text="0"
+            android:textSize="30sp"
+            app:cornerRadius="15dp"
             app:layout_columnSpan="2"
             app:layout_columnWeight="2"
-            android:textSize="30sp"
-            android:layout_margin="4dp"
-            app:cornerRadius="15dp"
-            android:text="0" />
+            app:layout_rowWeight="1" />
 
         <com.google.android.material.button.MaterialButton
             android:id="@+id/btnDot"
+            style="@style/Widget.MaterialComponents.Button.OutlinedButton"
             android:layout_width="0dp"
             android:layout_height="0dp"
-            app:layout_rowWeight="1"
-            app:layout_columnWeight="1"
-            android:textSize="30sp"
             android:layout_margin="4dp"
             android:text="."
+            android:textSize="30sp"
             app:cornerRadius="15dp"
-            style="@style/Widget.MaterialComponents.Button.OutlinedButton"/>
+            app:layout_columnWeight="1"
+            app:layout_rowWeight="1" />
 
         <com.google.android.material.button.MaterialButton
             android:id="@+id/btnEquals"
+            style="@style/Widget.MaterialComponents.Button"
             android:layout_width="0dp"
             android:layout_height="0dp"
-            app:layout_rowWeight="1"
-            app:layout_columnWeight="1"
-            android:textSize="30sp"
             android:layout_margin="4dp"
             android:text="="
+            android:textSize="30sp"
             app:cornerRadius="15dp"
-            style="@style/Widget.MaterialComponents.Button"/>
+            app:layout_columnWeight="1"
+            app:layout_rowWeight="1" />
 
     </androidx.gridlayout.widget.GridLayout>
 
