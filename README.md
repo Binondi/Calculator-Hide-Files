@@ -91,10 +91,9 @@ git clone https://github.com/Binondi/Calculator-Hide-Files.git
 
 ## 🛠️ Technologies Used
 
-- **Programming Language**: Kotlin & Java  
-- **UI Framework**: Jetpack Compose / XML Layouts  
+- **Programming Language**: Kotlin
+- **UI Framework**: XML (For UI)
 - **File Storage**: Secure internal storage & MediaStore API  
-- **Encryption**: Secure file protection algorithms  
 
 ---
 
