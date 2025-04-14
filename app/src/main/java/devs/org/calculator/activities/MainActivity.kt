@@ -2,7 +2,6 @@ package devs.org.calculator.activities
 
 import android.annotation.SuppressLint
 import android.content.Intent
-import android.content.SharedPreferences
 import android.content.pm.PackageManager
 import android.net.Uri
 import android.os.Build
@@ -34,27 +33,27 @@ class MainActivity : AppCompatActivity(), DialogActionsCallback {
     private lateinit var baseDocumentTreeUri: Uri
     private val dialogUtil = DialogUtil(this)
     private val fileManager = FileManager(this, this)
-    private lateinit var sp :SharedPreferences
+    private val sp by lazy { getSharedPreferences("app", MODE_PRIVATE) }
 
     @RequiresApi(Build.VERSION_CODES.R)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
-        sp = getSharedPreferences("app", MODE_PRIVATE)
 
-        if (!sp.contains("isFirstTime") || sp.getBoolean("isFirstTime", true)) {
-            binding.display.text = getString(R.string.enter_123456)
-        }
         launcher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
             handleActivityResult(result)
+        }
+
+        if (sp.getBoolean("isFirst", true)){
+            binding.display.text = getString(R.string.enter_123456)
         }
 
         // Ask permission
         if(!Environment.isExternalStorageManager()) {
             dialogUtil.showMaterialDialog(
                 "Storage Permission",
-                "To ensure the app works properly and allows you to easily hide or unhide your private files, please grant storage access permission.\n" +
+                "To ensure the app works properly and allows you to easily hide or un-hide your private files, please grant storage access permission.\n" +
                         "\n" +
                         "For devices running Android 11 or higher, you'll need to grant the 'All Files Access' permission.",
                 "Grant",
@@ -291,6 +290,7 @@ class MainActivity : AppCompatActivity(), DialogActionsCallback {
     private fun calculateResult() {
         if (currentExpression == "123456") {
             val intent = Intent(this, SetupPasswordActivity::class.java)
+            sp.edit().putBoolean("isFirst", false).apply()
             intent.putExtra("password", currentExpression)
             startActivity(intent)
             clearDisplay()
@@ -306,10 +306,8 @@ class MainActivity : AppCompatActivity(), DialogActionsCallback {
         }
 
         try {
-            // Replace '×' with '*' for the expression evaluator
             var processedExpression = currentExpression.replace("×", "*")
 
-            // Process percentages in the expression
             if (processedExpression.contains("%")) {
                 processedExpression = preprocessExpression(processedExpression)
             }
@@ -336,22 +334,6 @@ class MainActivity : AppCompatActivity(), DialogActionsCallback {
 
     @SuppressLint("DefaultLocale")
     private fun updateDisplay() {
-        if (!sp.contains("isFirstTime") || sp.getBoolean("isFirstTime", true)) {
-            if (currentExpression == "123456") {
-                binding.total.text = getString(R.string.now_enter_button)
-                return
-            }
-            else if (currentExpression != "0" && currentExpression.isNotEmpty()) {
-                binding.display.text = currentExpression.replace("*", "×")
-                return
-            }
-            else if (currentExpression == "0") {
-                binding.display.text = getString(R.string.enter_123456)
-                return
-            }
-        }
-
-
         binding.display.text = currentExpression.replace("*", "×")
 
         if (currentExpression == "0") {
@@ -360,8 +342,6 @@ class MainActivity : AppCompatActivity(), DialogActionsCallback {
         }
 
         try {
-            // Don't show preview result if the expression ends with an operator
-            // (but allow percentage at the end)
             if (currentExpression.isEmpty() ||
                 (isOperator(currentExpression.last().toString()) && currentExpression.last() != '%')) {
                 binding.total.text = ""
@@ -383,8 +363,9 @@ class MainActivity : AppCompatActivity(), DialogActionsCallback {
             } else {
                 String.format("%.2f", result)
             }
-
-            binding.total.text = formattedResult
+            if (sp.getBoolean("isFirst", true) && (currentExpression == "123456" || binding.display.text.toString() == "123456")){
+                binding.total.text = getString(R.string.now_enter_button)
+            }else binding.total.text = formattedResult
         } catch (e: Exception) {
             binding.total.text = ""
         }
