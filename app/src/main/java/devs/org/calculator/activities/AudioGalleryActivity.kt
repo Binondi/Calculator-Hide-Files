@@ -7,6 +7,7 @@ import android.widget.Toast
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.lifecycle.lifecycleScope
+import devs.org.calculator.R
 import devs.org.calculator.callbacks.FileProcessCallback
 import devs.org.calculator.utils.FileManager
 import kotlinx.coroutines.launch
@@ -43,7 +44,7 @@ class AudioGalleryActivity : BaseGalleryActivity(), FileProcessCallback {
                             ).processMultipleFiles(uriList, fileType, this@AudioGalleryActivity)
                         }
                     } else {
-                        Toast.makeText(this, "No files selected", Toast.LENGTH_SHORT).show()
+                        Toast.makeText(this, getString(R.string.no_files_selected), Toast.LENGTH_SHORT).show()
                     }
                 }
             }
@@ -52,7 +53,7 @@ class AudioGalleryActivity : BaseGalleryActivity(), FileProcessCallback {
     override fun onFilesProcessedSuccessfully(copiedFiles: List<File>) {
         Toast.makeText(
             this@AudioGalleryActivity,
-            "${copiedFiles.size} Audios hidden successfully",
+            "${copiedFiles.size} ${getString(R.string.audio_hidded_successfully)} ",
             Toast.LENGTH_SHORT
         ).show()
         loadFiles()

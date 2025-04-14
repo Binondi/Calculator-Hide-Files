@@ -66,8 +66,7 @@ class ImageGalleryActivity : BaseGalleryActivity(), FileProcessCallback  {
     }
 
     override fun onFilesProcessedSuccessfully(copiedFiles: List<File>) {
-        Toast.makeText(this@ImageGalleryActivity,  copiedFiles.size.toString() +
-            getString(R.string.images_hidden_successfully), Toast.LENGTH_SHORT).show()
+        Toast.makeText(this@ImageGalleryActivity,  "${copiedFiles.size} ${getString(R.string.images_hidden_successfully)}", Toast.LENGTH_SHORT).show()
         loadFiles()
     }
 

@@ -60,7 +60,7 @@ class FileManager(private val context: Context, private val lifecycleOwner: Life
         }
     }
 
-    fun copyFileToHiddenDir(uri: Uri, type: FileType): File? {
+    private fun copyFileToHiddenDir(uri: Uri, type: FileType): File? {
         return try {
             val contentResolver = context.contentResolver
 

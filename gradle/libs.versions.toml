@@ -1,5 +1,5 @@
 [versions]
-agp = "8.7.3"
+agp = "8.9.1"
 documentfile = "1.0.1"
 exp4j = "0.4.8"
 glide = "4.16.0"

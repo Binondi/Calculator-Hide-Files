@@ -7,9 +7,9 @@
     <string name="add_files">Add Files</string>
     <string name="failed_to_hide_documents">Failed to hide Documents</string>
     <string name="no_files_selected">No files selected</string>
-    <string name="documents_hidden_successfully">%1$s Documents hidden successfully</string>
+    <string name="documents_hidden_successfully"> Documents hidden successfully</string>
     <string name="failed_to_hide_unhide_photo">Failed to hide/unhide photo</string>
-    <string name="images_hidden_successfully">%1$s Images hidden successfully</string>
+    <string name="images_hidden_successfully"> Images hidden successfully</string>
     <string name="failed_to_hide_images">Failed to hide images</string>
     <string name="storage_permissions_granted">Storage permissions granted</string>
     <string name="storage_permissions_denied">Storage permissions denied</string>
@@ -41,7 +41,7 @@
     <string name="answer_cannot_be_empty">Answer cannot be empty!</string>
     <string name="password_successfully_reset">Password successfully reset.</string>
     <string name="invalid_answer">Invalid answer!</string>
-    <string name="videos_hidden_successfully">%1$s Videos hidden successfully</string>
+    <string name="videos_hidden_successfully"> Videos hidden successfully</string>
     <string name="failed_to_hide_videos">Failed to hide videos</string>
     <string name="image">IMAGE</string>
     <string name="video">VIDEO</string>
@@ -50,5 +50,7 @@
     <string name="no_audio_player_found">No audio player found!</string>
     <string name="no_suitable_app_found_to_open_this_document">No suitable app found to open this document!</string>
     <string name="unknown_file">Unknown File</string>
-    <string name="details">%1$s DETAILS</string>
+    <string name="details"> DETAILS</string>
+    <string name="audio_hidded_successfully">Audios hidden successfully</string>
+    <string name="no_items_available_add_one_by_clicking_on_the_plus_button">No Items Available, Add one by clicking on the</string>
 </resources>

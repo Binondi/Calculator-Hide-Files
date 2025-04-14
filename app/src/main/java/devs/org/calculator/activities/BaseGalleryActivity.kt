@@ -1,6 +1,7 @@
 package devs.org.calculator.activities
 
 import android.Manifest
+import android.annotation.SuppressLint
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.net.Uri
@@ -8,6 +9,7 @@ import android.os.Build
 import android.os.Bundle
 import android.os.Environment
 import android.provider.Settings
+import android.view.View
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.IntentSenderRequest
 import androidx.activity.result.contract.ActivityResultContracts
@@ -39,6 +41,7 @@ abstract class BaseGalleryActivity : AppCompatActivity() {
 
     abstract val fileType: FileManager.FileType
 
+    @SuppressLint("SetTextI18n")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setupIntentSenderLauncher()
@@ -47,18 +50,27 @@ abstract class BaseGalleryActivity : AppCompatActivity() {
 
         fileManager = FileManager(this, this)
 
-        binding.fabAdd.text = when(fileType){
+        when(fileType){
             FileManager.FileType.IMAGE -> {
-                getString(R.string.add_image)
+                val image = getString(R.string.add_image)
+                binding.fabAdd.text = image
+                binding.noItemsTxt.text = "${getString(R.string.no_items_available_add_one_by_clicking_on_the_plus_button)} '$image' button"
             }
             FileManager.FileType.AUDIO -> {
-                getString(R.string.add_audio)
+                val text =  getString(R.string.add_audio)
+                binding.fabAdd.text = text
+                binding.noItemsTxt.text = "${getString(R.string.no_items_available_add_one_by_clicking_on_the_plus_button)} '$text' button"
+
             }
             FileManager.FileType.VIDEO -> {
-                getString(R.string.add_video)
+                val text = getString(R.string.add_video)
+                binding.fabAdd.text = text
+                binding.noItemsTxt.text = "${getString(R.string.no_items_available_add_one_by_clicking_on_the_plus_button)} '$text' button"
             }
             FileManager.FileType.DOCUMENT -> {
-                getString(R.string.add_files)
+                val text = getString(R.string.add_files)
+                binding.fabAdd.text = text
+                binding.noItemsTxt.text = "${getString(R.string.no_items_available_add_one_by_clicking_on_the_plus_button)} '$text' button"
             }
         }
         binding.recyclerView.setOnScrollChangeListener { _, _, scrollY, _, oldScrollY ->
@@ -116,6 +128,15 @@ abstract class BaseGalleryActivity : AppCompatActivity() {
     protected open fun loadFiles() {
         files = fileManager.getFilesInHiddenDir(fileType)
         adapter.submitList(files)
+        if (files.isEmpty()){
+            binding.recyclerView.visibility = View.GONE
+            binding.loading.visibility = View.GONE
+            binding.noItems.visibility = View.VISIBLE
+        }else{
+            binding.recyclerView.visibility = View.VISIBLE
+            binding.loading.visibility = View.GONE
+            binding.noItems.visibility = View.GONE
+        }
     }
 
     override fun onResume() {

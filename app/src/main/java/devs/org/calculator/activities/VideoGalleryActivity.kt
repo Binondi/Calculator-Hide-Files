@@ -49,8 +49,8 @@ class VideoGalleryActivity : BaseGalleryActivity(), FileProcessCallback {
     }
 
     override fun onFilesProcessedSuccessfully(copiedFiles: List<File>) {
-        Toast.makeText(this@VideoGalleryActivity, copiedFiles.size.toString() +
-            getString(R.string.videos_hidden_successfully), Toast.LENGTH_SHORT).show()
+        Toast.makeText(this@VideoGalleryActivity, "${copiedFiles.size} ${getString(R.string.videos_hidden_successfully)}"
+            , Toast.LENGTH_SHORT).show()
         loadFiles()
     }
 
