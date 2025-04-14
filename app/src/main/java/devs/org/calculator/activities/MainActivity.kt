@@ -2,6 +2,7 @@ package devs.org.calculator.activities
 
 import android.annotation.SuppressLint
 import android.content.Intent
+import android.content.SharedPreferences
 import android.content.pm.PackageManager
 import android.net.Uri
 import android.os.Build
@@ -33,13 +34,18 @@ class MainActivity : AppCompatActivity(), DialogActionsCallback {
     private lateinit var baseDocumentTreeUri: Uri
     private val dialogUtil = DialogUtil(this)
     private val fileManager = FileManager(this, this)
+    private lateinit var sp :SharedPreferences
 
     @RequiresApi(Build.VERSION_CODES.R)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
+        sp = getSharedPreferences("app", MODE_PRIVATE)
 
+        if (!sp.contains("isFirstTime") || sp.getBoolean("isFirstTime", true)) {
+            binding.display.text = getString(R.string.enter_123456)
+        }
         launcher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
             handleActivityResult(result)
         }
@@ -330,6 +336,22 @@ class MainActivity : AppCompatActivity(), DialogActionsCallback {
 
     @SuppressLint("DefaultLocale")
     private fun updateDisplay() {
+        if (!sp.contains("isFirstTime") || sp.getBoolean("isFirstTime", true)) {
+            if (currentExpression == "123456") {
+                binding.total.text = getString(R.string.now_enter_button)
+                return
+            }
+            else if (currentExpression != "0" && currentExpression.isNotEmpty()) {
+                binding.display.text = currentExpression.replace("*", "×")
+                return
+            }
+            else if (currentExpression == "0") {
+                binding.display.text = getString(R.string.enter_123456)
+                return
+            }
+        }
+
+
         binding.display.text = currentExpression.replace("*", "×")
 
         if (currentExpression == "0") {

@@ -53,4 +53,6 @@
     <string name="details"> DETAILS</string>
     <string name="audio_hidded_successfully">Audios hidden successfully</string>
     <string name="no_items_available_add_one_by_clicking_on_the_plus_button">No Items Available, Add one by clicking on the</string>
+    <string name="now_enter_button">Now Enter \'=\' button</string>
+    <string name="enter_123456">Enter 123456</string>
 </resources>
