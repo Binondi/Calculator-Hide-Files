@@ -24,13 +24,11 @@ class FolderManager(private val context: Context) {
     fun deleteFolder(folder: File): Boolean {
         return try {
             if (folder.exists() && folder.isDirectory) {
-                // Delete all files in the folder first
                 folder.listFiles()?.forEach { file ->
                     if (file.isFile) {
                         file.delete()
                     }
                 }
-                // Then delete the folder itself
                 folder.delete()
             } else {
                 false

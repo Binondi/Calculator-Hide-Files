@@ -14,6 +14,8 @@
         android:gravity="center_vertical"
         android:orientation="horizontal"
         android:padding="8dp"
+        android:id="@+id/toolBar"
+        android:layout_marginTop="25dp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent">
@@ -29,20 +31,29 @@
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Folder Name"
+            android:text="@string/hidden_space"
             android:textSize="18sp"
+            android:layout_weight="1"
             android:id="@+id/folderName"/>
+
+        <ImageButton
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:src="@drawable/ic_setting"
+            android:scaleType="fitCenter"
+            android:background="#00000000"
+            android:padding="9dp"
+            android:id="@+id/settings"/>
     </LinearLayout>
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/recyclerView"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:layout_marginTop="?attr/actionBarSize"
+        android:layout_height="0dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent">
+        app:layout_constraintTop_toBottomOf="@+id/toolBar">
 
     </androidx.recyclerview.widget.RecyclerView>
 
@@ -112,8 +123,8 @@
         app:fabCustomSize="51dp"
         android:visibility="gone"
         app:layout_constraintBottom_toTopOf="@+id/addDocument"
-        app:layout_constraintEnd_toEndOf="@+id/fabExpend"
-        app:layout_constraintStart_toStartOf="@+id/fabExpend" />
+        app:layout_constraintEnd_toEndOf="@+id/addDocument"
+        app:layout_constraintStart_toStartOf="@+id/addDocument" />
 
     <com.google.android.material.floatingactionbutton.FloatingActionButton
         android:id="@+id/addDocument"
@@ -125,8 +136,8 @@
         app:fabCustomSize="54dp"
         android:visibility="gone"
         app:layout_constraintBottom_toTopOf="@+id/fabExpend"
-        app:layout_constraintEnd_toEndOf="@+id/addFolder"
-        app:layout_constraintStart_toStartOf="@+id/addFolder" />
+        app:layout_constraintEnd_toEndOf="@+id/fabExpend"
+        app:layout_constraintStart_toStartOf="@+id/fabExpend" />
 
     <com.google.android.material.floatingactionbutton.FloatingActionButton
         android:id="@+id/addFolder"
@@ -138,8 +149,8 @@
         app:layout_constraintEnd_toEndOf="parent"
         android:layout_marginEnd="16dp"
         android:layout_marginBottom="20dp"
-        app:fabCustomSize="57dp"
-        />
+        app:fabCustomSize="57dp" />
+
     <com.google.android.material.floatingactionbutton.FloatingActionButton
         android:id="@+id/fabExpend"
         android:layout_width="wrap_content"
@@ -152,5 +163,17 @@
         app:fabCustomSize="60dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent" />
+
+    <com.google.android.material.floatingactionbutton.FloatingActionButton
+        android:id="@+id/deleteSelected"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:src="@drawable/ic_delete"
+        android:visibility="gone"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:layout_marginEnd="16dp"
+        android:layout_marginBottom="20dp"
+        app:fabCustomSize="57dp" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

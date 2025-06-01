@@ -1,6 +1,6 @@
 package devs.org.calculator.activities
 
-import android.app.AlertDialog
+import android.Manifest
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.net.Uri
@@ -9,29 +9,33 @@ import android.os.Bundle
 import android.os.Environment
 import android.os.Handler
 import android.os.Looper
+import android.provider.Settings
 import android.util.Log
 import android.view.View
 import android.view.animation.Animation
 import android.view.animation.AnimationUtils
-import android.widget.EditText
 import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
+import androidx.activity.result.ActivityResultLauncher
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
-import androidx.core.content.FileProvider
+import androidx.core.app.ActivityCompat
+import androidx.core.content.ContextCompat
+import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.GridLayoutManager
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import devs.org.calculator.R
 import devs.org.calculator.adapters.FileAdapter
 import devs.org.calculator.adapters.FolderAdapter
-import devs.org.calculator.callbacks.DialogActionsCallback
+import devs.org.calculator.callbacks.FileProcessCallback
 import devs.org.calculator.databinding.ActivityHiddenBinding
+import devs.org.calculator.databinding.ProccessingDialogBinding
 import devs.org.calculator.utils.DialogUtil
 import devs.org.calculator.utils.FileManager
 import devs.org.calculator.utils.FileManager.Companion.HIDDEN_DIR
 import devs.org.calculator.utils.FolderManager
+import kotlinx.coroutines.launch
 import java.io.File
-import java.io.FileOutputStream
-import java.io.InputStream
-import java.io.OutputStream
 
 class HiddenActivity : AppCompatActivity() {
 
@@ -45,19 +49,49 @@ class HiddenActivity : AppCompatActivity() {
     private val fileManager = FileManager(this, this)
     private val folderManager = FolderManager(this)
     private val dialogUtil = DialogUtil(this)
-
+    private var customDialog: androidx.appcompat.app.AlertDialog? = null
     private val STORAGE_PERMISSION_CODE = 101
-    private val PICK_FILE_REQUEST_CODE = 102
     private var currentFolder: File? = null
     private var folderAdapter: FolderAdapter? = null
     val hiddenDir = File(Environment.getExternalStorageDirectory(), HIDDEN_DIR)
+
+    private lateinit var pickImageLauncher: ActivityResultLauncher<Intent>
+    private var dialogShowTime: Long = 0
+    private val MINIMUM_DIALOG_DURATION = 1700L
+
+    private fun showCustomDialog(i: Int) {
+        val dialogView = ProccessingDialogBinding.inflate(layoutInflater)
+        customDialog = MaterialAlertDialogBuilder(this)
+            .setView(dialogView.root)
+            .setCancelable(false)
+            .create()
+        dialogView.title.text = "Hiding $i files"
+        customDialog?.show()
+        dialogShowTime = System.currentTimeMillis()
+
+    }
+
+    private fun dismissCustomDialog() {
+        val currentTime = System.currentTimeMillis()
+        val elapsedTime = currentTime - dialogShowTime
+
+        if (elapsedTime < MINIMUM_DIALOG_DURATION) {
+            val remainingTime = MINIMUM_DIALOG_DURATION - elapsedTime
+            Handler(Looper.getMainLooper()).postDelayed({
+                customDialog?.dismiss()
+                customDialog = null
+            }, remainingTime)
+        } else {
+            customDialog?.dismiss()
+            customDialog = null
+        }
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         binding = ActivityHiddenBinding.inflate(layoutInflater)
         setContentView(binding.root)
-
         //initialized animations for fabs
         fabOpen = AnimationUtils.loadAnimation(this, R.anim.fab_open)
         fabClose = AnimationUtils.loadAnimation(this, R.anim.fab_close)
@@ -70,6 +104,7 @@ class HiddenActivity : AppCompatActivity() {
         binding.addAudio.visibility = View.GONE
         binding.addDocument.visibility = View.GONE
         binding.addFolder.visibility = View.VISIBLE
+        binding.deleteSelected.visibility = View.GONE
 
         binding.fabExpend.setOnClickListener {
             if (isFabOpen) {
@@ -84,6 +119,13 @@ class HiddenActivity : AppCompatActivity() {
         binding.addImage.setOnClickListener { openFilePicker("image/*") }
         binding.addVideo.setOnClickListener { openFilePicker("video/*") }
         binding.addAudio.setOnClickListener { openFilePicker("audio/*") }
+        binding.back.setOnClickListener {
+            if (currentFolder != null) {
+                pressBack()
+            } else {
+                super.onBackPressed()
+            }
+        }
         binding.addDocument.setOnClickListener { openFilePicker("*/*") }
         binding.addFolder.setOnClickListener {
             dialogUtil.createInputDialog(
@@ -101,50 +143,104 @@ class HiddenActivity : AppCompatActivity() {
 
         fileManager.askPermission(this)
         listFoldersInHiddenDirectory()
+
+        setupDeleteButton()
+
+        pickImageLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
+            if (result.resultCode == RESULT_OK) {
+                val clipData = result.data?.clipData
+                val uriList = mutableListOf<Uri>()
+
+                if (clipData != null) {
+                    for (i in 0 until clipData.itemCount) {
+                        val uri = clipData.getItemAt(i).uri
+                        uriList.add(uri)
+                    }
+                } else {
+                    result.data?.data?.let { uriList.add(it) }
+                }
+
+                if (uriList.isNotEmpty()) {
+                    showCustomDialog(uriList.size)
+                    lifecycleScope.launch {
+                        if (currentFolder != null){
+                            FileManager(this@HiddenActivity, this@HiddenActivity)
+                                .processMultipleFiles(uriList, currentFolder!!,
+                                    object : FileProcessCallback {
+                                        override fun onFilesProcessedSuccessfully(copiedFiles: List<File>) {
+                                            Toast.makeText(this@HiddenActivity,  "${copiedFiles.size} ${getString(R.string.documents_hidden_successfully)}", Toast.LENGTH_SHORT).show()
+                                            openFolder(currentFolder!!)
+                                            dismissCustomDialog()
+                                        }
+
+                                        override fun onFileProcessFailed() {
+                                            Toast.makeText(this@HiddenActivity,
+                                                getString(R.string.failed_to_hide_files), Toast.LENGTH_SHORT).show()
+                                            dismissCustomDialog()
+                                        }
+
+                                    })
+                        }else{
+                            Toast.makeText(
+                                this@HiddenActivity,
+                                getString(R.string.there_was_a_problem_in_the_folder),
+                                Toast.LENGTH_SHORT
+                            ).show()
+                            dismissCustomDialog()
+                        }
+
+                    }
+                } else {
+                    Toast.makeText(this, getString(R.string.no_files_selected), Toast.LENGTH_SHORT).show()
+                }
+            }
+        }
+        askPermissiom()
+    }
+
+    private fun askPermissiom() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R){
+            if (!Environment.isExternalStorageManager()){
+                val intent = Intent().setAction(Settings.ACTION_MANAGE_ALL_FILES_ACCESS_PERMISSION)
+                startActivity(intent)
+            }
+        }
+        else {
+            checkAndRequestStoragePermission()
+        }
+    }
+
+    private fun checkAndRequestStoragePermission() {
+        if (ContextCompat.checkSelfPermission(
+                this,
+                Manifest.permission.READ_EXTERNAL_STORAGE
+            ) != PackageManager.PERMISSION_GRANTED ||
+            ContextCompat.checkSelfPermission(
+                this,
+                Manifest.permission.WRITE_EXTERNAL_STORAGE
+            ) != PackageManager.PERMISSION_GRANTED
+        ) {
+            ActivityCompat.requestPermissions(
+                this,
+                arrayOf(
+                    Manifest.permission.READ_EXTERNAL_STORAGE,
+                    Manifest.permission.WRITE_EXTERNAL_STORAGE
+                ),
+                STORAGE_PERMISSION_CODE
+            )
+        }
     }
 
     private fun openFilePicker(mimeType: String) {
-        val intent = Intent(Intent.ACTION_GET_CONTENT).apply {
+        val intent = Intent(Intent.ACTION_OPEN_DOCUMENT).apply {
             type = mimeType
             addCategory(Intent.CATEGORY_OPENABLE)
+            putExtra(Intent.EXTRA_ALLOW_MULTIPLE, true)
+            addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+            addFlags(Intent.FLAG_GRANT_WRITE_URI_PERMISSION)
+            addFlags(Intent.FLAG_GRANT_PERSISTABLE_URI_PERMISSION)
         }
-        startActivityForResult(intent, PICK_FILE_REQUEST_CODE)
-    }
-
-    override fun onRequestPermissionsResult(
-        requestCode: Int,
-        permissions: Array<out String>,
-        grantResults: IntArray
-    ) {
-        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
-        if (requestCode == STORAGE_PERMISSION_CODE) {
-            if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                Log.d("HiddenActivity", "READ/WRITE_EXTERNAL_STORAGE permission granted via onRequestPermissionsResult")
-                listFoldersInHiddenDirectory()
-            } else {
-                Log.d("HiddenActivity", "READ/WRITE_EXTERNAL_STORAGE permission denied via onRequestPermissionsResult")
-                // Handle denied case, maybe show a message or disable functionality
-            }
-        }
-    }
-
-    @Deprecated("This method has been deprecated in favor of using the Activity Result API\n      which brings increased type safety via an {@link ActivityResultContract} and the prebuilt\n      contracts for common intents available in\n      {@link androidx.activity.result.contract.ActivityResultContracts}, provides hooks for\n      testing, and allow receiving results in separate, testable classes independent from your\n      activity. Use\n      {@link #registerForActivityResult(ActivityResultContract, ActivityResultCallback)}\n      with the appropriate {@link ActivityResultContract} and handling the result in the\n      {@link ActivityResultCallback#onActivityResult(Object) callback}.")
-    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-        super.onActivityResult(requestCode, resultCode, data)
-        if (requestCode == STORAGE_PERMISSION_CODE) {
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
-                if (Environment.isExternalStorageManager()) {
-                    listFoldersInHiddenDirectory()
-                } else {
-                    // Handle denied case
-                }
-            }
-        } else if (requestCode == PICK_FILE_REQUEST_CODE && resultCode == RESULT_OK) {
-            data?.data?.let { uri ->
-                Log.d("HiddenActivity", "Selected file URI: $uri")
-                copyFileToHiddenDirectory(uri)
-            }
-        }
+        pickImageLauncher.launch(intent)
     }
 
     private fun listFoldersInHiddenDirectory() {
@@ -163,7 +259,16 @@ class HiddenActivity : AppCompatActivity() {
                             openFolder(clickedFolder)
                         },
                         onFolderLongClick = { folder ->
-                            // go to selection mode
+                            // Enter selection mode
+                            binding.fabExpend.visibility = View.GONE
+                            binding.addFolder.visibility = View.GONE
+                            binding.deleteSelected.visibility = View.VISIBLE
+                        },
+                        onSelectionModeChanged = { isSelectionMode ->
+                            if (!isSelectionMode) {
+                                binding.deleteSelected.visibility = View.GONE
+                                binding.addFolder.visibility = View.VISIBLE
+                            }
                         }
                     )
                     binding.recyclerView.adapter = folderAdapter
@@ -191,6 +296,7 @@ class HiddenActivity : AppCompatActivity() {
         // Read files in the clicked folder and update RecyclerView
         val files = folderManager.getFilesInFolder(folder)
         Log.d("HiddenActivity", "Found ${files.size} files in ${folder.name}")
+        binding.folderName.text = folder.name
 
         if (files.isNotEmpty()) {
             binding.recyclerView.layoutManager = GridLayoutManager(this, 3)
@@ -253,7 +359,7 @@ class HiddenActivity : AppCompatActivity() {
         binding.addVideo.visibility = View.VISIBLE
         binding.addAudio.visibility = View.VISIBLE
         binding.addDocument.visibility = View.VISIBLE
-        binding.addFolder.visibility = View.VISIBLE // Keep this visible if in folder list, but should be GONE when showing files
+        binding.addFolder.visibility = View.VISIBLE
 
         isFabOpen = true
         Handler(Looper.getMainLooper()).postDelayed({
@@ -279,31 +385,6 @@ class HiddenActivity : AppCompatActivity() {
         binding.fabExpend.setImageResource(R.drawable.ic_add)
     }
 
-    private fun copyFileToHiddenDirectory(uri: Uri) {
-        currentFolder?.let { destinationFolder ->
-            try {
-                val inputStream: InputStream? = contentResolver.openInputStream(uri)
-                val fileName = getFileNameFromUri(uri) ?: "unknown_file"
-                val destinationFile = File(destinationFolder, fileName)
-
-                inputStream?.use { input ->
-                    val outputStream: OutputStream = FileOutputStream(destinationFile)
-                    outputStream.use { output ->
-                        input.copyTo(output)
-                    }
-                }
-                Log.d("HiddenActivity", "File copied to: ${destinationFile.absolutePath}")
-                // Refresh the file list in the RecyclerView
-                currentFolder?.let { openFolder(it) }
-            } catch (e: Exception) {
-                Log.e("HiddenActivity", "Error copying file", e)
-                // TODO: Show error message to user
-            }
-        } ?: run {
-            Log.e("HiddenActivity", "Current folder is null, cannot copy file")
-            // TODO: Show error message to user
-        }
-    }
 
     private fun getFileNameFromUri(uri: Uri): String? {
         var name: String? = null
@@ -318,102 +399,70 @@ class HiddenActivity : AppCompatActivity() {
         return name
     }
 
-    private fun showFileOptionsDialog(file: File) {
-        val options = arrayOf("Delete", "Rename", "Share")
-        AlertDialog.Builder(this)
-            .setTitle("Choose an action for ${file.name}")
-            .setItems(options) { dialog, which ->
-                when (which) {
-                    0 -> deleteFile(file)
-                    1 -> renameFile(file)
-                    2 -> shareFile(file)
-                }
-            }
-            .create()
-            .show()
-    }
 
-    private fun deleteFile(file: File) {
-        Log.d("HiddenActivity", "Deleting file: ${file.name}")
-        if (file.exists()) {
-            if (file.delete()) {
-                Log.d("HiddenActivity", "File deleted successfully")
-                // Refresh the file list in the RecyclerView
-                currentFolder?.let { openFolder(it) }
-            } else {
-                Log.e("HiddenActivity", "Failed to delete file: ${file.absolutePath}")
-                // TODO: Show error message to user
-            }
-        } else {
-            Log.e("HiddenActivity", "File not found for deletion: ${file.absolutePath}")
-            // TODO: Show error message to user
-        }
-    }
-
-    private fun renameFile(file: File) {
-        Log.d("HiddenActivity", "Renaming file: ${file.name}")
-        val inputEditText = EditText(this)
-        AlertDialog.Builder(this)
-            .setTitle("Rename ${file.name}")
-            .setView(inputEditText)
-            .setPositiveButton("Rename") { dialog, _ ->
-                val newName = inputEditText.text.toString().trim()
-                if (newName.isNotEmpty()) {
-                    val parentDir = file.parentFile
-                    if (parentDir != null) {
-                        val newFile = File(parentDir, newName)
-                        if (file.renameTo(newFile)) {
-                            Log.d("HiddenActivity", "File renamed to: ${newFile.name}")
-                            currentFolder?.let { openFolder(it) }
-                        } else {
-                            Log.e("HiddenActivity", "Failed to rename file: ${file.absolutePath} to ${newFile.absolutePath}")
+    private fun setupDeleteButton() {
+        binding.deleteSelected.setOnClickListener {
+            val selectedFolders = folderAdapter?.getSelectedItems() ?: emptyList()
+            if (selectedFolders.isNotEmpty()) {
+                dialogUtil.showMaterialDialog(
+                    getString(R.string.delete_items),
+                    getString(R.string.are_you_sure_you_want_to_delete_selected_items),
+                    getString(R.string.delete),
+                    getString(R.string.cancel),
+                    object : DialogUtil.DialogCallback {
+                        override fun onPositiveButtonClicked() {
+                            var allDeleted = true
+                            selectedFolders.forEach { folder ->
+                                if (!folderManager.deleteFolder(folder)) {
+                                    allDeleted = false
+                                }
+                            }
+                            if (allDeleted) {
+                                Toast.makeText(this@HiddenActivity, getString(R.string.folder_deleted_successfully), Toast.LENGTH_SHORT).show()
+                            } else {
+                                Toast.makeText(this@HiddenActivity, getString(R.string.some_items_could_not_be_deleted), Toast.LENGTH_SHORT).show()
+                            }
+                            folderAdapter?.clearSelection()
+                            binding.deleteSelected.visibility = View.GONE
+                            binding.addFolder.visibility = View.VISIBLE
+                            listFoldersInHiddenDirectory()
                         }
-                    } else {
-                        Log.e("HiddenActivity", "Parent directory is null for renaming: ${file.absolutePath}")
-                    }
-                } else {
-                    Log.d("HiddenActivity", "New file name is empty")
-                }
-                dialog.dismiss()
-            }
-            .setNegativeButton("Cancel") { dialog, _ ->
-                dialog.cancel()
-            }
-            .create()
-            .show()
-    }
 
-    private fun shareFile(file: File) {
-        val uri: Uri? = FileProvider.getUriForFile(this, "${packageName}.fileprovider", file)
-        uri?.let { fileUri ->
-            val shareIntent = Intent(Intent.ACTION_SEND).apply {
-                type = contentResolver.getType(fileUri) ?: "*/*"
-                putExtra(Intent.EXTRA_STREAM, fileUri)
-                addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+                        override fun onNegativeButtonClicked() {
+                            // Do nothing
+                        }
+
+                        override fun onNaturalButtonClicked() {
+                            // Do nothing
+                        }
+                    }
+                )
             }
-            startActivity(Intent.createChooser(shareIntent, "Share ${file.name}"))
-        } ?: run {
-            Log.e("HiddenActivity", "Could not get URI for sharing file: ${file.absolutePath}")
-            //Show error message to user
         }
     }
 
+    private fun pressBack(){
+        currentFolder = null
+        if (isFabOpen) {
+            closeFabs()
+        }
+        if (folderAdapter != null) {
+            binding.recyclerView.adapter = folderAdapter
+        }
+        binding.folderName.text = getString(R.string.hidden_space)
+        listFoldersInHiddenDirectory()
+        binding.fabExpend.visibility = View.GONE
+        binding.addImage.visibility = View.GONE
+        binding.addVideo.visibility = View.GONE
+        binding.addAudio.visibility = View.GONE
+        binding.addDocument.visibility = View.GONE
+        binding.addFolder.visibility = View.VISIBLE
+    }
+
+    @Deprecated("This method has been deprecated in favor of using the\n      {@link OnBackPressedDispatcher} via {@link #getOnBackPressedDispatcher()}.\n      The OnBackPressedDispatcher controls how back button events are dispatched\n      to one or more {@link OnBackPressedCallback} objects.")
     override fun onBackPressed() {
         if (currentFolder != null) {
-            currentFolder = null
-            if (isFabOpen) {
-                closeFabs()
-            }
-            if (folderAdapter != null) {
-                binding.recyclerView.adapter = folderAdapter
-            }
-            listFoldersInHiddenDirectory()
-            binding.fabExpend.visibility = View.GONE
-            binding.addImage.visibility = View.GONE
-            binding.addVideo.visibility = View.GONE
-            binding.addAudio.visibility = View.GONE
-            binding.addDocument.visibility = View.GONE
-            binding.addFolder.visibility = View.VISIBLE
+            pressBack()
         } else {
             super.onBackPressed()
         }

@@ -16,6 +16,7 @@ import androidx.lifecycle.LifecycleOwner
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import devs.org.calculator.R
 import devs.org.calculator.activities.PreviewActivity
 import devs.org.calculator.utils.FileManager
@@ -215,23 +216,39 @@ class FileAdapter(
 
         private fun showFileOptionsDialog(file: File) {
             val options = arrayOf(
-                context.getString(R.string.delete),
+                context.getString(R.string.un_hide),
                 context.getString(R.string.rename),
+                context.getString(R.string.delete),
                 context.getString(R.string.share)
             )
 
-            AlertDialog.Builder(context)
+            MaterialAlertDialogBuilder(context)
                 .setTitle(context.getString(R.string.file_options))
                 .setItems(options) { dialog, which ->
                     when (which) {
-                        0 -> deleteFile(file)
+                        0 -> unHideFile(file)
                         1 -> renameFile(file)
-                        2 -> shareFile(file)
+                        2 -> deleteFile(file)
+                        3 -> shareFile(file)
                     }
                     dialog.dismiss()
                 }
                 .create()
                 .show()
+        }
+
+        private fun unHideFile(file: File) {
+            FileManager(context, lifecycleOwner).unHideFile(
+                file = file,
+                onSuccess = {
+                    fileOperationCallback?.onFileDeleted(file)
+
+                },
+                onError = { errorMessage ->
+
+                    Toast.makeText(context, "Failed to unhide: $errorMessage", Toast.LENGTH_SHORT).show()
+                }
+            )
         }
 
         private fun deleteFile(file: File) {
@@ -249,7 +266,7 @@ class FileAdapter(
                 selectAll()
             }
 
-            AlertDialog.Builder(context)
+            MaterialAlertDialogBuilder(context)
                 .setTitle(context.getString(R.string.rename_file))
                 .setView(inputEditText)
                 .setPositiveButton(context.getString(R.string.rename)) { dialog, _ ->

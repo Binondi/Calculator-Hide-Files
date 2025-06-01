@@ -25,6 +25,7 @@ import kotlinx.coroutines.withContext
 import java.io.File
 import android.Manifest
 import androidx.core.content.FileProvider
+import devs.org.calculator.R
 
 class FileManager(private val context: Context, private val lifecycleOwner: LifecycleOwner) {
     private lateinit var intentSenderLauncher: ActivityResultLauncher<IntentSenderRequest>
@@ -72,14 +73,12 @@ class FileManager(private val context: Context, private val lifecycleOwner: Life
         return typeDir.listFiles()?.filterNotNull()?.filter { it.name != ".nomedia" } ?: emptyList()
     }
 
-    private fun copyFileToHiddenDir(uri: Uri, type: FileType, currentDir: File? = null): File? {
+    private fun copyFileToHiddenDir(uri: Uri, folderName: File, currentDir: File? = null): File? {
         return try {
             val contentResolver = context.contentResolver
 
-            // Get the target directory
-            val targetDir = currentDir ?: File(Environment.getExternalStorageDirectory(), "$HIDDEN_DIR/${type.dirName}")
-            targetDir.mkdirs()
-            File(targetDir, ".nomedia").createNewFile()
+            // Get the target directory (i am using the current opened folder as target folder)
+            val targetDir = folderName
 
             // Create target file
             val mimeType = contentResolver.getType(uri)
@@ -151,6 +150,64 @@ class FileManager(private val context: Context, private val lifecycleOwner: Life
         } catch (e: Exception) {
             e.printStackTrace()
             null
+        }
+    }
+
+    fun unHideFile(file: File, onSuccess: (() -> Unit)? = null, onError: ((String) -> Unit)? = null) {
+        lifecycleOwner.lifecycleScope.launch(Dispatchers.IO) {
+            try {
+                // Create target directory (Downloads)
+                val targetDir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS)
+                targetDir.mkdirs()
+
+                // Create target file with same name or timestamp
+                val targetFile = File(targetDir, file.name)
+
+                // If file with same name exists, add timestamp
+                val finalTargetFile = if (targetFile.exists()) {
+                    val nameWithoutExt = file.nameWithoutExtension
+                    val extension = file.extension
+                    File(targetDir, "${nameWithoutExt}_${System.currentTimeMillis()}.${extension}")
+                } else {
+                    targetFile
+                }
+
+                // Copy file content
+                file.copyTo(finalTargetFile, overwrite = false)
+
+                // Verify copy success
+                if (finalTargetFile.exists() && finalTargetFile.length() > 0) {
+                    // Delete original hidden file
+                    if (file.delete()) {
+                        // Trigger media scan for the new file
+                        val mediaScanIntent = Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE)
+                        mediaScanIntent.data = Uri.fromFile(finalTargetFile)
+                        context.sendBroadcast(mediaScanIntent)
+
+                        withContext(Dispatchers.Main) {
+                            Toast.makeText(context, context.getString(R.string.file_unhidden_successfully), Toast.LENGTH_SHORT).show()
+                            onSuccess?.invoke() // Call success callback
+                        }
+                    } else {
+                        withContext(Dispatchers.Main) {
+                            Toast.makeText(context, "File copied but failed to remove from hidden folder", Toast.LENGTH_SHORT).show()
+                            onError?.invoke("Failed to remove from hidden folder")
+                        }
+                    }
+                } else {
+                    withContext(Dispatchers.Main) {
+                        Toast.makeText(context, "Failed to copy file", Toast.LENGTH_SHORT).show()
+                        onError?.invoke("Failed to copy file")
+                    }
+                }
+
+            } catch (e: Exception) {
+                withContext(Dispatchers.Main) {
+                    Toast.makeText(context, "Error unhiding file: ${e.message}", Toast.LENGTH_LONG).show()
+                    onError?.invoke(e.message ?: "Unknown error")
+                }
+                e.printStackTrace()
+            }
         }
     }
     
@@ -284,7 +341,7 @@ class FileManager(private val context: Context, private val lifecycleOwner: Life
 
     suspend fun processMultipleFiles(
         uriList: List<Uri>,
-        fileType: FileType,
+        fileType: File,
         callback: FileProcessCallback,
         currentDir: File? = null
     ) {

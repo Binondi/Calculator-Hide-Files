@@ -8,27 +8,33 @@
     android:layout_margin="4dp"
     app:cardCornerRadius="8dp">
 
-
-    <com.jsibbold.zoomage.ZoomageView
-        android:id="@+id/imageView"
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        app:zoomage_restrictBounds="false"
-        app:zoomage_animateOnReset="true"
-        app:zoomage_autoResetMode="UNDER"
-        app:zoomage_autoCenter="true"
-        android:visibility="gone"
-        app:zoomage_zoomable="true"
-        app:zoomage_translatable="true"
-        app:zoomage_minScale="0.6"
-        app:zoomage_maxScale="8"
-        />
+        android:gravity="center"
+        android:orientation="vertical">
+        <com.jsibbold.zoomage.ZoomageView
+            android:id="@+id/imageView"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            app:zoomage_restrictBounds="false"
+            app:zoomage_animateOnReset="true"
+            app:zoomage_autoResetMode="UNDER"
+            app:zoomage_autoCenter="true"
+            android:visibility="gone"
+            app:zoomage_zoomable="true"
+            app:zoomage_translatable="true"
+            app:zoomage_minScale="0.6"
+            app:zoomage_maxScale="8"
+            />
 
-    <VideoView
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:visibility="gone"
-        android:id="@+id/videoView"/>
+        <VideoView
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:visibility="gone"
+            android:layout_gravity="center"
+            android:id="@+id/videoView"/>
+    </LinearLayout>
 
     <com.google.android.material.card.MaterialCardView
         android:id="@+id/audioBg"
