@@ -23,7 +23,7 @@ import devs.org.calculator.utils.PrefsUtil
 import net.objecthunter.exp4j.ExpressionBuilder
 import java.util.regex.Pattern
 
-class MainActivity : AppCompatActivity(), DialogActionsCallback {
+class MainActivity : AppCompatActivity(), DialogActionsCallback, DialogUtil.DialogCallback {
     private lateinit var binding: ActivityMainBinding
     private var currentExpression = "0"
     private var lastWasOperator = false
@@ -57,8 +57,24 @@ class MainActivity : AppCompatActivity(), DialogActionsCallback {
                         "\n" +
                         "For devices running Android 11 or higher, you'll need to grant the 'All Files Access' permission.",
                 "Grant",
-                "Cancel",
-                this
+                "Later",
+                object : DialogUtil.DialogCallback {
+                    override fun onPositiveButtonClicked() {
+                        fileManager.askPermission(this@MainActivity)
+                    }
+
+                    override fun onNegativeButtonClicked() {
+                        Toast.makeText(this@MainActivity,
+                            "Storage permission is required for the app to function properly",
+                            Toast.LENGTH_LONG).show()
+                    }
+
+                    override fun onNaturalButtonClicked() {
+                        Toast.makeText(this@MainActivity,
+                            "You can grant permission later from Settings",
+                            Toast.LENGTH_LONG).show()
+                    }
+                }
             )
         }
         setupNumberButton(binding.btn0, "0")
@@ -298,7 +314,7 @@ class MainActivity : AppCompatActivity(), DialogActionsCallback {
         }
 
         if (PrefsUtil(this).validatePassword(currentExpression)) {
-            val intent = Intent(this, HiddenVaultActivity::class.java)
+            val intent = Intent(this, HiddenActivity::class.java)
             intent.putExtra("password", currentExpression)
             startActivity(intent)
             clearDisplay()
@@ -395,15 +411,18 @@ class MainActivity : AppCompatActivity(), DialogActionsCallback {
     }
 
     override fun onPositiveButtonClicked() {
+        // Handle positive button click for both DialogUtil and DialogActionsCallback
         fileManager.askPermission(this)
     }
 
     override fun onNegativeButtonClicked() {
-
+        // Handle negative button click
+        Toast.makeText(this, "Storage permission is required for the app to function properly", Toast.LENGTH_LONG).show()
     }
 
     override fun onNaturalButtonClicked() {
-
+        // Handle neutral button click
+        Toast.makeText(this, "You can grant permission later from Settings", Toast.LENGTH_LONG).show()
     }
 
     override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {

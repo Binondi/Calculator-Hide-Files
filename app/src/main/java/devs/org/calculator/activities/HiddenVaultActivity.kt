@@ -20,17 +20,5 @@ class HiddenVaultActivity : AppCompatActivity() {
     }
 
     private fun setupNavigation() {
-        binding.btnImages.setOnClickListener {
-            startActivity(Intent(this, ImageGalleryActivity::class.java))
-        }
-        binding.btnVideos.setOnClickListener {
-            startActivity(Intent(this, VideoGalleryActivity::class.java))
-        }
-        binding.btnAudio.setOnClickListener {
-            startActivity(Intent(this, AudioGalleryActivity::class.java))
-        }
-        binding.btnDocs.setOnClickListener {
-            startActivity(Intent(this, DocumentsActivity::class.java))
-        }
     }
 }

@@ -1,59 +1,57 @@
 package devs.org.calculator.utils
 
 import android.content.Context
-import androidx.activity.result.ActivityResultLauncher
-import androidx.activity.result.IntentSenderRequest
+import android.view.LayoutInflater
+import android.widget.EditText
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
-import devs.org.calculator.callbacks.DialogActionsCallback
+import devs.org.calculator.R
 
 class DialogUtil(private val context: Context) {
-    private lateinit var intentSenderLauncher: ActivityResultLauncher<IntentSenderRequest>
-    fun showMaterialDialogWithNaturalButton(
-        title: String,
-        message: String,
-        positiveButton: String,
-        negativeButton: String,
-        neutralButton: String,
-        callback: DialogActionsCallback
-    ) {
-        MaterialAlertDialogBuilder(context)
-            .setTitle(title)
-            .setMessage(message)
-            .setPositiveButton(positiveButton) { dialog, _ ->
-                // Handle positive button click
-                callback.onPositiveButtonClicked()
-                dialog.dismiss()
-            }
-            .setNegativeButton(negativeButton) { dialog, _ ->
-                // Handle negative button click
-                callback.onNegativeButtonClicked()
-                dialog.dismiss()
-            }
-            .setNeutralButton(neutralButton) { dialog, _ ->
-                callback.onNaturalButtonClicked()
-                dialog.dismiss()
-            }
-            .show()
-    }
+
     fun showMaterialDialog(
         title: String,
         message: String,
-        positiveButton: String,
-        negativeButton: String,
-        callback: DialogActionsCallback
+        positiveButtonText: String,
+        neutralButtonText: String,
+        callback: DialogCallback
     ) {
         MaterialAlertDialogBuilder(context)
             .setTitle(title)
             .setMessage(message)
-            .setPositiveButton(positiveButton) { _, _ ->
-                // Handle positive button click
-                callback.onPositiveButtonClicked()
+            .setPositiveButton(positiveButtonText) { _, _ -> callback.onPositiveButtonClicked() }
+            .setNegativeButton(neutralButtonText) { _, _ -> callback.onNegativeButtonClicked() }
+            .show()
+    }
+
+    fun createInputDialog(
+        title: String,
+        hint: String,
+        callback: InputDialogCallback
+    ) {
+        val dialogView = LayoutInflater.from(context).inflate(R.layout.dialog_input, null)
+        val editText = dialogView.findViewById<EditText>(R.id.editText)
+        editText.hint = hint
+
+        MaterialAlertDialogBuilder(context)
+            .setTitle(title)
+            .setView(dialogView)
+            .setPositiveButton(R.string.create) { _, _ ->
+                callback.onPositiveButtonClicked(editText.text.toString())
             }
-            .setNegativeButton(negativeButton) { dialog, _ ->
-                // Handle negative button click
-                callback.onNegativeButtonClicked()
+            .setNegativeButton(R.string.cancel) { dialog, _ ->
                 dialog.dismiss()
             }
+            .create()
             .show()
+    }
+
+    interface DialogCallback {
+        fun onPositiveButtonClicked()
+        fun onNegativeButtonClicked()
+        fun onNaturalButtonClicked()
+    }
+
+    interface InputDialogCallback {
+        fun onPositiveButtonClicked(input: String)
     }
 }

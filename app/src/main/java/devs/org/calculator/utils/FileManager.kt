@@ -41,31 +41,43 @@ class FileManager(private val context: Context, private val lifecycleOwner: Life
     fun getHiddenDirectory(): File {
         val dir = File(Environment.getExternalStorageDirectory(), HIDDEN_DIR)
         if (!dir.exists()) {
-            dir.mkdirs()
+            val created = dir.mkdirs()
+            if (!created) {
+                throw RuntimeException("Failed to create hidden directory: ${dir.absolutePath}")
+            }
             // Create .nomedia file to hide from media scanners
-            File(dir, ".nomedia").createNewFile()
+            val nomediaFile = File(dir, ".nomedia")
+            if (!nomediaFile.exists()) {
+                nomediaFile.createNewFile()
+            }
         }
         return dir
     }
 
-
-
     fun getFilesInHiddenDir(type: FileType): List<File> {
         val hiddenDir = getHiddenDirectory()
         val typeDir = File(hiddenDir, type.dirName)
-        return if (typeDir.exists()) {
-            typeDir.listFiles()?.filterNotNull()?.filter { it.name != ".nomedia" } ?: emptyList()
-        } else {
-            emptyList()
+        if (!typeDir.exists()) {
+            typeDir.mkdirs()
+            File(typeDir, ".nomedia").createNewFile()
         }
+        return typeDir.listFiles()?.filterNotNull()?.filter { it.name != ".nomedia" } ?: emptyList()
+    }
+    fun getFilesInHiddenDirFromFolder(type: FileType, folder: String): List<File> {
+        val typeDir = File(folder)
+        if (!typeDir.exists()) {
+            typeDir.mkdirs()
+            File(typeDir, ".nomedia").createNewFile()
+        }
+        return typeDir.listFiles()?.filterNotNull()?.filter { it.name != ".nomedia" } ?: emptyList()
     }
 
-    private fun copyFileToHiddenDir(uri: Uri, type: FileType): File? {
+    private fun copyFileToHiddenDir(uri: Uri, type: FileType, currentDir: File? = null): File? {
         return try {
             val contentResolver = context.contentResolver
 
             // Get the target directory
-            val targetDir = File(Environment.getExternalStorageDirectory(), "$HIDDEN_DIR/${type.dirName}")
+            val targetDir = currentDir ?: File(Environment.getExternalStorageDirectory(), "$HIDDEN_DIR/${type.dirName}")
             targetDir.mkdirs()
             File(targetDir, ".nomedia").createNewFile()
 
@@ -258,8 +270,6 @@ class FileManager(private val context: Context, private val lifecycleOwner: Life
                 } catch (e: ActivityNotFoundException) {
                     Toast.makeText(activity, "Unable to open settings. Please grant permission manually.", Toast.LENGTH_SHORT).show()
                 }
-            } else {
-                Toast.makeText(activity, "Permission already granted", Toast.LENGTH_SHORT).show()
             }
         } else {
             // For Android 10 and below
@@ -275,13 +285,14 @@ class FileManager(private val context: Context, private val lifecycleOwner: Life
     suspend fun processMultipleFiles(
         uriList: List<Uri>,
         fileType: FileType,
-        callback: FileProcessCallback
+        callback: FileProcessCallback,
+        currentDir: File? = null
     ) {
         withContext(Dispatchers.IO) {
             val copiedFiles = mutableListOf<File>()
             for (uri in uriList) {
                 try {
-                    val file = copyFileToHiddenDir(uri, fileType)
+                    val file = copyFileToHiddenDir(uri, fileType, currentDir)
                     file?.let { copiedFiles.add(it) }
                 } catch (e: Exception) {
                     e.printStackTrace()
@@ -297,12 +308,22 @@ class FileManager(private val context: Context, private val lifecycleOwner: Life
         }
     }
 
+    fun getFileType(file: File): FileType {
+        val extension = file.extension.lowercase()
+        return when (extension) {
+            "jpg", "jpeg", "png", "gif", "bmp", "webp" -> FileType.IMAGE
+            "mp4", "avi", "mkv", "mov", "wmv", "flv", "webm", "3gp" -> FileType.VIDEO
+            "mp3", "wav", "flac", "aac", "ogg", "m4a" -> FileType.AUDIO
+            else -> FileType.DOCUMENT
+        }
+    }
 
 
     enum class FileType(val dirName: String) {
         IMAGE(IMAGES_DIR),
         VIDEO(VIDEOS_DIR),
         AUDIO(AUDIO_DIR),
-        DOCUMENT(DOCS_DIR)
+        DOCUMENT(DOCS_DIR),
+        ALL("all")
     }
 }

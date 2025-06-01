@@ -10,10 +10,10 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.MediaController
 import android.widget.SeekBar
+import androidx.lifecycle.LifecycleOwner
 import androidx.recyclerview.widget.AsyncListDiffer
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
-import devs.org.calculator.adapters.FileAdapter.FileDiffCallback
 import devs.org.calculator.databinding.ViewpagerItemsBinding
 import devs.org.calculator.utils.FileManager
 import java.io.File
@@ -21,7 +21,7 @@ import devs.org.calculator.R
 
 class ImagePreviewAdapter(
     private val context: Context,
-    private var fileType: FileManager.FileType
+    private var lifecycleOwner: LifecycleOwner
 ) : RecyclerView.Adapter<ImagePreviewAdapter.ImageViewHolder>() {
 
     private val differ = AsyncListDiffer(this, FileDiffCallback())
@@ -42,7 +42,8 @@ class ImagePreviewAdapter(
 
     override fun onBindViewHolder(holder: ImageViewHolder, position: Int) {
         val imageUrl = images[position]
-        holder.bind(imageUrl)
+        val fileType = FileManager(context, lifecycleOwner).getFileType(images[position])
+        holder.bind(imageUrl,fileType)
         currentViewHolder = holder
 
         currentMediaPlayer?.let {
@@ -67,7 +68,7 @@ class ImagePreviewAdapter(
         private var seekHandler = Handler(Looper.getMainLooper())
         private var seekRunnable: Runnable? = null
 
-        fun bind(file: File) {
+        fun bind(file: File, fileType: FileManager.FileType) {
             when (fileType) {
                 FileManager.FileType.VIDEO -> {
                     binding.imageView.visibility = View.GONE
@@ -228,6 +229,7 @@ class ImagePreviewAdapter(
 
         private fun playVideoAtPosition(position: Int) {
             val nextFile = images[position]
+            val fileType = FileManager(context, lifecycleOwner).getFileType(images[position])
             if (fileType == FileManager.FileType.VIDEO) {
                 val videoUri = Uri.fromFile(nextFile)
                 binding.videoView.setVideoURI(videoUri)

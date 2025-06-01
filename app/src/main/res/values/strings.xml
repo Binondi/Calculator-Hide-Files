@@ -5,6 +5,12 @@
     <string name="add_audio">Add Audio</string>
     <string name="add_video">Add Video</string>
     <string name="add_files">Add Files</string>
+    <string name="share">Share</string>
+    <string name="file_options">File Options</string>
+    <string name="rename_file">Rename File</string>
+    <string name="share_file">Share File</string>
+    <string name="add_document">Add Document</string>
+    <string name="failed_to_hide_audio">Failed to hide Audios</string>
     <string name="failed_to_hide_documents">Failed to hide Documents</string>
     <string name="no_files_selected">No files selected</string>
     <string name="documents_hidden_successfully"> Documents hidden successfully</string>
@@ -46,6 +52,11 @@
     <string name="image">IMAGE</string>
     <string name="video">VIDEO</string>
     <string name="audio">AUDIO</string>
+    <string name="delete">Delete</string>
+    <string name="create">Create</string>
+    <string name="delete_folder">Delete Folder</string>
+    <string name="rename">Rename</string>
+    <string name="cannot_delete_folder">Cannot Delete Folder</string>
     <string name="document">DOCUMENT</string>
     <string name="no_audio_player_found">No audio player found!</string>
     <string name="no_suitable_app_found_to_open_this_document">No suitable app found to open this document!</string>
@@ -55,4 +66,18 @@
     <string name="no_items_available_add_one_by_clicking_on_the_plus_button">No Items Available, Add one by clicking on the</string>
     <string name="now_enter_button">Now Enter \'=\' button</string>
     <string name="enter_123456">Enter 123456</string>
+    <string name="create_folder">Create Folder</string>
+    <string name="enter_folder_name">Enter folder name</string>
+    <string name="folder_already_exists">Folder already exists</string>
+    <string name="folder_options">Folder Options</string>
+    <string name="rename_folder">Rename Folder</string>
+    <string name="enter_new_folder_name">Enter new folder name</string>
+    <string name="failed_to_create_folder">Failed to create folder</string>
+    <string name="are_you_sure_you_want_to_delete_this_folder">Are you sure you want to delete this folder?</string>
+    <string name="yes">Yes</string>
+    <string name="error_loading_files">Error loading files</string>
+    <string name="delete_items">Delete Items</string>
+    <string name="are_you_sure_you_want_to_delete_selected_items">Are you sure you want to delete selected items?</string>
+    <string name="items_deleted_successfully">Items deleted successfully</string>
+    <string name="some_items_could_not_be_deleted">Some items could not be deleted</string>
 </resources>

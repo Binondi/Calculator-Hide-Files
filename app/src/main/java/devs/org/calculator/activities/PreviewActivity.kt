@@ -7,7 +7,6 @@ import androidx.lifecycle.lifecycleScope
 import androidx.viewpager2.widget.ViewPager2
 import devs.org.calculator.R
 import devs.org.calculator.adapters.ImagePreviewAdapter
-import devs.org.calculator.callbacks.DialogActionsCallback
 import devs.org.calculator.databinding.ActivityPreviewBinding
 import devs.org.calculator.utils.DialogUtil
 import devs.org.calculator.utils.FileManager
@@ -20,6 +19,7 @@ class PreviewActivity : AppCompatActivity() {
     private var currentPosition: Int = 0
     private lateinit var files: List<File>
     private lateinit var type: String
+    private lateinit var folder: String
     private lateinit var filetype: FileManager.FileType
     private lateinit var adapter: ImagePreviewAdapter
     private lateinit var fileManager: FileManager
@@ -34,9 +34,10 @@ class PreviewActivity : AppCompatActivity() {
 
         currentPosition = intent.getIntExtra("position", 0)
         type = intent.getStringExtra("type").toString()
+        folder = intent.getStringExtra("folder").toString()
 
         setupFileType()
-        files = fileManager.getFilesInHiddenDir(filetype)
+        files = fileManager.getFilesInHiddenDirFromFolder(filetype, folder = folder)
 
         setupImagePreview()
         clickListeners()
@@ -72,7 +73,7 @@ class PreviewActivity : AppCompatActivity() {
     }
 
     private fun setupImagePreview() {
-        adapter = ImagePreviewAdapter(this, filetype)
+        adapter = ImagePreviewAdapter(this, this)
         adapter.images = files
         binding.viewPager.adapter = adapter
 
@@ -110,7 +111,7 @@ class PreviewActivity : AppCompatActivity() {
                     getString(R.string.are_you_sure_to_delete_this_file_permanently),
                     getString(R.string.delete_permanently),
                     getString(R.string.cancel),
-                    object : DialogActionsCallback{
+                    object : DialogUtil.DialogCallback {
                         override fun onPositiveButtonClicked() {
                             lifecycleScope.launch {
                                 FileManager(this@PreviewActivity, this@PreviewActivity).deletePhotoFromExternalStorage(fileUri)
@@ -119,13 +120,12 @@ class PreviewActivity : AppCompatActivity() {
                         }
 
                         override fun onNegativeButtonClicked() {
-
+                            // Handle negative button click
                         }
 
                         override fun onNaturalButtonClicked() {
-
+                            // Handle neutral button click
                         }
-
                     }
                 )
             }
@@ -139,7 +139,7 @@ class PreviewActivity : AppCompatActivity() {
                     getString(R.string.are_you_sure_you_want_to_un_hide_this_file),
                     getString(R.string.un_hide),
                     getString(R.string.cancel),
-                    object : DialogActionsCallback{
+                    object : DialogUtil.DialogCallback {
                         override fun onPositiveButtonClicked() {
                             lifecycleScope.launch {
                                 FileManager(this@PreviewActivity, this@PreviewActivity).copyFileToNormalDir(fileUri)
@@ -148,13 +148,12 @@ class PreviewActivity : AppCompatActivity() {
                         }
 
                         override fun onNegativeButtonClicked() {
-
+                            // Handle negative button click
                         }
 
                         override fun onNaturalButtonClicked() {
-
+                            // Handle neutral button click
                         }
-
                     }
                 )
             }
