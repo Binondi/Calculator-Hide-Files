@@ -49,6 +49,10 @@ class PreviewActivity : AppCompatActivity() {
             }
         })
 
+        binding.back.setOnClickListener {
+            finish()
+        }
+
     }
 
     private fun setupFileType() {

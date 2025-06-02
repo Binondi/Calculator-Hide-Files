@@ -31,11 +31,13 @@ class FileAdapter(
     private val selectedItems = mutableSetOf<Int>()
     private var isSelectionMode = false
 
-    // Callback interface for handling file operations
+    // Callback interface for handling file operations and selection changes
     interface FileOperationCallback {
         fun onFileDeleted(file: File)
         fun onFileRenamed(oldFile: File, newFile: File)
         fun onRefreshNeeded()
+        fun onSelectionModeChanged(isSelectionMode: Boolean, selectedCount: Int)
+        fun onSelectionCountChanged(selectedCount: Int)
     }
 
     var fileOperationCallback: FileOperationCallback? = null
@@ -44,6 +46,8 @@ class FileAdapter(
         val imageView: ImageView = view.findViewById(R.id.fileIconImageView)
         val fileNameTextView: TextView = view.findViewById(R.id.fileNameTextView)
         val playIcon: ImageView = view.findViewById(R.id.videoPlay)
+        val selectionOverlay: View? = view.findViewById(R.id.selectedLayer) // Optional overlay for selection
+        val checkIcon: ImageView? = view.findViewById(R.id.selected) // Optional check icon
 
         fun bind(file: File) {
             val fileType = FileManager(context, lifecycleOwner).getFileType(file)
@@ -51,7 +55,8 @@ class FileAdapter(
             setupClickListeners(file, fileType)
 
             // Handle selection state
-            itemView.isSelected = selectedItems.contains(adapterPosition)
+            val isSelected = selectedItems.contains(adapterPosition)
+            updateSelectionUI(isSelected)
         }
 
         fun bind(file: File, payloads: List<Any>) {
@@ -70,8 +75,26 @@ class FileAdapter(
                     "SIZE_CHANGED", "MODIFIED_DATE_CHANGED" -> {
                         // Could update file info if displayed
                     }
+                    "SELECTION_CHANGED" -> {
+                        val isSelected = selectedItems.contains(adapterPosition)
+                        updateSelectionUI(isSelected)
+                    }
                 }
             }
+        }
+
+        private fun updateSelectionUI(isSelected: Boolean) {
+            // Update visual selection state
+            itemView.isSelected = isSelected
+
+            // If you have a selection overlay, show/hide it
+            selectionOverlay?.visibility = if (isSelected) View.VISIBLE else View.GONE
+
+            // If you have a check icon, show/hide it
+            checkIcon?.visibility = if (isSelected) View.VISIBLE else View.GONE
+
+            // You can also change the background or add other visual indicators
+            itemView.alpha = if (isSelectionMode && !isSelected) 0.7f else 1.0f
         }
 
         private fun setupFileDisplay(file: File, fileType: FileManager.FileType) {
@@ -141,7 +164,8 @@ class FileAdapter(
                     showFileOptionsDialog(file)
                     true
                 } else {
-                    false
+                    toggleSelection(adapterPosition)
+                    true
                 }
             }
         }
@@ -217,6 +241,7 @@ class FileAdapter(
         private fun showFileOptionsDialog(file: File) {
             val options = arrayOf(
                 context.getString(R.string.un_hide),
+                context.getString(R.string.select_multiple),
                 context.getString(R.string.rename),
                 context.getString(R.string.delete),
                 context.getString(R.string.share)
@@ -227,9 +252,10 @@ class FileAdapter(
                 .setItems(options) { dialog, which ->
                     when (which) {
                         0 -> unHideFile(file)
-                        1 -> renameFile(file)
-                        2 -> deleteFile(file)
-                        3 -> shareFile(file)
+                        1 -> enableSelectMultipleFiles()
+                        2 -> renameFile(file)
+                        3 -> deleteFile(file)
+                        4 -> shareFile(file)
                     }
                     dialog.dismiss()
                 }
@@ -237,15 +263,21 @@ class FileAdapter(
                 .show()
         }
 
+        private fun enableSelectMultipleFiles() {
+            // Enable multiple selection mode and select current item
+            enterSelectionMode()
+            selectedItems.add(adapterPosition)
+            notifyItemChanged(adapterPosition, listOf("SELECTION_CHANGED"))
+            fileOperationCallback?.onSelectionCountChanged(selectedItems.size)
+        }
+
         private fun unHideFile(file: File) {
             FileManager(context, lifecycleOwner).unHideFile(
                 file = file,
                 onSuccess = {
                     fileOperationCallback?.onFileDeleted(file)
-
                 },
                 onError = { errorMessage ->
-
                     Toast.makeText(context, "Failed to unhide: $errorMessage", Toast.LENGTH_SHORT).show()
                 }
             )
@@ -315,11 +347,14 @@ class FileAdapter(
                 selectedItems.add(position)
             }
 
+            // Exit selection mode if no items are selected
             if (selectedItems.isEmpty()) {
-                isSelectionMode = false
+                exitSelectionMode()
+            } else {
+                fileOperationCallback?.onSelectionCountChanged(selectedItems.size)
             }
 
-            notifyItemChanged(position)
+            notifyItemChanged(position, listOf("SELECTION_CHANGED"))
         }
     }
 
@@ -344,15 +379,179 @@ class FileAdapter(
     }
 
     // Public methods for external control
-    fun clearSelection() {
-        selectedItems.clear()
-        isSelectionMode = false
-        notifyDataSetChanged()
+
+    /**
+     * Enter selection mode
+     */
+    fun enterSelectionMode() {
+        if (!isSelectionMode) {
+            isSelectionMode = true
+            fileOperationCallback?.onSelectionModeChanged(true, selectedItems.size)
+            notifyDataSetChanged() // Refresh all items to show selection UI
+        }
     }
 
+    /**
+     * Exit selection mode and clear all selections
+     */
+    fun exitSelectionMode() {
+        if (isSelectionMode) {
+            isSelectionMode = false
+            selectedItems.clear()
+            fileOperationCallback?.onSelectionModeChanged(false, 0)
+            notifyDataSetChanged() // Refresh all items to hide selection UI
+        }
+    }
+
+    /**
+     * Clear selection without exiting selection mode
+     */
+    fun clearSelection() {
+        if (selectedItems.isNotEmpty()) {
+            val previouslySelected = selectedItems.toSet()
+            selectedItems.clear()
+            fileOperationCallback?.onSelectionCountChanged(0)
+
+            // Only update previously selected items
+            previouslySelected.forEach { position ->
+                notifyItemChanged(position, listOf("SELECTION_CHANGED"))
+            }
+        }
+    }
+
+    /**
+     * Select all items
+     */
+    fun selectAll() {
+        if (!isSelectionMode) {
+            enterSelectionMode()
+        }
+
+        val previouslySelected = selectedItems.toSet()
+        selectedItems.clear()
+
+        // Add all positions to selection
+        for (i in 0 until itemCount) {
+            selectedItems.add(i)
+        }
+
+        fileOperationCallback?.onSelectionCountChanged(selectedItems.size)
+
+        // Update UI for changed items
+        val allPositions = (0 until itemCount).toSet()
+        val changedPositions = allPositions - previouslySelected + previouslySelected - allPositions
+        changedPositions.forEach { position ->
+            notifyItemChanged(position, listOf("SELECTION_CHANGED"))
+        }
+    }
+
+    /**
+     * Get selected files
+     */
     fun getSelectedItems(): List<File> {
         return selectedItems.mapNotNull { position ->
             if (position < itemCount) getItem(position) else null
+        }
+    }
+
+    /**
+     * Get selected file count
+     */
+    fun getSelectedCount(): Int = selectedItems.size
+
+    /**
+     * Check if in selection mode
+     */
+    fun isInSelectionMode(): Boolean = isSelectionMode
+
+    /**
+     * Delete selected files
+     */
+    fun deleteSelectedFiles() {
+        val selectedFiles = getSelectedItems()
+        var deletedCount = 0
+        var failedCount = 0
+
+        selectedFiles.forEach { file ->
+            if (file.delete()) {
+                deletedCount++
+                fileOperationCallback?.onFileDeleted(file)
+            } else {
+                failedCount++
+            }
+        }
+
+        exitSelectionMode()
+
+        // Show result message
+        when {
+            deletedCount > 0 && failedCount == 0 -> {
+                Toast.makeText(context, "Deleted $deletedCount file(s)", Toast.LENGTH_SHORT).show()
+            }
+            deletedCount > 0 && failedCount > 0 -> {
+                Toast.makeText(context, "Deleted $deletedCount file(s), failed to delete $failedCount", Toast.LENGTH_LONG).show()
+            }
+            failedCount > 0 -> {
+                Toast.makeText(context, "Failed to delete $failedCount file(s)", Toast.LENGTH_SHORT).show()
+            }
+        }
+    }
+
+    /**
+     * Share selected files
+     */
+    fun shareSelectedFiles() {
+        val selectedFiles = getSelectedItems()
+        if (selectedFiles.isEmpty()) return
+
+        if (selectedFiles.size == 1) {
+            // Share single file
+            val file = selectedFiles.first()
+            val uri = FileProvider.getUriForFile(
+                context,
+                "${context.packageName}.fileprovider",
+                file
+            )
+            val shareIntent = Intent(Intent.ACTION_SEND).apply {
+                type = context.contentResolver.getType(uri) ?: "*/*"
+                putExtra(Intent.EXTRA_STREAM, uri)
+                addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+            }
+            context.startActivity(
+                Intent.createChooser(shareIntent, context.getString(R.string.share_file))
+            )
+        } else {
+            // Share multiple files
+            val uris = selectedFiles.map { file ->
+                FileProvider.getUriForFile(
+                    context,
+                    "${context.packageName}.fileprovider",
+                    file
+                )
+            }
+            val shareIntent = Intent(Intent.ACTION_SEND_MULTIPLE).apply {
+                type = "*/*"
+                putParcelableArrayListExtra(Intent.EXTRA_STREAM, ArrayList(uris))
+                addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+            }
+            context.startActivity(
+                Intent.createChooser(shareIntent, "Share ${selectedFiles.size} files")
+            )
+        }
+
+        exitSelectionMode()
+    }
+
+    /**
+     * Handle back press - exit selection mode if active
+     * @return true if selection mode was active and has been exited, false otherwise
+     */
+    fun onBackPressed(): Boolean {
+        return if (isSelectionMode) {
+            exitSelectionMode()
+            true
+        } else {
+            false
         }
     }
 }

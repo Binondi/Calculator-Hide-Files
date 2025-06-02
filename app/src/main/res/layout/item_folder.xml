@@ -20,7 +20,7 @@
                 android:id="@+id/selectedLayer"
                 android:layout_width="match_parent"
                 android:layout_height="0dp"
-                android:alpha="0.2"
+                android:alpha="0.3"
                 android:background="?attr/colorControlNormal"
                 android:orientation="horizontal"
                 android:visibility="gone"

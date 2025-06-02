@@ -18,4 +18,9 @@
         <item name="android:windowLightStatusBar">false</item>
         <item name="android:windowLightNavigationBar" tools:targetApi="o_mr1">false</item>
     </style>
+
+    <style name="CustomMaterialButton" parent="Widget.MaterialComponents.Button">
+        <item name="android:background">@drawable/gradient_bg</item>
+        <item name="backgroundTint">@null</item>
+    </style>
 </resources>

@@ -15,24 +15,26 @@
         android:orientation="horizontal"
         android:padding="8dp"
         android:id="@+id/toolBar"
-        android:layout_marginTop="25dp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent">
 
-        <ImageButton
+        <androidx.appcompat.widget.AppCompatImageButton
             android:layout_width="40dp"
             android:layout_height="40dp"
             android:src="@drawable/ic_back"
             android:scaleType="fitCenter"
             android:background="#00000000"
-            android:padding="7dp"
+            android:padding="8dp"
             android:id="@+id/back"/>
         <TextView
-            android:layout_width="wrap_content"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:text="@string/hidden_space"
-            android:textSize="18sp"
+            android:textSize="22sp"
+            android:singleLine="true"
+            android:padding="4dp"
+            android:textStyle="bold"
             android:layout_weight="1"
             android:id="@+id/folderName"/>
 

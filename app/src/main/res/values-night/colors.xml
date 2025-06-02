@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="black">#FF000000</color>
-    <color name="white">#FFFFFFFF</color>
+    <color name="white">#FF000000</color>
+    <color name="black">#FFFFFFFF</color>
 
     <!-- Material You dynamic colors -->
     <color name="primary">#00B43B</color>

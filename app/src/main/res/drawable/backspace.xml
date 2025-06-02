@@ -2,12 +2,12 @@
       
     <path android:fillColor="#00000000"
         android:pathData="M7.7,6.36L3.533,11.36C3.224,11.731 3.224,12.269 3.533,12.64L7.7,17.64C7.89,17.868 8.172,18 8.468,18H18C19.657,18 21,16.657 21,15V9C21,7.343 19.657,6 18,6H8.468C8.172,6 7.89,6.132 7.7,6.36Z"
-        android:strokeColor="@color/textColor" android:strokeLineCap="round"
+        android:strokeColor="@color/white" android:strokeLineCap="round"
         android:strokeLineJoin="round" android:strokeWidth="2"/>
       
     <path android:fillColor="#00000000"
         android:pathData="M15,10L13,12M13,12L11,14M13,12L11,10M13,12L15,14"
-        android:strokeColor="@color/textColor"
+        android:strokeColor="@color/white"
         android:strokeLineCap="round"
         android:strokeLineJoin="round"
         android:strokeWidth="2"/>

@@ -3,8 +3,7 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    android:orientation="vertical"
-    android:padding="8dp">
+    android:orientation="vertical">
 
     <FrameLayout
         android:layout_width="match_parent"
@@ -14,11 +13,26 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content">
 
+            <LinearLayout
+                android:id="@+id/selectedLayer"
+                android:layout_width="match_parent"
+                android:layout_height="0dp"
+                android:alpha="0.2"
+                android:background="?attr/colorControlNormal"
+                android:orientation="horizontal"
+                android:visibility="gone"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent" />
+
             <androidx.cardview.widget.CardView
                 android:id="@+id/cardView"
                 android:layout_width="match_parent"
                 android:layout_height="0dp"
                 app:cardCornerRadius="10dp"
+                android:layout_margin="5dp"
+                app:cardElevation="3dp"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintDimensionRatio="1:1"
                 app:layout_constraintEnd_toEndOf="parent"
@@ -34,12 +48,22 @@
                     android:src="@drawable/add_image" />
 
             </androidx.cardview.widget.CardView>
+            <ImageView
+                android:id="@+id/selected"
+                android:layout_width="35dp"
+                android:layout_height="35dp"
+                android:padding="3dp"
+                android:visibility="gone"
+                android:src="@drawable/selected"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent" />
 
         </androidx.constraintlayout.widget.ConstraintLayout>
         <ImageView
             android:id="@+id/videoPlay"
-            android:layout_width="43dp"
-            android:layout_height="43dp"
+            android:layout_width="50dp"
+            android:layout_height="50dp"
+            android:contentDescription=""
             android:visibility="gone"
             android:scaleType="fitCenter"
             android:src="@drawable/play"
@@ -54,7 +78,6 @@
         android:layout_height="wrap_content"
         android:gravity="center_horizontal"
         android:padding="5dp"
-        android:textAppearance="@style/TextAppearance.AppCompat.Small"
-        android:text="File Name" />
+        android:textAppearance="@style/TextAppearance.AppCompat.Small" />
 
 </LinearLayout> 

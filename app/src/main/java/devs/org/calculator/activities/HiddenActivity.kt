@@ -89,7 +89,6 @@ class HiddenActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        enableEdgeToEdge()
         binding = ActivityHiddenBinding.inflate(layoutInflater)
         setContentView(binding.root)
         //initialized animations for fabs
@@ -114,6 +113,10 @@ class HiddenActivity : AppCompatActivity() {
                 openFabs()
 
             }
+        }
+
+        binding.settings.setOnClickListener {
+            startActivity(Intent(this, SettingsActivity::class.java))
         }
 
         binding.addImage.setOnClickListener { openFilePicker("image/*") }
@@ -302,7 +305,6 @@ class HiddenActivity : AppCompatActivity() {
             binding.recyclerView.layoutManager = GridLayoutManager(this, 3)
 
             val fileAdapter = FileAdapter(this, this, folder).apply {
-                // Set up the callback for file operations
                 fileOperationCallback = object : FileAdapter.FileOperationCallback {
                     override fun onFileDeleted(file: File) {
                         // Refresh the file list
@@ -317,6 +319,18 @@ class HiddenActivity : AppCompatActivity() {
                     override fun onRefreshNeeded() {
                         // Refresh the file list
                         refreshCurrentFolder()
+                    }
+
+                    override fun onSelectionModeChanged(
+                        isSelectionMode: Boolean,
+                        selectedCount: Int
+                    ) {
+
+                    }
+
+                    override fun onSelectionCountChanged(selectedCount: Int) {
+
+                        
                     }
                 }
 

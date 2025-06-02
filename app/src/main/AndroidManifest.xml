@@ -33,6 +33,9 @@
         android:theme="@style/Theme.Calculator"
         tools:targetApi="31">
         <activity
+            android:name=".activities.SettingsActivity"
+            android:exported="false" />
+        <activity
             android:name=".activities.HiddenActivity"
             android:exported="false" />
         <activity

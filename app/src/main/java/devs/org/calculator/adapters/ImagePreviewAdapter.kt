@@ -129,13 +129,15 @@ class ImagePreviewAdapter(
             mediaPlayer = MediaPlayer().apply {
                 setDataSource(file.absolutePath)
                 setOnPreparedListener { mp ->
-                    binding.audioSeekBar.max = mp.duration
+                    binding.audioSeekBar.valueTo = mp.duration.toFloat()
+
                     isMediaPlayerPrepared = true
                 }
                 setOnCompletionListener {
 //                    isPlaying = false
                     binding.playPause.setImageResource(R.drawable.play)
-                    binding.audioSeekBar.progress = 0
+                    binding.audioSeekBar.value = 0f
+
                     seekHandler.removeCallbacks(seekRunnable!!)
                 }
                 prepareAsync()
@@ -143,26 +145,22 @@ class ImagePreviewAdapter(
         }
 
         private fun setupSeekBar() {
-            binding.audioSeekBar.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
-                override fun onProgressChanged(seekBar: SeekBar?, progress: Int, fromUser: Boolean) {
-                    if (fromUser) {
-                        mediaPlayer?.seekTo(progress)
-                    }
+            binding.audioSeekBar.addOnChangeListener { slider, value, fromUser ->
+                if (fromUser && mediaPlayer != null && isMediaPlayerPrepared) {
+                    mediaPlayer?.seekTo(value.toInt())
                 }
-
-                override fun onStartTrackingTouch(seekBar: SeekBar?) {}
-                override fun onStopTrackingTouch(seekBar: SeekBar?) {}
-            })
+            }
 
             seekRunnable = Runnable {
                 mediaPlayer?.let { mp ->
                     if (mp.isPlaying) {
-                        binding.audioSeekBar.progress = mp.currentPosition
+                        binding.audioSeekBar.value = mp.currentPosition.toFloat()
                         seekHandler.postDelayed(seekRunnable!!, 100)
                     }
                 }
             }
         }
+
 
         private fun setupPlaybackControls() {
             binding.playPause.setOnClickListener {
@@ -177,7 +175,7 @@ class ImagePreviewAdapter(
                 mediaPlayer?.let { mp ->
                     val newPosition = mp.currentPosition - 10000
                     mp.seekTo(maxOf(0, newPosition))
-                    binding.audioSeekBar.progress = mp.currentPosition
+                    binding.audioSeekBar.value = mp.currentPosition.toFloat()
                 }
             }
 
@@ -185,7 +183,7 @@ class ImagePreviewAdapter(
                 mediaPlayer?.let { mp ->
                     val newPosition = mp.currentPosition + 10000
                     mp.seekTo(minOf(mp.duration, newPosition))
-                    binding.audioSeekBar.progress = mp.currentPosition
+                    binding.audioSeekBar.value = mp.currentPosition.toFloat()
                 }
             }
         }
