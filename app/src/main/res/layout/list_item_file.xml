@@ -13,18 +13,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content">
 
-            <LinearLayout
-                android:id="@+id/selectedLayer"
-                android:layout_width="match_parent"
-                android:layout_height="0dp"
-                android:alpha="0.2"
-                android:background="?attr/colorControlNormal"
-                android:orientation="horizontal"
-                android:visibility="gone"
-                app:layout_constraintBottom_toBottomOf="parent"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toTopOf="parent" />
+
 
             <androidx.cardview.widget.CardView
                 android:id="@+id/cardView"
@@ -38,36 +27,49 @@
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toTopOf="parent">
-
-                <ImageView
-                    android:id="@+id/fileIconImageView"
+                <FrameLayout
                     android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:layout_gravity="center"
-                    android:scaleType="centerCrop"
-                    android:src="@drawable/add_image" />
+                    android:layout_height="match_parent">
+                    <ImageView
+                        android:id="@+id/fileIconImageView"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:layout_gravity="center"
+                        android:scaleType="centerCrop"
+                        android:src="@drawable/add_image" />
+                    <LinearLayout
+                        android:id="@+id/selectedLayer"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:alpha="0.3"
+                        android:background="?attr/colorControlNormal"
+                        android:orientation="horizontal"
+                        android:visibility="gone" />
+                </FrameLayout>
+
+
 
             </androidx.cardview.widget.CardView>
-            <ImageView
-                android:id="@+id/selected"
-                android:layout_width="35dp"
-                android:layout_height="35dp"
-                android:padding="3dp"
-                android:visibility="gone"
-                android:src="@drawable/selected"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toTopOf="parent" />
 
         </androidx.constraintlayout.widget.ConstraintLayout>
         <ImageView
             android:id="@+id/videoPlay"
-            android:layout_width="50dp"
-            android:layout_height="50dp"
-            android:contentDescription=""
+            android:layout_width="35dp"
+            android:layout_height="35dp"
             android:visibility="gone"
             android:scaleType="fitCenter"
-            android:src="@drawable/play"
+            android:src="@drawable/ic_play_circle"
             android:layout_gravity="center"/>
+        <ImageView
+            android:id="@+id/selected"
+            android:layout_width="20dp"
+            android:layout_height="20dp"
+            android:padding="3dp"
+            app:tint="#fff"
+            android:visibility="gone"
+            android:src="@drawable/selected"
+            android:background="@drawable/gradient_bg"
+            android:layout_gravity="end"/>
     </FrameLayout>
 
 

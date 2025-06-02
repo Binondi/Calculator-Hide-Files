@@ -29,7 +29,7 @@
             android:textSize="22sp"
             android:layout_height="wrap_content"
             android:textStyle="bold"
-            android:text="Preview File"/>
+            android:text="@string/preview_file"/>
     </LinearLayout>
 
     <androidx.viewpager2.widget.ViewPager2
@@ -60,7 +60,7 @@
             android:minWidth="120dp"
             android:layout_weight="1"
             style="@style/Widget.Material3.Button.OutlinedButton"
-            android:text="Unhide" />
+            android:text="@string/un_hide" />
 
         <com.google.android.material.button.MaterialButton
             android:id="@+id/delete"
@@ -69,7 +69,7 @@
             android:layout_weight="1"
             android:layout_margin="6dp"
             android:minWidth="120dp"
-            android:text="Delete" />
+            android:text="@string/delete" />
 
     </LinearLayout>
 

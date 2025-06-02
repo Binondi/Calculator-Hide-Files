@@ -6,7 +6,7 @@
     android:id="@+id/main"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".activities.HiddenActivity">
+    tools:context=".activities.ViewFolderActivity">
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -38,25 +38,6 @@
             android:layout_weight="1"
             android:id="@+id/folderName"/>
 
-        <ImageButton
-            android:layout_width="40dp"
-            android:layout_height="40dp"
-            android:src="@drawable/ic_edit"
-            android:scaleType="fitCenter"
-            android:padding="9dp"
-            android:visibility="gone"
-            android:background="#00000000"
-            android:id="@+id/edit"/>
-
-        <ImageButton
-            android:id="@+id/delete"
-            android:layout_width="40dp"
-            android:layout_height="40dp"
-            android:background="#00000000"
-            android:padding="9dp"
-            android:scaleType="fitCenter"
-            android:src="@drawable/ic_delete"
-            android:visibility="gone" />
 
         <ImageButton
             android:id="@+id/menuButton"
@@ -64,26 +45,10 @@
             android:layout_height="40dp"
             android:src="@drawable/ic_more"
             android:scaleType="fitCenter"
-            android:padding="9dp"
+            android:padding="7dp"
             android:visibility="gone"
             android:background="#00000000"/>
 
-        <ImageButton
-            android:layout_width="40dp"
-            android:layout_height="40dp"
-            android:src="@drawable/ic_list"
-            android:scaleType="fitCenter"
-            android:background="#00000000"
-            android:padding="8dp"
-            android:id="@+id/folderOrientation"/>
-        <ImageButton
-            android:layout_width="40dp"
-            android:layout_height="40dp"
-            android:src="@drawable/ic_settings"
-            android:scaleType="fitCenter"
-            android:background="#00000000"
-            android:padding="8dp"
-            android:id="@+id/settings"/>
     </LinearLayout>
 
     <androidx.recyclerview.widget.RecyclerView
@@ -127,31 +92,78 @@
     </LinearLayout>
 
     <com.google.android.material.floatingactionbutton.FloatingActionButton
-        android:id="@+id/addFolder"
+        android:id="@+id/addImage"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:src="@drawable/ic_folder_add"
+        android:src="@drawable/add_image"
+        android:layout_marginBottom="10dp"
         android:text="@string/add_image"
-        android:backgroundTint="?attr/colorPrimary"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        android:layout_marginEnd="16dp"
         app:tint="@color/white"
-        android:layout_marginBottom="20dp"
-        app:fabCustomSize="57dp" />
+        android:visibility="gone"
+        app:fabCustomSize="48dp"
+        android:backgroundTint="?attr/colorPrimary"
+        app:layout_constraintBottom_toTopOf="@+id/addVideo"
+        app:layout_constraintEnd_toEndOf="@+id/addVideo"
+        app:layout_constraintStart_toStartOf="@+id/addVideo" />
 
     <com.google.android.material.floatingactionbutton.FloatingActionButton
-        android:id="@+id/deleteSelected"
+        android:id="@+id/addVideo"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:src="@drawable/ic_delete"
+        android:layout_marginBottom="10dp"
+        android:src="@drawable/video_add"
+        android:text="@string/add_image"
+        app:fabCustomSize="49dp"
         android:visibility="gone"
         app:tint="@color/white"
         android:backgroundTint="?attr/colorPrimary"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintBottom_toTopOf="@+id/addAudio"
+        app:layout_constraintEnd_toEndOf="@+id/addAudio"
+        app:layout_constraintHorizontal_bias="1.0"
+        app:layout_constraintStart_toStartOf="@+id/addAudio" />
+
+    <com.google.android.material.floatingactionbutton.FloatingActionButton
+        android:id="@+id/addAudio"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="10dp"
+        android:src="@drawable/music_add"
+        android:text="@string/add_image"
+        app:fabCustomSize="51dp"
+        android:visibility="gone"
+        app:tint="@color/white"
+        android:backgroundTint="?attr/colorPrimary"
+        app:layout_constraintBottom_toTopOf="@+id/addDocument"
+        app:layout_constraintEnd_toEndOf="@+id/addDocument"
+        app:layout_constraintStart_toStartOf="@+id/addDocument" />
+
+    <com.google.android.material.floatingactionbutton.FloatingActionButton
+        android:id="@+id/addDocument"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:src="@drawable/document_add"
+        android:text="@string/add_image"
+        android:layout_marginBottom="10dp"
+        app:fabCustomSize="54dp"
+        app:tint="@color/white"
+        android:visibility="gone"
+        android:backgroundTint="?attr/colorPrimary"
+        app:layout_constraintBottom_toTopOf="@+id/fabExpend"
+        app:layout_constraintEnd_toEndOf="@+id/fabExpend"
+        app:layout_constraintStart_toStartOf="@+id/fabExpend" />
+
+    <com.google.android.material.floatingactionbutton.FloatingActionButton
+        android:id="@+id/fabExpend"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
         android:layout_marginEnd="16dp"
         android:layout_marginBottom="20dp"
-        app:fabCustomSize="57dp" />
+        android:src="@drawable/ic_add"
+        android:backgroundTint="?attr/colorPrimary"
+        android:text="@string/add_image"
+        app:fabCustomSize="60dp"
+        app:tint="@color/white"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

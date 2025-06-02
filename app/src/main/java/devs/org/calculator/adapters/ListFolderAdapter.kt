@@ -11,25 +11,24 @@ import androidx.recyclerview.widget.RecyclerView
 import devs.org.calculator.R
 import java.io.File
 
-class FolderAdapter(
+class ListFolderAdapter(
     private val onFolderClick: (File) -> Unit,
     private val onFolderLongClick: (File) -> Unit,
     private val onSelectionModeChanged: (Boolean) -> Unit,
     private val onSelectionCountChanged: (Int) -> Unit
-) : ListAdapter<File, FolderAdapter.FolderViewHolder>(FolderDiffCallback()) {
+) : ListAdapter<File, ListFolderAdapter.FolderViewHolder>(FolderDiffCallback()) {
 
     private val selectedItems = mutableSetOf<Int>()
     private var isSelectionMode = false
 
     inner class FolderViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         val folderNameTextView: TextView = itemView.findViewById(R.id.folderName)
-        val selectedView: ImageView = itemView.findViewById(R.id.selected)
+
         val selectedLayer: View = itemView.findViewById(R.id.selectedLayer)
 
         fun bind(folder: File, onFolderClick: (File) -> Unit, onFolderLongClick: (File) -> Unit, isSelected: Boolean) {
             folderNameTextView.text = folder.name
 
-            selectedView.visibility = if (isSelected) View.VISIBLE else View.GONE
             selectedLayer.visibility = if (isSelected) View.VISIBLE else View.GONE
 
             itemView.setOnClickListener { 
@@ -64,8 +63,18 @@ class FolderAdapter(
         }
     }
 
+    private fun enterSelectionMode() {
+        isSelectionMode = true
+        onSelectionModeChanged(true)
+    }
+
+    private fun exitSelectionMode() {
+        isSelectionMode = false
+        onSelectionModeChanged(false)
+    }
+
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): FolderViewHolder {
-        val view = LayoutInflater.from(parent.context).inflate(R.layout.item_folder, parent, false)
+        val view = LayoutInflater.from(parent.context).inflate(R.layout.item_folder_list_style, parent, false)
         return FolderViewHolder(view)
     }
 
@@ -101,16 +110,6 @@ class FolderAdapter(
 
     fun isInSelectionMode(): Boolean {
         return isSelectionMode
-    }
-
-    private fun enterSelectionMode() {
-        isSelectionMode = true
-        onSelectionModeChanged(true)
-    }
-
-    private fun exitSelectionMode() {
-        isSelectionMode = false
-        onSelectionModeChanged(false)
     }
 
     private class FolderDiffCallback : DiffUtil.ItemCallback<File>() {

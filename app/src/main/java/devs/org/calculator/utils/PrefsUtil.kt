@@ -18,6 +18,15 @@ class PrefsUtil(context: Context) {
             .apply()
     }
 
+    fun setBoolean(key:String, value: Boolean){
+        return prefs.edit().putBoolean(key,value).apply()
+
+    }
+
+    fun getBoolean(key: String, defValue: Boolean = false): Boolean{
+        return prefs.getBoolean(key,defValue)
+    }
+
     fun resetPassword(){
         prefs.edit()
             .remove("password")

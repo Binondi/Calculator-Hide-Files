@@ -9,7 +9,8 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_margin="4dp"
-        app:cardCornerRadius="8dp">
+        app:cardCornerRadius="8dp"
+        app:cardElevation="2dp">
 
         <androidx.constraintlayout.widget.ConstraintLayout
             android:layout_width="match_parent"
@@ -21,7 +22,7 @@
                 android:layout_height="0dp"
                 android:alpha="0.3"
                 android:background="?attr/colorControlNormal"
-                android:orientation="horizontal"
+                android:orientation="vertical"
                 android:visibility="gone"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"
@@ -32,8 +33,9 @@
                 android:id="@+id/linearLayout2"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:orientation="vertical"
+                android:orientation="horizontal"
                 android:padding="8dp"
+                android:gravity="center_vertical"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintDimensionRatio="1:1"
                 app:layout_constraintEnd_toEndOf="parent"
@@ -44,32 +46,52 @@
                     android:id="@+id/folderIcon"
                     android:layout_width="48dp"
                     android:layout_height="48dp"
+                    android:padding="8dp"
                     android:layout_gravity="center"
                     android:src="@drawable/ic_folder" />
 
-                <TextView
-                    android:id="@+id/folderName"
+                <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="4dp"
-                    android:ellipsize="end"
-                    android:gravity="center"
-                    android:singleLine="true"
-                    android:textColor="?attr/colorPrimary"
-                    android:maxLines="1"
-                    android:textSize="14sp" />
+                    android:paddingStart="10dp"
+                    android:orientation="vertical">
+                    <TextView
+                        android:id="@+id/folderName"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="4dp"
+                        android:ellipsize="end"
+                        android:textColor="?attr/colorPrimary"
+                        android:maxLines="1"
+                        android:singleLine="true"
+                        android:textSize="18sp" />
+
+                    <TextView
+                        android:id="@+id/timeModified"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="4dp"
+                        android:ellipsize="end"
+                        android:text=""
+                        android:visibility="gone"
+                        android:textColor="#767676"
+                        android:maxLines="1"
+                        android:textSize="12sp" />
+                </LinearLayout>
+
 
             </LinearLayout>
+            <ImageView
+                android:id="@+id/selected"
+                android:layout_width="20dp"
+                android:layout_height="20dp"
+                android:background="@drawable/gradient_bg"
+                android:padding="3dp"
+                android:src="@drawable/selected"
+                android:visibility="gone"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintTop_toTopOf="parent"
+                app:tint="#fff" />
         </androidx.constraintlayout.widget.ConstraintLayout>
     </com.google.android.material.card.MaterialCardView>
-    <ImageView
-        android:id="@+id/selected"
-        android:layout_width="20dp"
-        android:layout_height="20dp"
-        android:background="@drawable/gradient_bg"
-        android:padding="3dp"
-        android:src="@drawable/selected"
-        android:layout_gravity="end"
-        android:visibility="visible"
-        app:tint="#fff" />
 </FrameLayout>

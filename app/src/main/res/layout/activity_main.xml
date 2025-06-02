@@ -11,7 +11,8 @@
         android:id="@+id/displayContainer"
         android:layout_width="0dp"
         android:layout_height="0dp"
-        android:layout_margin="16dp"
+        android:layout_margin="0dp"
+        android:background="@drawable/bottom_corner"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHeight_percent="0.3"
         app:layout_constraintStart_toStartOf="parent"
@@ -40,14 +41,14 @@
                     android:id="@+id/display"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:autoSizeMaxTextSize="48sp"
+                    android:autoSizeMaxTextSize="70sp"
                     android:autoSizeMinTextSize="16sp"
                     android:autoSizeStepGranularity="2sp"
                     android:gravity="end|bottom"
                     android:autoSizeTextType="uniform"
                     android:padding="10dp"
-                    android:text="0"
-                    android:textSize="48sp"
+                    android:text=""
+                    android:textSize="70sp"
                     tools:ignore="Suspicious0dp" />
             </LinearLayout>
 
@@ -57,7 +58,7 @@
             android:id="@+id/total"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:autoSizeMaxTextSize="26sp"
+            android:autoSizeMaxTextSize="40sp"
             android:autoSizeMinTextSize="24sp"
             android:autoSizeStepGranularity="2sp"
             android:autoSizeTextType="uniform"
@@ -65,7 +66,7 @@
             android:paddingRight="10dp"
             android:paddingBottom="10dp"
             android:text=""
-            android:textSize="26sp"
+            android:textSize="40sp"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
@@ -183,6 +184,7 @@
                 android:layout_marginHorizontal="4dp"
                 android:layout_marginVertical="8dp"
                 android:layout_weight="1"
+                android:textColor="@color/white"
                 android:text="×"
                 android:textSize="30sp"
                 app:cornerRadius="15dp" />
@@ -236,6 +238,7 @@
                 android:layout_marginHorizontal="4dp"
                 android:layout_marginVertical="8dp"
                 android:layout_weight="1"
+                android:textColor="@color/white"
                 android:text="-"
                 android:textSize="30sp"
                 app:cornerRadius="15dp" />
@@ -289,6 +292,7 @@
                 android:layout_marginHorizontal="4dp"
                 android:layout_marginVertical="8dp"
                 android:layout_weight="1"
+                android:textColor="@color/white"
                 android:text="+"
                 android:textSize="30sp"
                 app:cornerRadius="15dp" />
@@ -331,6 +335,7 @@
                 android:layout_marginHorizontal="4dp"
                 android:layout_marginVertical="8dp"
                 android:layout_weight="1"
+                android:textColor="@color/white"
                 android:text="="
                 android:textSize="30sp"
                 app:cornerRadius="15dp" />

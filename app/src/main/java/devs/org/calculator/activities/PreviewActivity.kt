@@ -2,6 +2,7 @@ package devs.org.calculator.activities
 
 import android.net.Uri
 import android.os.Bundle
+import android.view.WindowManager
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
 import androidx.viewpager2.widget.ViewPager2
@@ -30,6 +31,7 @@ class PreviewActivity : AppCompatActivity() {
         binding = ActivityPreviewBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
+
         fileManager = FileManager(this, this)
 
         currentPosition = intent.getIntExtra("position", 0)
@@ -53,6 +55,21 @@ class PreviewActivity : AppCompatActivity() {
             finish()
         }
 
+    }
+
+    override fun onResume() {
+        super.onResume()
+        setupFlagSecure()
+    }
+
+    private fun setupFlagSecure() {
+        val prefs = getSharedPreferences("app_settings", MODE_PRIVATE)
+        if (prefs.getBoolean("screenshot_restriction", true)) {
+            window.setFlags(
+                WindowManager.LayoutParams.FLAG_SECURE,
+                WindowManager.LayoutParams.FLAG_SECURE
+            )
+        }
     }
 
     private fun setupFileType() {
