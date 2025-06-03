@@ -1,5 +1,6 @@
 package devs.org.calculator.adapters
 
+import android.annotation.SuppressLint
 import android.content.Context
 import android.content.Intent
 import android.os.Handler
@@ -346,15 +347,16 @@ class FileAdapter(
             }
         }
 
+        @SuppressLint("MissingInflatedId")
         private fun renameFile(file: File) {
-            val inputEditText = EditText(context).apply {
-                setText(file.name)
-                selectAll()
-            }
+            val dialogView = LayoutInflater.from(context).inflate(R.layout.dialog_input, null)
+            val inputEditText = dialogView.findViewById<EditText>(R.id.editText)
+            inputEditText.setText(file.name)
+            inputEditText.selectAll()
 
             MaterialAlertDialogBuilder(context)
                 .setTitle(context.getString(R.string.rename_file))
-                .setView(inputEditText)
+                .setView(dialogView)
                 .setPositiveButton(context.getString(R.string.rename)) { dialog, _ ->
                     val newName = inputEditText.text.toString().trim()
                     if (newName.isNotEmpty() && newName != file.name) {

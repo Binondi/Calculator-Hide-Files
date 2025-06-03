@@ -8,6 +8,7 @@ import android.os.Bundle
 import android.os.Environment
 import android.os.Handler
 import android.os.Looper
+import android.view.LayoutInflater
 import android.view.View
 import android.view.animation.Animation
 import android.view.animation.AnimationUtils
@@ -17,9 +18,13 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.GridLayoutManager
+import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
+import com.google.android.material.bottomsheet.BottomSheetDialog
 import devs.org.calculator.R
 import devs.org.calculator.adapters.FileAdapter
+import devs.org.calculator.adapters.FolderSelectionAdapter
 import devs.org.calculator.callbacks.FileProcessCallback
 import devs.org.calculator.databinding.ActivityViewFolderBinding
 import devs.org.calculator.databinding.ProccessingDialogBinding
@@ -601,12 +606,18 @@ class ViewFolderActivity : AppCompatActivity() {
             return
         }
 
-        val folderNames = folders.map { it.name }.toTypedArray()
-        MaterialAlertDialogBuilder(this)
-            .setTitle(getString(R.string.select_destination_folder))
-            .setItems(folderNames) { _, which ->
-                onFolderSelected(folders[which])
-            }
-            .show()
+        val bottomSheetView = LayoutInflater.from(this).inflate(R.layout.bottom_sheet_folder_selection, null)
+        val recyclerView = bottomSheetView.findViewById<RecyclerView>(R.id.folderRecyclerView)
+        
+        val bottomSheetDialog = BottomSheetDialog(this)
+        bottomSheetDialog.setContentView(bottomSheetView)
+
+        recyclerView.layoutManager = LinearLayoutManager(this)
+        recyclerView.adapter = FolderSelectionAdapter(folders) { selectedFolder ->
+            bottomSheetDialog.dismiss()
+            onFolderSelected(selectedFolder)
+        }
+
+        bottomSheetDialog.show()
     }
 }

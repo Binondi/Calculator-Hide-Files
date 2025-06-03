@@ -6,6 +6,7 @@ import android.os.Environment
 import android.os.Handler
 import android.os.Looper
 import android.util.Log
+import android.view.LayoutInflater
 import android.view.View
 import android.view.WindowManager
 import android.widget.EditText
@@ -159,27 +160,33 @@ class HiddenActivity : AppCompatActivity() {
 
 
     private fun createNewFolder() {
-        dialogUtil.createInputDialog(
-            title = "Enter Folder Name To Create",
-            hint = "",
-            callback = object : DialogUtil.InputDialogCallback {
-                override fun onPositiveButtonClicked(input: String) {
-                    if (input.trim().isNotEmpty()) {
-                        try {
-                            folderManager.createFolder(hiddenDir, input.trim())
-                            refreshCurrentView()
-                        } catch (e: Exception) {
-                            Log.e(TAG, "Error creating folder: ${e.message}")
-                            Toast.makeText(
-                                this@HiddenActivity,
-                                "Failed to create folder",
-                                Toast.LENGTH_SHORT
-                            ).show()
-                        }
+        val dialogView = LayoutInflater.from(this).inflate(R.layout.dialog_input, null)
+        val inputEditText = dialogView.findViewById<EditText>(R.id.editText)
+
+        MaterialAlertDialogBuilder(this)
+            .setTitle("Enter Folder Name To Create")
+            .setView(dialogView)
+            .setPositiveButton("Create") { dialog, _ ->
+                val newName = inputEditText.text.toString().trim()
+                if (newName.isNotEmpty()) {
+                    try {
+                        folderManager.createFolder(hiddenDir, newName)
+                        refreshCurrentView()
+                    } catch (e: Exception) {
+                        Log.e(TAG, "Error creating folder: ${e.message}")
+                        Toast.makeText(
+                            this@HiddenActivity,
+                            "Failed to create folder",
+                            Toast.LENGTH_SHORT
+                        ).show()
                     }
                 }
+                dialog.dismiss()
             }
-        )
+            .setNegativeButton("Cancel") { dialog, _ ->
+                dialog.cancel()
+            }
+            .show()
     }
 
     override fun onResume() {
@@ -470,14 +477,14 @@ class HiddenActivity : AppCompatActivity() {
     }
 
     private fun showEditFolderDialog(folder: File) {
-        val inputEditText = EditText(this).apply {
-            setText(folder.name)
-            selectAll()
-        }
+        val dialogView = LayoutInflater.from(this).inflate(R.layout.dialog_input, null)
+        val inputEditText = dialogView.findViewById<EditText>(R.id.editText)
+        inputEditText.setText(folder.name)
+        inputEditText.selectAll()
 
         MaterialAlertDialogBuilder(this)
             .setTitle("Rename Folder")
-            .setView(inputEditText)
+            .setView(dialogView)
             .setPositiveButton("Rename") { dialog, _ ->
                 val newName = inputEditText.text.toString().trim()
                 if (newName.isNotEmpty() && newName != folder.name) {
