@@ -38,10 +38,8 @@ class FileAdapter(
     private val selectedItems = mutableSetOf<Int>()
     private var isSelectionMode = false
 
-    // Use WeakReference to prevent memory leaks
     private var fileOperationCallback: WeakReference<FileOperationCallback>? = null
 
-    // Background executor for file operations
     private val fileExecutor = Executors.newSingleThreadExecutor()
     private val mainHandler = Handler(Looper.getMainLooper())
 
@@ -49,7 +47,6 @@ class FileAdapter(
         private const val TAG = "FileAdapter"
     }
 
-    // Callback interface for handling file operations and selection changes
     interface FileOperationCallback {
         fun onFileDeleted(file: File)
         fun onFileRenamed(oldFile: File, newFile: File)
@@ -75,7 +72,6 @@ class FileAdapter(
             setupClickListeners(file, fileType)
             fileNameTextView.visibility = if (showFileName) View.VISIBLE else View.GONE
 
-            // Update selection state
             val position = adapterPosition
             if (position != RecyclerView.NO_POSITION) {
                 val isSelected = selectedItems.contains(position)
@@ -89,7 +85,6 @@ class FileAdapter(
                 return
             }
 
-            // Handle partial updates based on payload
             val changes = payloads.firstOrNull() as? List<String>
             changes?.forEach { change ->
                 when (change) {
@@ -97,14 +92,13 @@ class FileAdapter(
                         fileNameTextView.text = file.name
                     }
                     "SIZE_CHANGED", "MODIFIED_DATE_CHANGED" -> {
-                        // Could update file info if displayed
+
                     }
                     "SELECTION_CHANGED" -> {
                         val position = adapterPosition
                         if (position != RecyclerView.NO_POSITION) {
                             val isSelected = selectedItems.contains(position)
                             updateSelectionUI(isSelected)
-                            // Notify activity about selection change
                             notifySelectionModeChange()
                         }
                     }
@@ -128,7 +122,6 @@ class FileAdapter(
                         .centerCrop()
                         .diskCacheStrategy(DiskCacheStrategy.AUTOMATIC)
                         .error(R.drawable.ic_document)
-                        .placeholder(R.drawable.ic_document)
                         .into(imageView)
                 }
                 FileManager.FileType.VIDEO -> {
@@ -138,12 +131,12 @@ class FileAdapter(
                         .centerCrop()
                         .diskCacheStrategy(DiskCacheStrategy.AUTOMATIC)
                         .error(R.drawable.ic_document)
-                        .placeholder(R.drawable.ic_document)
                         .into(imageView)
                 }
                 FileManager.FileType.AUDIO -> {
                     playIcon.visibility = View.GONE
                     imageView.setImageResource(R.drawable.ic_audio)
+                    imageView.setPadding(50,50,50,50)
                 }
                 else -> {
                     playIcon.visibility = View.GONE
@@ -191,16 +184,18 @@ class FileAdapter(
         }
 
         private fun openAudioFile(file: File) {
+            val fileType = FileManager(context,lifecycleOwner).getFileType(file)
             try {
-                val uri = FileProvider.getUriForFile(
-                    context,
-                    "${context.packageName}.fileprovider",
-                    file
-                )
-                val intent = Intent(Intent.ACTION_VIEW).apply {
-                    setDataAndType(uri, "audio/*")
+                val fileTypeString = when (fileType) {
+                    FileManager.FileType.IMAGE -> context.getString(R.string.image)
+                    FileManager.FileType.VIDEO -> context.getString(R.string.video)
+                    else -> "unknown"
+                }
+
+                val intent = Intent(context, PreviewActivity::class.java).apply {
+                    putExtra("type", fileTypeString)
                     putExtra("folder", currentFolder.toString())
-                    addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+                    putExtra("position", adapterPosition)
                 }
                 context.startActivity(intent)
             } catch (e: Exception) {
@@ -316,7 +311,6 @@ class FileAdapter(
         }
 
         private fun deleteFile(file: File) {
-            // Show confirmation dialog first
             MaterialAlertDialogBuilder(context)
                 .setTitle("Delete File")
                 .setMessage("Are you sure you want to delete ${file.name}?")
@@ -436,12 +430,10 @@ class FileAdapter(
         }
 
         private fun copyToAnotherFolder(file: File) {
-            // This will be handled by the activity
             fileOperationCallback?.get()?.onRefreshNeeded()
         }
 
         private fun moveToAnotherFolder(file: File) {
-            // This will be handled by the activity
             fileOperationCallback?.get()?.onRefreshNeeded()
         }
 
@@ -489,7 +481,6 @@ class FileAdapter(
             currentList.clear()
             super.submitList(null)
         } else {
-            // Create a new list to force update
             val newList = list.toMutableList()
             super.submitList(newList)
         }
@@ -502,6 +493,7 @@ class FileAdapter(
         }
     }
 
+    @SuppressLint("NotifyDataSetChanged")
     fun exitSelectionMode() {
         if (isSelectionMode) {
             isSelectionMode = false
@@ -574,8 +566,6 @@ class FileAdapter(
     fun deleteSelectedFiles() {
         val selectedFiles = getSelectedItems()
         if (selectedFiles.isEmpty()) return
-
-        // Show confirmation dialog
         MaterialAlertDialogBuilder(context)
             .setTitle("Delete Files")
             .setMessage("Are you sure you want to delete ${selectedFiles.size} file(s)?")
@@ -611,10 +601,8 @@ class FileAdapter(
             }
 
             mainHandler.post {
-                // Exit selection mode first
                 exitSelectionMode()
 
-                // Show detailed result message
                 when {
                     deletedCount > 0 && failedCount == 0 -> {
                         Toast.makeText(context, "Deleted $deletedCount file(s)", Toast.LENGTH_SHORT).show()
@@ -641,7 +629,6 @@ class FileAdapter(
 
         try {
             if (selectedFiles.size == 1) {
-                // Share single file
                 val file = selectedFiles.first()
                 val uri = FileProvider.getUriForFile(
                     context,
@@ -657,7 +644,6 @@ class FileAdapter(
                     Intent.createChooser(shareIntent, context.getString(R.string.share_file))
                 )
             } else {
-                // Share multiple files
                 val uris = selectedFiles.mapNotNull { file ->
                     try {
                         FileProvider.getUriForFile(
@@ -709,7 +695,6 @@ class FileAdapter(
                     notifyItemChanged(position, listOf("SELECTION_CHANGED"))
                 }
             }
-            // Ensure callback is notified
             notifySelectionModeChange()
         }
     }

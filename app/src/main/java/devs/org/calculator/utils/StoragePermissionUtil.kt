@@ -12,6 +12,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.core.content.PermissionChecker
+import androidx.core.net.toUri
 
 class StoragePermissionUtil(private val activity: AppCompatActivity) {
     
@@ -34,7 +35,7 @@ class StoragePermissionUtil(private val activity: AppCompatActivity) {
                     onGranted()
                 } else {
                     val intent = Intent(Settings.ACTION_MANAGE_APP_ALL_FILES_ACCESS_PERMISSION).apply {
-                        data = Uri.parse("package:${activity.packageName}")
+                        data = "package:${activity.packageName}".toUri()
                     }
                     activity.startActivity(intent)
                 }

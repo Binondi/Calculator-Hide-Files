@@ -66,6 +66,10 @@
                 android:name="android.support.FILE_PROVIDER_PATHS"
                 android:resource="@xml/file_paths" />
         </provider>
+
+        <meta-data
+            android:name="android.app.icon"
+            android:resource="@mipmap/ic_launcher_monochrome" />
     </application>
 
 </manifest>

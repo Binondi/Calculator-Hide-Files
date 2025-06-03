@@ -9,7 +9,6 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.MediaController
-import android.widget.SeekBar
 import androidx.lifecycle.LifecycleOwner
 import androidx.recyclerview.widget.AsyncListDiffer
 import androidx.recyclerview.widget.RecyclerView
@@ -25,11 +24,8 @@ class ImagePreviewAdapter(
 ) : RecyclerView.Adapter<ImagePreviewAdapter.ImageViewHolder>() {
 
     private val differ = AsyncListDiffer(this, FileDiffCallback())
-    var currentMediaPlayer: MediaPlayer? = null
-    var isMediaPlayerPrepared = false
-    var currentViewHolder: ImageViewHolder? = null
     private var currentPlayingPosition = -1
-    private var isPlaying = false
+    private var currentViewHolder: ImageViewHolder? = null
 
     var images: List<File>
         get() = differ.currentList
@@ -43,32 +39,35 @@ class ImagePreviewAdapter(
     override fun onBindViewHolder(holder: ImageViewHolder, position: Int) {
         val imageUrl = images[position]
         val fileType = FileManager(context, lifecycleOwner).getFileType(images[position])
-        holder.bind(imageUrl,fileType)
-        currentViewHolder = holder
 
-        currentMediaPlayer?.let {
-            if (it.isPlaying) it.pause()
-            it.seekTo(0)
-        }
-        currentMediaPlayer = null
-        isMediaPlayerPrepared = false
+        stopAndResetCurrentAudio()
 
-        if (currentMediaPlayer?.isPlaying == true) {
-            currentMediaPlayer?.stop()
-            currentMediaPlayer?.release()
-        }
-        currentMediaPlayer = null
+        holder.bind(imageUrl, fileType, position)
     }
 
     override fun getItemCount(): Int = images.size
 
+    private fun stopAndResetCurrentAudio() {
+        currentViewHolder?.stopAndResetAudio()
+        currentPlayingPosition = -1
+        currentViewHolder = null
+    }
+
     inner class ImageViewHolder(private val binding: ViewpagerItemsBinding) : RecyclerView.ViewHolder(binding.root) {
 
-        private var mediaPlayer: MediaPlayer? = null
         private var seekHandler = Handler(Looper.getMainLooper())
         private var seekRunnable: Runnable? = null
+        private var mediaPlayer: MediaPlayer? = null
+        private var isMediaPlayerPrepared = false
+        private var isPlaying = false
+        private var currentPosition = 0
 
-        fun bind(file: File, fileType: FileManager.FileType) {
+        fun bind(file: File, fileType: FileManager.FileType, position: Int) {
+            currentPosition = position
+
+            releaseMediaPlayer()
+            resetAudioUI()
+
             when (fileType) {
                 FileManager.FileType.VIDEO -> {
                     binding.imageView.visibility = View.GONE
@@ -114,7 +113,6 @@ class ImagePreviewAdapter(
                     binding.audioTitle.text = file.name
 
                     setupAudioPlayer(file)
-                    setupSeekBar()
                     setupPlaybackControls()
                 }
                 else -> {
@@ -125,27 +123,40 @@ class ImagePreviewAdapter(
             }
         }
 
+        private fun resetAudioUI() {
+            binding.playPause.setImageResource(R.drawable.play)
+            binding.audioSeekBar.value = 0f
+            binding.audioSeekBar.valueTo = 100f // Default value
+            seekRunnable?.let { seekHandler.removeCallbacks(it) }
+        }
+
         private fun setupAudioPlayer(file: File) {
-            mediaPlayer = MediaPlayer().apply {
-                setDataSource(file.absolutePath)
-                setOnPreparedListener { mp ->
-                    binding.audioSeekBar.valueTo = mp.duration.toFloat()
-
-                    isMediaPlayerPrepared = true
+            try {
+                mediaPlayer = MediaPlayer().apply {
+                    setDataSource(file.absolutePath)
+                    setOnPreparedListener { mp ->
+                        binding.audioSeekBar.valueTo = mp.duration.toFloat()
+                        binding.audioSeekBar.value = 0f
+                        setupSeekBar()
+                        isMediaPlayerPrepared = true
+                    }
+                    setOnCompletionListener {
+                        stopAndResetAudio()
+                    }
+                    setOnErrorListener { _, _, _ ->
+                        releaseMediaPlayer()
+                        true
+                    }
+                    prepareAsync()
                 }
-                setOnCompletionListener {
-//                    isPlaying = false
-                    binding.playPause.setImageResource(R.drawable.play)
-                    binding.audioSeekBar.value = 0f
-
-                    seekHandler.removeCallbacks(seekRunnable!!)
-                }
-                prepareAsync()
+            } catch (e: Exception) {
+                e.printStackTrace()
+                releaseMediaPlayer()
             }
         }
 
         private fun setupSeekBar() {
-            binding.audioSeekBar.addOnChangeListener { slider, value, fromUser ->
+            binding.audioSeekBar.addOnChangeListener { _, value, fromUser ->
                 if (fromUser && mediaPlayer != null && isMediaPlayerPrepared) {
                     mediaPlayer?.seekTo(value.toInt())
                 }
@@ -153,14 +164,17 @@ class ImagePreviewAdapter(
 
             seekRunnable = Runnable {
                 mediaPlayer?.let { mp ->
-                    if (mp.isPlaying) {
-                        binding.audioSeekBar.value = mp.currentPosition.toFloat()
-                        seekHandler.postDelayed(seekRunnable!!, 100)
+                    if (mp.isPlaying && isMediaPlayerPrepared) {
+                        try {
+                            binding.audioSeekBar.value = mp.currentPosition.toFloat()
+                            seekHandler.postDelayed(seekRunnable!!, 100)
+                        } catch (e: Exception) {
+                            e.printStackTrace()
+                        }
                     }
                 }
             }
         }
-
 
         private fun setupPlaybackControls() {
             binding.playPause.setOnClickListener {
@@ -173,65 +187,127 @@ class ImagePreviewAdapter(
 
             binding.preview.setOnClickListener {
                 mediaPlayer?.let { mp ->
-                    val newPosition = mp.currentPosition - 10000
-                    mp.seekTo(maxOf(0, newPosition))
-                    binding.audioSeekBar.value = mp.currentPosition.toFloat()
+                    if (isMediaPlayerPrepared) {
+                        try {
+                            val newPosition = mp.currentPosition - 10000
+                            mp.seekTo(maxOf(0, newPosition))
+                            binding.audioSeekBar.value = mp.currentPosition.toFloat()
+                        } catch (e: Exception) {
+                            e.printStackTrace()
+                        }
+                    }
                 }
             }
 
             binding.next.setOnClickListener {
                 mediaPlayer?.let { mp ->
-                    val newPosition = mp.currentPosition + 10000
-                    mp.seekTo(minOf(mp.duration, newPosition))
-                    binding.audioSeekBar.value = mp.currentPosition.toFloat()
+                    if (isMediaPlayerPrepared) {
+                        try {
+                            val newPosition = mp.currentPosition + 10000
+                            mp.seekTo(minOf(mp.duration, newPosition))
+                            binding.audioSeekBar.value = mp.currentPosition.toFloat()
+                        } catch (e: Exception) {
+                            e.printStackTrace()
+                        }
+                    }
                 }
             }
         }
 
         private fun playAudio() {
             mediaPlayer?.let { mp ->
-                if (currentPlayingPosition != -1 && currentPlayingPosition != adapterPosition) {
-                    currentViewHolder?.pauseAudio()
+                if (isMediaPlayerPrepared) {
+                    try {
+                        if (currentPlayingPosition != currentPosition) {
+                            stopAndResetCurrentAudio()
+                        }
+
+                        mp.start()
+                        isPlaying = true
+                        binding.playPause.setImageResource(R.drawable.pause)
+                        seekRunnable?.let { seekHandler.post(it) }
+
+                        currentPlayingPosition = currentPosition
+                        currentViewHolder = this@ImageViewHolder
+                    } catch (e: Exception) {
+                        e.printStackTrace()
+                        releaseMediaPlayer()
+                    }
                 }
-                mp.start()
-                isPlaying = true
-                binding.playPause.setImageResource(R.drawable.pause)
-                seekHandler.post(seekRunnable!!)
-                currentPlayingPosition = adapterPosition
-                currentViewHolder = this
             }
         }
 
         private fun pauseAudio() {
             mediaPlayer?.let { mp ->
-                if (mp.isPlaying) {
-                    mp.pause()
-                    isPlaying = false
-                    binding.playPause.setImageResource(R.drawable.play)
-                    seekHandler.removeCallbacks(seekRunnable!!)
+                try {
+                    if (mp.isPlaying) {
+                        mp.pause()
+                        isPlaying = false
+                        binding.playPause.setImageResource(R.drawable.play)
+                        seekRunnable?.let { seekHandler.removeCallbacks(it) }
+                    }
+                } catch (e: Exception) {
+                    e.printStackTrace()
+                    releaseMediaPlayer()
                 }
+            }
+        }
+
+        fun stopAndResetAudio() {
+            try {
+                mediaPlayer?.let { mp ->
+                    if (mp.isPlaying) {
+                        mp.stop()
+                        mp.prepare()
+                    } else if (isMediaPlayerPrepared) {
+                        mp.seekTo(0)
+                    }
+                }
+                isPlaying = false
+                resetAudioUI()
+
+                if (currentPlayingPosition == currentPosition) {
+                    currentPlayingPosition = -1
+                    currentViewHolder = null
+                }
+            } catch (e: Exception) {
+                e.printStackTrace()
+                releaseMediaPlayer()
             }
         }
 
         fun releaseMediaPlayer() {
-            mediaPlayer?.let { mp ->
-                if (mp.isPlaying) {
-                    mp.stop()
+            try {
+                mediaPlayer?.let { mp ->
+                    if (mp.isPlaying) {
+                        mp.stop()
+                    }
+                    mp.release()
                 }
-                mp.release()
+            } catch (e: Exception) {
+                e.printStackTrace()
+            } finally {
                 mediaPlayer = null
                 isPlaying = false
-                seekHandler.removeCallbacks(seekRunnable!!)
+                isMediaPlayerPrepared = false
+                seekRunnable?.let { seekHandler.removeCallbacks(it) }
+
+                if (currentPlayingPosition == currentPosition) {
+                    currentPlayingPosition = -1
+                    currentViewHolder = null
+                }
             }
         }
 
         private fun playVideoAtPosition(position: Int) {
-            val nextFile = images[position]
-            val fileType = FileManager(context, lifecycleOwner).getFileType(images[position])
-            if (fileType == FileManager.FileType.VIDEO) {
-                val videoUri = Uri.fromFile(nextFile)
-                binding.videoView.setVideoURI(videoUri)
-                binding.videoView.start()
+            if (position < images.size) {
+                val nextFile = images[position]
+                val fileType = FileManager(context, lifecycleOwner).getFileType(images[position])
+                if (fileType == FileManager.FileType.VIDEO) {
+                    val videoUri = Uri.fromFile(nextFile)
+                    binding.videoView.setVideoURI(videoUri)
+                    binding.videoView.start()
+                }
             }
         }
     }
@@ -240,5 +316,14 @@ class ImagePreviewAdapter(
         super.onViewRecycled(holder)
         holder.releaseMediaPlayer()
     }
-}
 
+    fun onItemScrolledAway(position: Int) {
+        if (currentPlayingPosition == position) {
+            stopAndResetCurrentAudio()
+        }
+    }
+
+    fun releaseAllResources() {
+        stopAndResetCurrentAudio()
+    }
+}

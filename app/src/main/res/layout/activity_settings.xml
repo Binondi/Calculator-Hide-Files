@@ -81,7 +81,9 @@
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             app:cardCornerRadius="10dp"
-                            app:cardElevation="5dp">
+                            android:background="#00000000"
+                            android:backgroundTint="#00000000"
+                            app:cardElevation="0dp">
                             <ImageView
                                 android:id="@+id/appLogo"
                                 android:layout_width="48dp"

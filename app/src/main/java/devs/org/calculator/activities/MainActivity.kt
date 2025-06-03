@@ -9,6 +9,7 @@ import android.os.Bundle
 import android.os.Environment
 import android.util.Log
 import android.widget.Toast
+import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.RequiresApi
@@ -22,6 +23,8 @@ import devs.org.calculator.utils.FileManager
 import devs.org.calculator.utils.PrefsUtil
 import net.objecthunter.exp4j.ExpressionBuilder
 import java.util.regex.Pattern
+import androidx.core.content.edit
+import com.google.android.material.color.DynamicColors
 
 class MainActivity : AppCompatActivity(), DialogActionsCallback, DialogUtil.DialogCallback {
     private lateinit var binding: ActivityMainBinding
@@ -34,13 +37,14 @@ class MainActivity : AppCompatActivity(), DialogActionsCallback, DialogUtil.Dial
     private val dialogUtil = DialogUtil(this)
     private val fileManager = FileManager(this, this)
     private val sp by lazy { getSharedPreferences("app", MODE_PRIVATE) }
+    private val prefs:PrefsUtil by lazy { PrefsUtil(this) }
 
     @RequiresApi(Build.VERSION_CODES.R)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
-
+        enableEdgeToEdge()
         launcher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
             handleActivityResult(result)
         }
@@ -49,15 +53,14 @@ class MainActivity : AppCompatActivity(), DialogActionsCallback, DialogUtil.Dial
             binding.display.text = getString(R.string.enter_123456)
         }
 
-        // Ask permission
         if(!Environment.isExternalStorageManager()) {
             dialogUtil.showMaterialDialog(
-                "Storage Permission",
-                "To ensure the app works properly and allows you to easily hide or un-hide your private files, please grant storage access permission.\n" +
+                getString(R.string.storage_permission),
+                getString(R.string.to_ensure_the_app_works_properly_and_allows_you_to_easily_hide_or_un_hide_your_private_files_please_grant_storage_access_permission) +
                         "\n" +
-                        "For devices running Android 11 or higher, you'll need to grant the 'All Files Access' permission.",
-                "Grant",
-                "Later",
+                        getString(R.string.for_devices_running_android_11_or_higher_you_ll_need_to_grant_the_all_files_access_permission),
+                getString(R.string.grant_permission),
+                getString(R.string.later),
                 object : DialogUtil.DialogCallback {
                     override fun onPositiveButtonClicked() {
                         fileManager.askPermission(this@MainActivity)
@@ -65,19 +68,20 @@ class MainActivity : AppCompatActivity(), DialogActionsCallback, DialogUtil.Dial
 
                     override fun onNegativeButtonClicked() {
                         Toast.makeText(this@MainActivity,
-                            "Storage permission is required for the app to function properly",
+                            getString(R.string.storage_permission_is_required_for_the_app_to_function_properly),
                             Toast.LENGTH_LONG).show()
                     }
 
                     override fun onNaturalButtonClicked() {
                         Toast.makeText(this@MainActivity,
-                            "You can grant permission later from Settings",
+                            getString(R.string.you_can_grant_permission_later_from_settings),
                             Toast.LENGTH_LONG).show()
                     }
                 }
             )
         }
         setupNumberButton(binding.btn0, "0")
+        setupNumberButton(binding.btn00, "00")
         setupNumberButton(binding.btn1, "1")
         setupNumberButton(binding.btn2, "2")
         setupNumberButton(binding.btn3, "3")
@@ -99,6 +103,7 @@ class MainActivity : AppCompatActivity(), DialogActionsCallback, DialogUtil.Dial
         binding.cut.setOnClickListener { cutNumbers() }
     }
 
+
     private fun handleActivityResult(result: androidx.activity.result.ActivityResult) {
         if (result.resultCode == RESULT_OK) {
             result.data?.data?.let { uri ->
@@ -107,10 +112,8 @@ class MainActivity : AppCompatActivity(), DialogActionsCallback, DialogUtil.Dial
                 contentResolver.takePersistableUriPermission(uri, takeFlags)
 
                 val preferences = getSharedPreferences("com.example.fileutility", MODE_PRIVATE)
-                preferences.edit().putString("filestorageuri", uri.toString()).apply()
+                preferences.edit { putString("filestorageuri", uri.toString()) }
             }
-        } else {
-            Log.e("FileUtility", "Error occurred or operation cancelled: $result")
         }
     }
 
@@ -149,7 +152,7 @@ class MainActivity : AppCompatActivity(), DialogActionsCallback, DialogUtil.Dial
     }
 
     private fun clearDisplay() {
-        currentExpression = "0"
+        currentExpression = ""
         binding.total.text = ""
         lastWasOperator = false
         lastWasPercent = false
@@ -173,41 +176,24 @@ class MainActivity : AppCompatActivity(), DialogActionsCallback, DialogUtil.Dial
         }
     }
 
-    private fun calculatePercentage() {
-        try {
-            val value = currentExpression.toDouble()
-            currentExpression = (value / 100).toString()
-            updateDisplay()
-        } catch (e: Exception) {
-            binding.display.text = getString(R.string.invalid_message)
-        }
-    }
-
     private fun preprocessExpression(expression: String): String {
         val percentagePattern = Pattern.compile("(\\d+\\.?\\d*)%")
         val operatorPercentPattern = Pattern.compile("([+\\-*/])(\\d+\\.?\\d*)%")
 
         var processedExpression = expression
-
-        // Replace standalone percentages (like "50%") with their decimal form (0.5)
         val matcher = percentagePattern.matcher(processedExpression)
         while (matcher.find()) {
             val fullMatch = matcher.group(0)
             val number = matcher.group(1)
 
-            // Check if it's a standalone percentage or part of an operation
             val start = matcher.start()
             if (start == 0 || !isOperator(processedExpression[start-1].toString())) {
-                val percentageValue = number.toDouble() / 100
-                processedExpression = processedExpression.replace(fullMatch, percentageValue.toString())
+                val percentageValue = number!!.toDouble() / 100
+                processedExpression = processedExpression.replace(fullMatch!!.toString(), percentageValue.toString())
             }
         }
-
-        // Handle operator-percentage combinations (like "100-20%")
         val opMatcher = operatorPercentPattern.matcher(processedExpression)
         val sb = StringBuilder(processedExpression)
-
-        // We need to process matches from right to left to maintain indices
         val matches = mutableListOf<Triple<Int, Int, String>>()
 
         while (opMatcher.find()) {
@@ -219,15 +205,11 @@ class MainActivity : AppCompatActivity(), DialogActionsCallback, DialogUtil.Dial
             matches.add(Triple(start, end, "$operator$percentValue%"))
         }
 
-        // Process matches from right to left
         for (match in matches.reversed()) {
             val (start, end, fullMatch) = match
 
-            // Find the number before this operator
-            var leftNumberEnd = start
             var leftNumberStart = start - 1
 
-            // Skip parentheses and move to the actual number
             if (leftNumberStart >= 0 && sb[leftNumberStart] == ')') {
                 var openParens = 1
                 leftNumberStart--
@@ -238,7 +220,6 @@ class MainActivity : AppCompatActivity(), DialogActionsCallback, DialogUtil.Dial
                     leftNumberStart--
                 }
 
-                // Now we need to find the start of the expression
                 if (leftNumberStart >= 0) {
                     while (leftNumberStart >= 0 && (isDigit(sb[leftNumberStart].toString()) || sb[leftNumberStart] == '.' || sb[leftNumberStart] == '-')) {
                         leftNumberStart--
@@ -248,26 +229,24 @@ class MainActivity : AppCompatActivity(), DialogActionsCallback, DialogUtil.Dial
                     leftNumberStart = 0
                 }
             } else {
-                // For simple numbers, just find the start of the number
+
                 while (leftNumberStart >= 0 && (isDigit(sb[leftNumberStart].toString()) || sb[leftNumberStart] == '.')) {
                     leftNumberStart--
                 }
                 leftNumberStart++
             }
 
-            if (leftNumberStart < leftNumberEnd) {
-                val leftPart = sb.substring(leftNumberStart, leftNumberEnd)
+            if (leftNumberStart < start) {
+                val leftPart = sb.substring(leftNumberStart, start)
 
                 try {
-                    // Extract the numerical values
+
                     val baseNumber = evaluateExpression(leftPart)
                     val operator = fullMatch.substring(0, 1)
                     val percentNumber = fullMatch.substring(1, fullMatch.length - 1).toDouble()
 
-                    // Calculate the percentage of the base number
                     val percentValue = baseNumber * (percentNumber / 100)
 
-                    // Calculate the new value based on the operator
                     val newValue = when (operator) {
                         "+" -> baseNumber + percentValue
                         "-" -> baseNumber - percentValue
@@ -276,7 +255,6 @@ class MainActivity : AppCompatActivity(), DialogActionsCallback, DialogUtil.Dial
                         else -> baseNumber
                     }
 
-                    // Replace the entire expression "number operator percent%" with the result
                     sb.replace(leftNumberStart, end, newValue.toString())
                 } catch (e: Exception) {
                     Log.e("Calculator", "Error processing percentage expression: $e")
@@ -303,10 +281,11 @@ class MainActivity : AppCompatActivity(), DialogActionsCallback, DialogUtil.Dial
         }
     }
 
+    @SuppressLint("DefaultLocale")
     private fun calculateResult() {
         if (currentExpression == "123456") {
             val intent = Intent(this, SetupPasswordActivity::class.java)
-            sp.edit().putBoolean("isFirst", false).apply()
+            sp.edit { putBoolean("isFirst", false) }
             intent.putExtra("password", currentExpression)
             startActivity(intent)
             clearDisplay()
@@ -363,8 +342,6 @@ class MainActivity : AppCompatActivity(), DialogActionsCallback, DialogUtil.Dial
                 binding.total.text = ""
                 return
             }
-
-            // Process the expression for preview calculation
             var processedExpression = currentExpression.replace("×", "*")
 
             if (processedExpression.contains("%")) {
@@ -411,27 +388,24 @@ class MainActivity : AppCompatActivity(), DialogActionsCallback, DialogUtil.Dial
     }
 
     override fun onPositiveButtonClicked() {
-        // Handle positive button click for both DialogUtil and DialogActionsCallback
         fileManager.askPermission(this)
     }
 
     override fun onNegativeButtonClicked() {
-        // Handle negative button click
-        Toast.makeText(this, "Storage permission is required for the app to function properly", Toast.LENGTH_LONG).show()
+        Toast.makeText(this, getString(R.string.storage_permission_is_required_for_the_app_to_function_properly), Toast.LENGTH_LONG).show()
     }
 
     override fun onNaturalButtonClicked() {
-        // Handle neutral button click
-        Toast.makeText(this, "You can grant permission later from Settings", Toast.LENGTH_LONG).show()
+        Toast.makeText(this, getString(R.string.you_can_grant_permission_later_from_settings), Toast.LENGTH_LONG).show()
     }
 
     override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
         if (requestCode == 6767) {
             if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                Toast.makeText(this, "Permission granted", Toast.LENGTH_SHORT).show()
+                Toast.makeText(this, getString(R.string.permission_granted), Toast.LENGTH_SHORT).show()
             } else {
-                Toast.makeText(this, "Permission denied", Toast.LENGTH_SHORT).show()
+                Toast.makeText(this, getString(R.string.permission_denied), Toast.LENGTH_SHORT).show()
             }
         }
     }

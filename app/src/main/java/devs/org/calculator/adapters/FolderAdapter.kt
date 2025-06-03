@@ -1,5 +1,6 @@
 package devs.org.calculator.adapters
 
+import android.annotation.SuppressLint
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -80,6 +81,7 @@ class FolderAdapter(
         }
     }
 
+    @SuppressLint("NotifyDataSetChanged")
     fun clearSelection() {
         val wasInSelectionMode = isSelectionMode
         selectedItems.clear()

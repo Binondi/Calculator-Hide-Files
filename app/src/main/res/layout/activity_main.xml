@@ -14,7 +14,7 @@
         android:layout_margin="0dp"
         android:background="@drawable/bottom_corner"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHeight_percent="0.3"
+        app:layout_constraintHeight_percent="0.4"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent">
 
@@ -23,6 +23,7 @@
             android:layout_width="match_parent"
             android:layout_height="0dp"
             android:scrollbars="none"
+            android:paddingTop="27dp"
             android:gravity="end|bottom"
             app:layout_constraintBottom_toTopOf="@+id/total"
             app:layout_constraintEnd_toEndOf="parent"
@@ -59,7 +60,7 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:autoSizeMaxTextSize="40sp"
-            android:autoSizeMinTextSize="24sp"
+            android:autoSizeMinTextSize="12sp"
             android:autoSizeStepGranularity="2sp"
             android:autoSizeTextType="uniform"
             android:gravity="end|bottom"
@@ -85,7 +86,7 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/displayContainer">
 
-        <LinearLayout
+        <androidx.constraintlayout.widget.ConstraintLayout
             android:layout_width="match_parent"
             android:layout_height="0dp"
             android:layout_weight="1"
@@ -95,49 +96,68 @@
                 android:id="@+id/btnClear"
                 style="@style/Widget.MaterialComponents.Button.OutlinedButton"
                 android:layout_width="0dp"
-                android:layout_height="match_parent"
-                android:layout_margin="4dp"
-                android:layout_weight="1"
+                android:layout_height="0dp"
+                android:layout_marginHorizontal="3dp"
+                android:backgroundTint="?attr/colorSecondaryContainer"
                 android:text="C"
                 android:textSize="30sp"
-                app:cornerRadius="15dp" />
+                app:cornerRadius="15dp"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintDimensionRatio="1:1.15"
+                app:layout_constraintEnd_toStartOf="@+id/btnPercent"
+                app:layout_constraintHorizontal_chainStyle="spread"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent" />
 
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/btnPercent"
                 style="@style/Widget.MaterialComponents.Button.OutlinedButton"
                 android:layout_width="0dp"
-                android:layout_height="match_parent"
-                android:layout_margin="4dp"
-                android:layout_weight="1"
+                android:layout_height="0dp"
+                android:backgroundTint="?attr/colorSecondaryContainer"
                 android:text="%"
                 android:textSize="30sp"
-                app:cornerRadius="15dp" />
+                android:layout_marginHorizontal="3dp"
+                app:cornerRadius="15dp"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintDimensionRatio="1:1.15"
+                app:layout_constraintEnd_toStartOf="@+id/btnDivide"
+                app:layout_constraintStart_toEndOf="@+id/btnClear"
+                app:layout_constraintTop_toTopOf="parent" />
 
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/btnDivide"
                 style="@style/Widget.MaterialComponents.Button.OutlinedButton"
                 android:layout_width="0dp"
-                android:layout_height="match_parent"
-                android:layout_margin="4dp"
-                android:layout_weight="1"
+                android:layout_height="0dp"
+                android:backgroundTint="?attr/colorSecondaryContainer"
                 android:text="÷"
                 android:textSize="30sp"
-                app:cornerRadius="15dp" />
+                android:layout_marginHorizontal="3dp"
+                app:cornerRadius="15dp"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintDimensionRatio="1:1.15"
+                app:layout_constraintEnd_toStartOf="@+id/cut"
+                app:layout_constraintStart_toEndOf="@+id/btnPercent"
+                app:layout_constraintTop_toTopOf="parent" />
 
             <ImageButton
                 android:id="@+id/cut"
                 android:layout_width="0dp"
-                android:layout_height="match_parent"
-                android:layout_marginHorizontal="4dp"
-                android:layout_weight="1"
-                android:layout_marginVertical="8dp"
+                android:layout_height="0dp"
                 android:background="@drawable/gradient_bg"
+                android:scaleType="centerInside"
                 android:src="@drawable/backspace"
-                android:scaleType="centerInside"/>
+                android:layout_marginHorizontal="3dp"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintDimensionRatio="1:1"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toEndOf="@+id/btnDivide"
+                app:layout_constraintTop_toTopOf="parent" />
 
-        </LinearLayout>
+        </androidx.constraintlayout.widget.ConstraintLayout>
 
-        <LinearLayout
+        <androidx.constraintlayout.widget.ConstraintLayout
             android:layout_width="match_parent"
             android:layout_height="0dp"
             android:layout_weight="1"
@@ -147,10 +167,16 @@
                 android:id="@+id/btn7"
                 style="@style/Widget.MaterialComponents.Button.OutlinedButton"
                 android:layout_width="0dp"
-                android:layout_height="match_parent"
-                android:layout_margin="4dp"
+                android:layout_height="0dp"
                 android:layout_weight="1"
+                android:layout_marginHorizontal="3dp"
                 android:text="7"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintDimensionRatio="1:1.15"
+                app:layout_constraintEnd_toStartOf="@+id/btn8"
+                app:layout_constraintHorizontal_chainStyle="spread"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent"
                 android:textSize="30sp"
                 app:cornerRadius="15dp" />
 
@@ -158,21 +184,32 @@
                 android:id="@+id/btn8"
                 style="@style/Widget.MaterialComponents.Button.OutlinedButton"
                 android:layout_width="0dp"
-                android:layout_height="match_parent"
-                android:layout_margin="4dp"
+                android:layout_height="0dp"
                 android:layout_weight="1"
+                android:layout_marginHorizontal="3dp"
                 android:text="8"
                 android:textSize="30sp"
-                app:cornerRadius="15dp" />
+                app:cornerRadius="15dp"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintDimensionRatio="1:1.15"
+                app:layout_constraintEnd_toStartOf="@+id/btn9"
+                app:layout_constraintStart_toEndOf="@+id/btn7"
+                app:layout_constraintTop_toTopOf="parent"
+                 />
 
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/btn9"
                 style="@style/Widget.MaterialComponents.Button.OutlinedButton"
                 android:layout_width="0dp"
-                android:layout_height="match_parent"
-                android:layout_margin="4dp"
+                android:layout_height="0dp"
                 android:layout_weight="1"
+                android:layout_marginHorizontal="3dp"
                 android:text="9"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintDimensionRatio="1:1.15"
+                app:layout_constraintEnd_toStartOf="@+id/btnMultiply"
+                app:layout_constraintStart_toEndOf="@+id/btn8"
+                app:layout_constraintTop_toTopOf="parent"
                 android:textSize="30sp"
                 app:cornerRadius="15dp" />
 
@@ -180,18 +217,22 @@
                 android:id="@+id/btnMultiply"
                 style="@style/CustomMaterialButton"
                 android:layout_width="0dp"
-                android:layout_height="match_parent"
-                android:layout_marginHorizontal="4dp"
-                android:layout_marginVertical="8dp"
+                android:layout_height="0dp"
                 android:layout_weight="1"
-                android:textColor="@color/white"
+                android:layout_marginHorizontal="3dp"
                 android:text="×"
+                android:textColor="@color/white"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintDimensionRatio="1:1"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toEndOf="@+id/btn9"
+                app:layout_constraintTop_toTopOf="parent"
                 android:textSize="30sp"
                 app:cornerRadius="15dp" />
 
-        </LinearLayout>
+        </androidx.constraintlayout.widget.ConstraintLayout>
 
-        <LinearLayout
+        <androidx.constraintlayout.widget.ConstraintLayout
             android:layout_width="match_parent"
             android:layout_height="0dp"
             android:layout_weight="1"
@@ -201,51 +242,71 @@
                 android:id="@+id/btn4"
                 style="@style/Widget.MaterialComponents.Button.OutlinedButton"
                 android:layout_width="0dp"
-                android:layout_height="match_parent"
-                android:layout_margin="4dp"
+                android:layout_height="0dp"
+                android:layout_marginHorizontal="3dp"
                 android:layout_weight="1"
                 android:text="4"
                 android:textSize="30sp"
-                app:cornerRadius="15dp" />
+                app:cornerRadius="15dp"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintDimensionRatio="1:1.15"
+                app:layout_constraintEnd_toStartOf="@+id/btn5"
+                app:layout_constraintHorizontal_chainStyle="spread"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent"/>
 
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/btn5"
                 style="@style/Widget.MaterialComponents.Button.OutlinedButton"
                 android:layout_width="0dp"
-                android:layout_height="match_parent"
-                android:layout_margin="4dp"
+                android:layout_height="0dp"
+                android:layout_marginHorizontal="3dp"
                 android:layout_weight="1"
                 android:text="5"
                 android:textSize="30sp"
-                app:cornerRadius="15dp" />
+                app:cornerRadius="15dp"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintDimensionRatio="1:1.15"
+                app:layout_constraintEnd_toStartOf="@+id/btn6"
+                app:layout_constraintStart_toEndOf="@+id/btn4"
+                app:layout_constraintTop_toTopOf="parent"/>
 
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/btn6"
                 style="@style/Widget.MaterialComponents.Button.OutlinedButton"
                 android:layout_width="0dp"
-                android:layout_height="match_parent"
-                android:layout_margin="4dp"
+                android:layout_height="0dp"
+                android:layout_marginHorizontal="3dp"
                 android:layout_weight="1"
                 android:text="6"
                 android:textSize="30sp"
-                app:cornerRadius="15dp" />
+                app:cornerRadius="15dp"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintDimensionRatio="1:1.15"
+                app:layout_constraintEnd_toStartOf="@+id/btnMinus"
+                app:layout_constraintStart_toEndOf="@+id/btn5"
+                app:layout_constraintTop_toTopOf="parent"/>
 
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/btnMinus"
                 style="@style/CustomMaterialButton"
                 android:layout_width="0dp"
-                android:layout_height="match_parent"
-                android:layout_marginHorizontal="4dp"
-                android:layout_marginVertical="8dp"
+                android:layout_height="0dp"
+                android:layout_marginHorizontal="3dp"
                 android:layout_weight="1"
                 android:textColor="@color/white"
                 android:text="-"
                 android:textSize="30sp"
-                app:cornerRadius="15dp" />
+                app:cornerRadius="15dp"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintDimensionRatio="1:1"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toEndOf="@+id/btn6"
+                app:layout_constraintTop_toTopOf="parent"/>
 
-        </LinearLayout>
+        </androidx.constraintlayout.widget.ConstraintLayout>
 
-        <LinearLayout
+        <androidx.constraintlayout.widget.ConstraintLayout
             android:layout_width="match_parent"
             android:layout_height="0dp"
             android:layout_weight="1"
@@ -255,92 +316,144 @@
                 android:id="@+id/btn1"
                 style="@style/Widget.MaterialComponents.Button.OutlinedButton"
                 android:layout_width="0dp"
-                android:layout_height="match_parent"
-                android:layout_margin="4dp"
+                android:layout_height="0dp"
                 android:layout_weight="1"
+                android:layout_marginHorizontal="3dp"
                 android:text="1"
                 android:textSize="30sp"
-                app:cornerRadius="15dp" />
+                app:cornerRadius="15dp"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintDimensionRatio="1:1.15"
+                app:layout_constraintEnd_toStartOf="@+id/btn2"
+                app:layout_constraintHorizontal_chainStyle="spread"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent"/>
 
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/btn2"
                 style="@style/Widget.MaterialComponents.Button.OutlinedButton"
                 android:layout_width="0dp"
-                android:layout_height="match_parent"
-                android:layout_margin="4dp"
+                android:layout_height="0dp"
                 android:layout_weight="1"
+                android:layout_marginHorizontal="3dp"
                 android:text="2"
                 android:textSize="30sp"
-                app:cornerRadius="15dp" />
+                app:cornerRadius="15dp"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintDimensionRatio="1:1.15"
+                app:layout_constraintEnd_toStartOf="@+id/btn3"
+                app:layout_constraintStart_toEndOf="@+id/btn1"
+                app:layout_constraintTop_toTopOf="parent"/>
 
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/btn3"
                 style="@style/Widget.MaterialComponents.Button.OutlinedButton"
                 android:layout_width="0dp"
-                android:layout_height="match_parent"
-                android:layout_margin="4dp"
+                android:layout_height="0dp"
                 android:layout_weight="1"
+                android:layout_marginHorizontal="3dp"
                 android:text="3"
                 android:textSize="30sp"
-                app:cornerRadius="15dp" />
+                app:cornerRadius="15dp"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintDimensionRatio="1:1.15"
+                app:layout_constraintEnd_toStartOf="@+id/btnPlus"
+                app:layout_constraintStart_toEndOf="@+id/btn2"
+                app:layout_constraintTop_toTopOf="parent"/>
 
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/btnPlus"
                 style="@style/CustomMaterialButton"
                 android:layout_width="0dp"
-                android:layout_height="match_parent"
-                android:layout_marginHorizontal="4dp"
-                android:layout_marginVertical="8dp"
+                android:layout_height="0dp"
                 android:layout_weight="1"
                 android:textColor="@color/white"
+                android:layout_marginHorizontal="3dp"
                 android:text="+"
                 android:textSize="30sp"
-                app:cornerRadius="15dp" />
+                app:cornerRadius="15dp"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintDimensionRatio="1:1"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toEndOf="@+id/btn3"
+                app:layout_constraintTop_toTopOf="parent"
+                />
 
-        </LinearLayout>
+        </androidx.constraintlayout.widget.ConstraintLayout>
 
-        <LinearLayout
+        <androidx.constraintlayout.widget.ConstraintLayout
             android:layout_width="match_parent"
             android:layout_height="0dp"
             android:layout_weight="1"
             android:orientation="horizontal">
 
             <com.google.android.material.button.MaterialButton
+                android:id="@+id/btn00"
+                style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                android:layout_width="0dp"
+                android:layout_height="0dp"
+                android:layout_marginHorizontal="3dp"
+                android:text="00"
+                android:layout_weight="1"
+                android:textSize="30sp"
+                app:cornerRadius="15dp"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintDimensionRatio="1:1.15"
+                app:layout_constraintEnd_toStartOf="@+id/btn0"
+                app:layout_constraintHorizontal_chainStyle="spread"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent" />
+
+            <com.google.android.material.button.MaterialButton
                 android:id="@+id/btn0"
                 style="@style/Widget.MaterialComponents.Button.OutlinedButton"
                 android:layout_width="0dp"
-                android:layout_height="match_parent"
-                android:layout_margin="4dp"
-                android:layout_weight="2"
+                android:layout_height="0dp"
+                android:layout_weight="1"
+                android:layout_marginHorizontal="3dp"
                 android:text="0"
                 android:textSize="30sp"
-                app:cornerRadius="15dp" />
+                app:cornerRadius="15dp"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintDimensionRatio="1:1.15"
+                app:layout_constraintEnd_toStartOf="@+id/btnDot"
+                app:layout_constraintStart_toEndOf="@+id/btn00"
+                app:layout_constraintTop_toTopOf="parent"/>
 
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/btnDot"
                 style="@style/Widget.MaterialComponents.Button.OutlinedButton"
                 android:layout_width="0dp"
-                android:layout_height="match_parent"
-                android:layout_margin="4dp"
-                android:layout_weight="1"
+                android:layout_height="0dp"
+                android:layout_marginHorizontal="3dp"
                 android:text="."
+                android:layout_weight="1"
                 android:textSize="30sp"
-                app:cornerRadius="15dp" />
+                app:cornerRadius="15dp"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintDimensionRatio="1:1.15"
+                app:layout_constraintEnd_toStartOf="@+id/btnEquals"
+                app:layout_constraintStart_toEndOf="@+id/btn0"
+                app:layout_constraintTop_toTopOf="parent" />
 
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/btnEquals"
                 style="@style/CustomMaterialButton"
                 android:layout_width="0dp"
-                android:layout_height="match_parent"
-                android:layout_marginHorizontal="4dp"
-                android:layout_marginVertical="8dp"
+                android:layout_height="0dp"
                 android:layout_weight="1"
-                android:textColor="@color/white"
+                android:layout_marginHorizontal="3dp"
                 android:text="="
+                android:textColor="@color/white"
                 android:textSize="30sp"
-                app:cornerRadius="15dp" />
+                app:cornerRadius="15dp"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintDimensionRatio="1:1"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toEndOf="@+id/btnDot"
+                app:layout_constraintTop_toTopOf="parent"/>
 
-        </LinearLayout>
+        </androidx.constraintlayout.widget.ConstraintLayout>
 
     </LinearLayout>
 

@@ -2,7 +2,6 @@ package devs.org.calculator.activities
 
 import android.annotation.SuppressLint
 import android.content.Intent
-import android.content.SharedPreferences
 import android.net.Uri
 import android.os.Bundle
 import android.os.Environment
@@ -20,8 +19,9 @@ import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.bottomsheet.BottomSheetDialog
+import com.google.android.material.color.DynamicColors
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import devs.org.calculator.R
 import devs.org.calculator.adapters.FileAdapter
 import devs.org.calculator.adapters.FolderSelectionAdapter
@@ -32,6 +32,7 @@ import devs.org.calculator.utils.DialogUtil
 import devs.org.calculator.utils.FileManager
 import devs.org.calculator.utils.FileManager.Companion.HIDDEN_DIR
 import devs.org.calculator.utils.FolderManager
+import devs.org.calculator.utils.PrefsUtil
 import kotlinx.coroutines.launch
 import java.io.File
 
@@ -51,12 +52,12 @@ class ViewFolderActivity : AppCompatActivity() {
     private var currentFolder: File? = null
     private val hiddenDir = File(Environment.getExternalStorageDirectory(), HIDDEN_DIR)
     private lateinit var pickImageLauncher: ActivityResultLauncher<Intent>
-    private lateinit var prefs: SharedPreferences
 
     private var customDialog: androidx.appcompat.app.AlertDialog? = null
 
     private var dialogShowTime: Long = 0
     private val MINIMUM_DIALOG_DURATION = 1200L
+    private val prefs:PrefsUtil by lazy { PrefsUtil(this) }
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -81,10 +82,10 @@ class ViewFolderActivity : AppCompatActivity() {
 
     private fun initialize() {
         fileManager = FileManager(this, this)
-        folderManager = FolderManager(this)
+        folderManager = FolderManager()
         dialogUtil = DialogUtil(this)
-        prefs = getSharedPreferences("app_settings", MODE_PRIVATE)
     }
+
 
     private fun setupActivityResultLaunchers() {
         pickImageLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
@@ -192,19 +193,12 @@ class ViewFolderActivity : AppCompatActivity() {
         }
     }
 
-    private fun refreshCurrentView() {
-        if (currentFolder != null) {
-            refreshCurrentFolder()
-        }
-    }
-
     override fun onResume() {
         super.onResume()
         refreshCurrentFolder()
     }
 
     private fun openFolder(folder: File) {
-        // Ensure folder exists and has .nomedia file
         if (!folder.exists()) {
             folder.mkdirs()
             File(folder, ".nomedia").createNewFile()
@@ -227,8 +221,6 @@ class ViewFolderActivity : AppCompatActivity() {
 
     private fun showFileList(files: List<File>, folder: File) {
         binding.recyclerView.layoutManager = GridLayoutManager(this, 3)
-
-        // Clean up previous adapter
         fileAdapter?.cleanup()
 
         fileAdapter = FileAdapter(this, this, folder, prefs.getBoolean("showFileName", true),
@@ -344,13 +336,9 @@ class ViewFolderActivity : AppCompatActivity() {
                     performFileUnhiding(selectedFiles)
                 }
 
-                override fun onNegativeButtonClicked() {
-                    // Do nothing
-                }
+                override fun onNegativeButtonClicked() {}
 
-                override fun onNaturalButtonClicked() {
-                    // Do nothing
-                }
+                override fun onNaturalButtonClicked() {}
             }
         )
     }
@@ -368,13 +356,9 @@ class ViewFolderActivity : AppCompatActivity() {
                     performFileDeletion(selectedFiles)
                 }
 
-                override fun onNegativeButtonClicked() {
-                    // Do nothing
-                }
+                override fun onNegativeButtonClicked() {}
 
-                override fun onNaturalButtonClicked() {
-                    // Do nothing
-                }
+                override fun onNaturalButtonClicked() {}
             }
         )
     }
@@ -523,8 +507,6 @@ class ViewFolderActivity : AppCompatActivity() {
                 }
 
                 Toast.makeText(this@ViewFolderActivity, message, Toast.LENGTH_SHORT).show()
-
-                // Fixed: Ensure proper order of operations
                 fileAdapter?.exitSelectionMode()
                 refreshCurrentFolder()
             }
@@ -546,8 +528,6 @@ class ViewFolderActivity : AppCompatActivity() {
         }
 
         Toast.makeText(this, message, Toast.LENGTH_SHORT).show()
-
-        // Fixed: Ensure proper order of operations
         fileAdapter?.exitSelectionMode()
         refreshCurrentFolder()
     }
@@ -569,10 +549,8 @@ class ViewFolderActivity : AppCompatActivity() {
             }
         }
 
-        val message = if (allCopied) "Files copied successfully" else "Some files could not be copied"
+        val message = if (allCopied) getString(R.string.files_copied_successfully) else getString(R.string.some_files_could_not_be_copied)
         Toast.makeText(this, message, Toast.LENGTH_SHORT).show()
-
-        // Fixed: Ensure proper order of operations
         fileAdapter?.exitSelectionMode()
         refreshCurrentFolder()
     }
@@ -589,17 +567,15 @@ class ViewFolderActivity : AppCompatActivity() {
             }
         }
 
-        val message = if (allMoved) "Files moved successfully" else "Some files could not be moved"
+        val message = if (allMoved) getString(R.string.files_moved_successfully) else getString(R.string.some_files_could_not_be_moved)
         Toast.makeText(this, message, Toast.LENGTH_SHORT).show()
-
-        // Fixed: Ensure proper order of operations
         fileAdapter?.exitSelectionMode()
         refreshCurrentFolder()
     }
 
     private fun showFolderSelectionDialog(onFolderSelected: (File) -> Unit) {
         val folders = folderManager.getFoldersInDirectory(hiddenDir)
-            .filter { it != currentFolder } // Exclude current folder
+            .filter { it != currentFolder }
 
         if (folders.isEmpty()) {
             Toast.makeText(this, getString(R.string.no_folders_available), Toast.LENGTH_SHORT).show()

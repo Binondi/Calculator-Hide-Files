@@ -64,7 +64,7 @@
     <string name="unknown_file">Unknown File</string>
     <string name="details"> DETAILS</string>
     <string name="audio_hidded_successfully">Audios hidden successfully</string>
-    <string name="no_items_available_add_one_by_clicking_on_the_plus_button">No Items Available, Add one by clicking on the</string>
+    <string name="no_items_available_add_one_by_clicking_on_the_plus_button">No Files Available, Add one by clicking on the \'+\' button</string>
     <string name="now_enter_button">Now Enter \'=\' button</string>
     <string name="enter_123456">Enter 123456</string>
     <string name="create_folder">Create Folder</string>
@@ -126,4 +126,26 @@
     <string name="security_question_for_password_reset">Security Question (For Password Reset)</string>
     <string name="security_answer">Security Answer</string>
     <string name="save_password">Save Password</string>
+    <string name="there_is_no_folders_available_create_one_by_clicking_on_the_add_folder_button_showing_in_the_bottom">There is no Folders Available, create one by clicking on the \'Add Folder\' Button showing in the bottom.</string>
+    <string name="storage_permission">Storage Permission</string>
+    <string name="to_ensure_the_app_works_properly_and_allows_you_to_easily_hide_or_un_hide_your_private_files_please_grant_storage_access_permission">To ensure the app works properly and allows you to easily hide or un-hide your private files, please grant storage access permission.\n</string>
+    <string name="for_devices_running_android_11_or_higher_you_ll_need_to_grant_the_all_files_access_permission">For devices running Android 11 or higher, you\'ll need to grant the \'All Files Access\' permission.</string>
+    <string name="grant_permission">Grant Permission</string>
+    <string name="later">Later</string>
+    <string name="storage_permission_is_required_for_the_app_to_function_properly">Storage permission is required for the app to function properly</string>
+    <string name="you_can_grant_permission_later_from_settings">You can grant permission later from Settings</string>
+    <string name="permission_granted">Permission granted</string>
+    <string name="permission_denied">Permission denied</string>
+    <string name="github_profile">https://github.com/binondi</string>
+    <string name="calculator_hide_files">%1$s/calculator-hide-files</string>
+    <string name="would_you_like_to_set_a_specific_theme_mode">Would you like to set a specific theme mode?</string>
+    <string name="no">No</string>
+    <string name="could_not_open_url">Could not open URL</string>
+    <string name="files_copied_successfully">Files copied successfully</string>
+    <string name="some_files_could_not_be_copied">Some files could not be copied</string>
+    <string name="files_moved_successfully">Files moved successfully</string>
+    <string name="some_files_could_not_be_moved">Some files could not be moved</string>
+    <string name="ok">OK</string>
+    <string name="if_you_turn_on_off_this_option_dynamic_theme_changes_will_be_visible_after_you_reopen_the_app">If you turn on/off this option, dynamic theme changes will be visible after you reopen the app.</string>
+    <string name="attention">Attention!</string>
 </resources>

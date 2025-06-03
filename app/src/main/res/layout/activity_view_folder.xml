@@ -40,16 +40,12 @@
             android:id="@+id/folderName"/>
 
 
-        <androidx.appcompat.widget.AppCompatImageButton
+        <com.google.android.material.button.MaterialButton
             android:id="@+id/menuButton"
-            android:layout_width="40dp"
-            android:layout_height="40dp"
-            android:src="@drawable/ic_more"
-            app:tint="?attr/colorPrimary"
-            android:scaleType="fitCenter"
-            android:padding="7dp"
-            android:visibility="gone"
-            android:background="#00000000"/>
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            app:icon="@drawable/ic_more"
+            style="@style/Widget.Material3.Button.IconButton"/>
 
     </LinearLayout>
 
@@ -79,7 +75,7 @@
         <ImageView
             android:layout_width="48dp"
             android:layout_height="48dp"
-            android:src="@drawable/ic_no_items" />
+            android:src="@drawable/ic_file" />
 
         <TextView
             android:id="@+id/noItemsTxt"

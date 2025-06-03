@@ -6,13 +6,10 @@ import java.io.File
 class FileDiffCallback : DiffUtil.ItemCallback<File>() {
 
     override fun areItemsTheSame(oldItem: File, newItem: File): Boolean {
-        // Compare by absolute path since File objects might be different instances
-        // but represent the same file
         return oldItem.absolutePath == newItem.absolutePath
     }
 
     override fun areContentsTheSame(oldItem: File, newItem: File): Boolean {
-        // Compare all relevant properties that might change and affect the UI
         return oldItem.name == newItem.name &&
                 oldItem.length() == newItem.length() &&
                 oldItem.lastModified() == newItem.lastModified() &&
@@ -22,8 +19,6 @@ class FileDiffCallback : DiffUtil.ItemCallback<File>() {
     }
 
     override fun getChangePayload(oldItem: File, newItem: File): Any? {
-        // Return a payload if only specific properties changed
-        // This allows for partial updates instead of full rebinding
         val changes = mutableListOf<String>()
 
         if (oldItem.name != newItem.name) {
@@ -42,6 +37,6 @@ class FileDiffCallback : DiffUtil.ItemCallback<File>() {
             changes.add("EXISTENCE_CHANGED")
         }
 
-        return if (changes.isNotEmpty()) changes else null
+        return changes.ifEmpty { null }
     }
 }

@@ -3,6 +3,7 @@ package devs.org.calculator.utils
 import android.content.Context
 import android.content.SharedPreferences
 import java.security.MessageDigest
+import androidx.core.content.edit
 
 class PrefsUtil(context: Context) {
     private val prefs: SharedPreferences = context.getSharedPreferences("Calculator", Context.MODE_PRIVATE)
@@ -13,26 +14,33 @@ class PrefsUtil(context: Context) {
 
     fun savePassword(password: String) {
         val hashedPassword = hashPassword(password)
-        prefs.edit()
-            .putString("password", hashedPassword)
-            .apply()
+        prefs.edit {
+            putString("password", hashedPassword)
+        }
     }
 
     fun setBoolean(key:String, value: Boolean){
-        return prefs.edit().putBoolean(key,value).apply()
+        return prefs.edit { putBoolean(key, value) }
+
+    }
+    fun setInt(key:String, value: Int){
+        return prefs.edit { putInt(key, value) }
 
     }
 
     fun getBoolean(key: String, defValue: Boolean = false): Boolean{
         return prefs.getBoolean(key,defValue)
     }
+    fun getInt(key: String, defValue: Int): Int{
+        return prefs.getInt(key,defValue)
+    }
 
     fun resetPassword(){
-        prefs.edit()
-            .remove("password")
-            .remove("security_question")
-            .remove("security_answer")
-            .apply()
+        prefs.edit {
+            remove("password")
+                .remove("security_question")
+                .remove("security_answer")
+        }
     }
 
     fun validatePassword(input: String): Boolean {
@@ -41,10 +49,10 @@ class PrefsUtil(context: Context) {
     }
 
     fun saveSecurityQA(question: String, answer: String) {
-        prefs.edit()
-            .putString("security_question", question)
-            .putString("security_answer", hashPassword(answer))
-            .apply()
+        prefs.edit {
+            putString("security_question", question)
+                .putString("security_answer", hashPassword(answer))
+        }
     }
 
     fun validateSecurityAnswer(answer: String): Boolean {

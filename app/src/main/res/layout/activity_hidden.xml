@@ -39,57 +39,38 @@
             android:layout_weight="1"
             android:id="@+id/folderName"/>
 
-        <androidx.appcompat.widget.AppCompatImageButton
-            android:layout_width="40dp"
-            android:layout_height="40dp"
-            android:src="@drawable/ic_edit"
-            app:tint="?attr/colorPrimary"
-            android:scaleType="fitCenter"
-            android:padding="9dp"
-            android:visibility="gone"
-            android:background="#00000000"
+        <com.google.android.material.button.MaterialButton
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            app:icon="@drawable/ic_edit"
+            style="@style/Widget.Material3.Button.IconButton"
             android:id="@+id/edit"/>
 
-        <androidx.appcompat.widget.AppCompatImageButton
+        <com.google.android.material.button.MaterialButton
             android:id="@+id/delete"
-            android:layout_width="40dp"
-            android:layout_height="40dp"
-            android:background="#00000000"
-            android:padding="9dp"
-            android:scaleType="fitCenter"
-            android:src="@drawable/ic_delete"
-            app:tint="?attr/colorPrimary"
-            android:visibility="gone" />
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            app:icon="@drawable/ic_delete"
+            style="@style/Widget.Material3.Button.IconButton" />
 
-        <androidx.appcompat.widget.AppCompatImageButton
+        <com.google.android.material.button.MaterialButton
             android:id="@+id/menuButton"
-            android:layout_width="40dp"
-            android:layout_height="40dp"
-            android:src="@drawable/ic_more"
-            app:tint="?attr/colorPrimary"
-            android:scaleType="fitCenter"
-            android:padding="9dp"
-            android:visibility="gone"
-            android:background="#00000000"/>
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            app:icon="@drawable/ic_more"
+            style="@style/Widget.Material3.Button.IconButton"/>
 
-        <androidx.appcompat.widget.AppCompatImageButton
-            android:layout_width="40dp"
-            android:layout_height="40dp"
-            android:src="@drawable/ic_list"
-            android:scaleType="fitCenter"
-            app:tint="?attr/colorPrimary"
-            android:background="#00000000"
-            android:padding="8dp"
+        <com.google.android.material.button.MaterialButton
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            app:icon="@drawable/ic_list"
+            style="@style/Widget.Material3.Button.IconButton"
             android:id="@+id/folderOrientation"/>
-        <androidx.appcompat.widget.AppCompatImageButton
-            android:layout_width="40dp"
-            android:layout_height="40dp"
-            android:src="@drawable/ic_settings"
-            android:scaleType="fitCenter"
-            app:tint="?attr/colorPrimary"
-
-            android:background="#00000000"
-            android:padding="8dp"
+        <com.google.android.material.button.MaterialButton
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            app:icon="@drawable/ic_settings"
+            style="@style/Widget.Material3.Button.IconButton"
             android:id="@+id/settings"/>
     </LinearLayout>
 
@@ -128,7 +109,7 @@
             android:layout_marginTop="8dp"
             android:gravity="center"
             android:padding="10dp"
-            android:text="@string/no_items_available_add_one_by_clicking_on_the_plus_button"
+            android:text="@string/there_is_no_folders_available_create_one_by_clicking_on_the_add_folder_button_showing_in_the_bottom"
             android:textSize="16sp" />
 
     </LinearLayout>

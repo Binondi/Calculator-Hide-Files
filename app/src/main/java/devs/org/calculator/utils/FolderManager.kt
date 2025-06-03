@@ -1,19 +1,14 @@
 package devs.org.calculator.utils
 
-import android.content.Context
-import android.os.Environment
 import java.io.File
 
-class FolderManager(private val context: Context) {
-    companion object {
-        const val HIDDEN_DIR = ".CalculatorHide"
-    }
+class FolderManager {
+
 
     fun createFolder(parentDir: File, folderName: String): Boolean {
         val newFolder = File(parentDir, folderName)
         return if (!newFolder.exists()) {
             newFolder.mkdirs()
-            // Create .nomedia file to hide from media scanners
             File(newFolder, ".nomedia").createNewFile()
             true
         } else {
@@ -52,22 +47,6 @@ class FolderManager(private val context: Context) {
             folder.listFiles()?.filter { it.isFile && it.name != ".nomedia" } ?: emptyList()
         } else {
             emptyList()
-        }
-    }
-
-    fun moveFileToFolder(file: File, targetFolder: File): Boolean {
-        return try {
-            if (!targetFolder.exists()) {
-                targetFolder.mkdirs()
-                File(targetFolder, ".nomedia").createNewFile()
-            }
-            val newFile = File(targetFolder, file.name)
-            file.copyTo(newFile, overwrite = true)
-            file.delete()
-            true
-        } catch (e: Exception) {
-            e.printStackTrace()
-            false
         }
     }
 } 

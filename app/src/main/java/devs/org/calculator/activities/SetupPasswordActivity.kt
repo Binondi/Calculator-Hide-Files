@@ -6,6 +6,7 @@ import android.view.LayoutInflater
 import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import com.google.android.material.color.DynamicColors
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.textfield.TextInputEditText
 import devs.org.calculator.databinding.ActivitySetupPasswordBinding
@@ -18,6 +19,7 @@ class SetupPasswordActivity : AppCompatActivity() {
     private lateinit var binding2: ActivityChangePasswordBinding
     private lateinit var prefsUtil: PrefsUtil
     private var hasPassword = false
+    private val prefs:PrefsUtil by lazy { PrefsUtil(this) }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -72,8 +74,6 @@ class SetupPasswordActivity : AppCompatActivity() {
         }
 
         binding.btnResetPassword.setOnClickListener {
-            // Implement password reset logic
-            // Could use security questions or email verification
             if (prefsUtil.getSecurityQuestion() != null) showSecurityQuestionDialog(prefsUtil.getSecurityQuestion().toString())
             else Toast.makeText(this,
                 getString(R.string.security_question_not_set_yet), Toast.LENGTH_SHORT).show()

@@ -1,9 +1,9 @@
 package devs.org.calculator.adapters
 
+import android.annotation.SuppressLint
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.ImageView
 import android.widget.TextView
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
@@ -22,9 +22,9 @@ class ListFolderAdapter(
     private var isSelectionMode = false
 
     inner class FolderViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
-        val folderNameTextView: TextView = itemView.findViewById(R.id.folderName)
+        private val folderNameTextView: TextView = itemView.findViewById(R.id.folderName)
 
-        val selectedLayer: View = itemView.findViewById(R.id.selectedLayer)
+        private val selectedLayer: View = itemView.findViewById(R.id.selectedLayer)
 
         fun bind(folder: File, onFolderClick: (File) -> Unit, onFolderLongClick: (File) -> Unit, isSelected: Boolean) {
             folderNameTextView.text = folder.name
@@ -89,6 +89,7 @@ class ListFolderAdapter(
         }
     }
 
+    @SuppressLint("NotifyDataSetChanged")
     fun clearSelection() {
         val wasInSelectionMode = isSelectionMode
         selectedItems.clear()

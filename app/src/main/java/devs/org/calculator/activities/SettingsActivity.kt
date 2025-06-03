@@ -1,36 +1,32 @@
 package devs.org.calculator.activities
 
 import android.content.Intent
-import android.content.SharedPreferences
-import android.net.Uri
 import android.os.Bundle
 import android.view.View
 import android.view.WindowManager
-import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.app.AppCompatDelegate
-import androidx.core.view.ViewCompat
-import androidx.core.view.WindowCompat
-import androidx.core.view.WindowInsetsCompat
-import androidx.core.view.WindowInsetsControllerCompat
+import androidx.core.net.toUri
+import com.google.android.material.color.DynamicColors
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.snackbar.Snackbar
 import devs.org.calculator.R
 import devs.org.calculator.databinding.ActivitySettingsBinding
+import devs.org.calculator.utils.PrefsUtil
 
 class SettingsActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivitySettingsBinding
-    private lateinit var prefs: SharedPreferences
-    private val DEV_GITHUB_URL = "https://github.com/binondi"
-    private val GITHUB_URL = "$DEV_GITHUB_URL/calculator-hide-files"
+    private val prefs:PrefsUtil by lazy { PrefsUtil(this) }
+    private var DEV_GITHUB_URL = ""
+    private var GITHUB_URL = ""
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivitySettingsBinding.inflate(layoutInflater)
         setContentView(binding.root)
-
-        prefs = getSharedPreferences("app_settings", MODE_PRIVATE)
+        DEV_GITHUB_URL = getString(R.string.github_profile)
+        GITHUB_URL = getString(R.string.calculator_hide_files, DEV_GITHUB_URL)
         setupUI()
         loadSettings()
         setupListeners()
@@ -41,6 +37,7 @@ class SettingsActivity : AppCompatActivity() {
             onBackPressed()
         }
     }
+
 
     private fun loadSettings() {
 
@@ -72,9 +69,14 @@ class SettingsActivity : AppCompatActivity() {
         }
 
         binding.dynamicThemeSwitch.setOnCheckedChangeListener { _, isChecked ->
-            prefs.edit().putBoolean("dynamic_theme", isChecked).apply()
+            prefs.setBoolean("dynamic_theme", isChecked)
             if (!isChecked) {
                 showThemeModeDialog()
+            }else{
+                showThemeModeDialog()
+                if (!prefs.getBoolean("isAppReopened",false)){
+                    DynamicColors.applyToActivityIfAvailable(this)
+                }
             }
         }
 
@@ -97,7 +99,7 @@ class SettingsActivity : AppCompatActivity() {
         }
 
         binding.screenshotRestrictionSwitch.setOnCheckedChangeListener { _, isChecked ->
-            prefs.edit().putBoolean("screenshot_restriction", isChecked).apply()
+            prefs.setBoolean("screenshot_restriction", isChecked)
             if (isChecked) {
                 enableScreenshotRestriction()
             } else {
@@ -105,7 +107,7 @@ class SettingsActivity : AppCompatActivity() {
             }
         }
         binding.showFileNames.setOnCheckedChangeListener { _, isChecked ->
-            prefs.edit().putBoolean("showFileName", isChecked).apply()
+            prefs.setBoolean("showFileName", isChecked)
         }
     }
 
@@ -115,20 +117,16 @@ class SettingsActivity : AppCompatActivity() {
 
     private fun showThemeModeDialog() {
         MaterialAlertDialogBuilder(this)
-            .setTitle("Theme Mode")
-            .setMessage("Would you like to set a specific theme mode?")
-            .setPositiveButton("Yes") { _, _ ->
-                binding.themeModeSwitch.isChecked = true
-            }
-            .setNegativeButton("No") { _, _ ->
-                binding.systemThemeRadio.isChecked = true
-                applyThemeMode(AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM)
+            .setTitle(getString(R.string.attention))
+            .setMessage(getString(R.string.if_you_turn_on_off_this_option_dynamic_theme_changes_will_be_visible_after_you_reopen_the_app))
+            .setPositiveButton(getString(R.string.ok)) { _, _ ->
+
             }
             .show()
     }
 
     private fun applyThemeMode(themeMode: Int) {
-        prefs.edit().putInt("theme_mode", themeMode).apply()
+        prefs.setInt("theme_mode", themeMode)
         AppCompatDelegate.setDefaultNightMode(themeMode)
     }
 
@@ -145,10 +143,11 @@ class SettingsActivity : AppCompatActivity() {
 
     private fun openUrl(url: String) {
         try {
-            val intent = Intent(Intent.ACTION_VIEW, Uri.parse(url))
+            val intent = Intent(Intent.ACTION_VIEW, url.toUri())
             startActivity(intent)
         } catch (e: Exception) {
-            Snackbar.make(binding.root, "Could not open URL", Snackbar.LENGTH_SHORT).show()
+            Snackbar.make(binding.root,
+                getString(R.string.could_not_open_url), Snackbar.LENGTH_SHORT).show()
         }
     }
 }
