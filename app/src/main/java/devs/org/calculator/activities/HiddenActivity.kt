@@ -47,7 +47,6 @@ class HiddenActivity : AppCompatActivity() {
         binding = ActivityHiddenBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        // Initialize managers
         fileManager = FileManager(this, this)
         folderManager = FolderManager(this)
         dialogUtil = DialogUtil(this)
@@ -56,16 +55,16 @@ class HiddenActivity : AppCompatActivity() {
         setupClickListeners()
         setupBackPressedHandler()
 
-        // Initialize permissions and load data
         fileManager.askPermission(this)
 
-        // Set initial orientation icon based on saved preference
         refreshCurrentView()
     }
 
     private fun setupInitialUIState() {
 
         binding.addFolder.visibility = View.VISIBLE
+        binding.settings.visibility = View.VISIBLE
+        binding.folderOrientation.visibility = View.VISIBLE
         binding.deleteSelected.visibility = View.GONE
         binding.delete.visibility = View.GONE
         binding.menuButton.visibility = View.GONE

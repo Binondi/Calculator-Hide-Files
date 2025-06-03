@@ -472,7 +472,7 @@ class FileAdapter(
 
     override fun onBindViewHolder(holder: FileViewHolder, position: Int, payloads: MutableList<Any>) {
         if (payloads.isEmpty()) {
-            super.onBindViewHolder(holder, position, payloads)
+            onBindViewHolder(holder, position)
         } else {
             if (position < itemCount) {
                 val file = getItem(position)
@@ -481,9 +481,18 @@ class FileAdapter(
         }
     }
 
-    /**
-     * Enter selection mode and notify callback immediately
-     */
+    override fun submitList(list: List<File>?) {
+        val currentList = currentList.toMutableList()
+        if (list == null) {
+            currentList.clear()
+            super.submitList(null)
+        } else {
+            // Create a new list to force update
+            val newList = list.toMutableList()
+            super.submitList(newList)
+        }
+    }
+
     fun enterSelectionMode() {
         if (!isSelectionMode) {
             isSelectionMode = true
@@ -491,9 +500,6 @@ class FileAdapter(
         }
     }
 
-    /**
-     * Exit selection mode and clear all selections
-     */
     fun exitSelectionMode() {
         if (isSelectionMode) {
             isSelectionMode = false
@@ -503,9 +509,6 @@ class FileAdapter(
         }
     }
 
-    /**
-     * Clear selection without exiting selection mode
-     */
     fun clearSelection() {
         if (selectedItems.isNotEmpty()) {
             val previouslySelected = selectedItems.toSet()
@@ -519,9 +522,6 @@ class FileAdapter(
         }
     }
 
-    /**
-     * Select all items
-     */
     fun selectAll() {
         if (!isSelectionMode) {
             enterSelectionMode()
@@ -542,9 +542,6 @@ class FileAdapter(
         updateSelectionItems(selectedItems.toSet(), previouslySelected)
     }
 
-    /**
-     * Efficiently update selection UI for changed items only
-     */
     private fun updateSelectionItems(newSelections: Set<Int>, oldSelections: Set<Int>) {
         val changedItems = (oldSelections - newSelections) + (newSelections - oldSelections)
         changedItems.forEach { position ->
@@ -554,36 +551,24 @@ class FileAdapter(
         }
     }
 
-    /**
-     * Centralized method to notify selection mode changes
-     */
     private fun notifySelectionModeChange() {
         fileOperationCallback?.get()?.onSelectionModeChanged(isSelectionMode, selectedItems.size)
         onFolderLongClick(isSelectionMode)
     }
 
-    /**
-     * Get selected files
-     */
     fun getSelectedItems(): List<File> {
         return selectedItems.mapNotNull { position ->
             if (position < itemCount) getItem(position) else null
         }
     }
 
-    /**
-     * Get selected file count
-     */
+
     fun getSelectedCount(): Int = selectedItems.size
 
-    /**
-     * Check if in selection mode
-     */
+
     fun isInSelectionMode(): Boolean = isSelectionMode
 
-    /**
-     * Delete selected files with proper error handling and background processing
-     */
+
     fun deleteSelectedFiles() {
         val selectedFiles = getSelectedItems()
         if (selectedFiles.isEmpty()) return
@@ -647,9 +632,7 @@ class FileAdapter(
         }
     }
 
-    /**
-     * Share selected files
-     */
+
     fun shareSelectedFiles() {
         val selectedFiles = getSelectedItems()
         if (selectedFiles.isEmpty()) return
@@ -707,10 +690,7 @@ class FileAdapter(
         exitSelectionMode()
     }
 
-    /**
-     * Handle back press - exit selection mode if active
-     * @return true if selection mode was active and has been exited, false otherwise
-     */
+
     fun onBackPressed(): Boolean {
         return if (isSelectionMode) {
             exitSelectionMode()
@@ -720,10 +700,6 @@ class FileAdapter(
         }
     }
 
-    /**
-     * Force refresh of all selection states
-     * Call this if you notice selection UI issues
-     */
     fun refreshSelectionStates() {
         if (isSelectionMode) {
             selectedItems.forEach { position ->
@@ -736,9 +712,6 @@ class FileAdapter(
         }
     }
 
-    /**
-     * Clean up resources to prevent memory leaks
-     */
     fun cleanup() {
         try {
             if (!fileExecutor.isShutdown) {
@@ -751,10 +724,6 @@ class FileAdapter(
         fileOperationCallback?.clear()
         fileOperationCallback = null
     }
-
-    /**
-     * Call this from the activity's onDestroy()
-     */
     override fun onDetachedFromRecyclerView(recyclerView: RecyclerView) {
         super.onDetachedFromRecyclerView(recyclerView)
         cleanup()

@@ -20,6 +20,7 @@ import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.lifecycleScope
 import devs.org.calculator.callbacks.FileProcessCallback
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.io.File
@@ -79,6 +80,12 @@ class FileManager(private val context: Context, private val lifecycleOwner: Life
 
             // Get the target directory (i am using the current opened folder as target folder)
             val targetDir = folderName
+            
+            // Ensure target directory exists and has .nomedia file
+            if (!targetDir.exists()) {
+                targetDir.mkdirs()
+                File(targetDir, ".nomedia").createNewFile()
+            }
 
             // Create target file
             val mimeType = contentResolver.getType(uri)
@@ -219,11 +226,7 @@ class FileManager(private val context: Context, private val lifecycleOwner: Life
                 if (documentFile?.exists() == true && documentFile.canWrite()) {
                     val deleted = documentFile.delete()
                     withContext(Dispatchers.Main) {
-                        if (deleted) {
 //                            Toast.makeText(context, "File deleted successfully", Toast.LENGTH_SHORT).show()
-                        } else {
-                            Toast.makeText(context, "Failed to hide/unhide file", Toast.LENGTH_SHORT).show()
-                        }
                     }
                     return@withContext
                 }
@@ -232,7 +235,7 @@ class FileManager(private val context: Context, private val lifecycleOwner: Life
                 try {
                     context.contentResolver.delete(photoUri, null, null)
                     withContext(Dispatchers.Main) {
-//                        Toast.makeText(context, "File deleted successfully", Toast.LENGTH_SHORT).show()
+//                            Toast.makeText(context, "File deleted successfully", Toast.LENGTH_SHORT).show()
                     }
                 } catch (e: SecurityException) {
                     // Handle security exception for Android 10 and above
@@ -290,8 +293,8 @@ class FileManager(private val context: Context, private val lifecycleOwner: Life
         }
 
     }
-    class FileManager(){
-        fun getContentUriImage(context: Context, file: File, fileType: FileType): Uri? {
+    class FileManager{
+        fun getContentUriImage(context: Context, file: File): Uri? {
 
             // Query MediaStore for the file
             val projection = arrayOf(MediaStore.MediaColumns._ID)
@@ -341,7 +344,7 @@ class FileManager(private val context: Context, private val lifecycleOwner: Life
 
     suspend fun processMultipleFiles(
         uriList: List<Uri>,
-        fileType: File,
+        targetFolder: File,
         callback: FileProcessCallback,
         currentDir: File? = null
     ) {
@@ -349,12 +352,14 @@ class FileManager(private val context: Context, private val lifecycleOwner: Life
             val copiedFiles = mutableListOf<File>()
             for (uri in uriList) {
                 try {
-                    val file = copyFileToHiddenDir(uri, fileType, currentDir)
+                    val file = copyFileToHiddenDir(uri, targetFolder, currentDir)
                     file?.let { copiedFiles.add(it) }
                 } catch (e: Exception) {
                     e.printStackTrace()
                 }
             }
+            delay(500)
+            
             withContext(Dispatchers.Main) {
                 if (copiedFiles.isNotEmpty()) {
                     callback.onFilesProcessedSuccessfully(copiedFiles)

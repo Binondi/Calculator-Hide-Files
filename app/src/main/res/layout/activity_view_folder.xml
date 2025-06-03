@@ -23,6 +23,7 @@
             android:layout_width="40dp"
             android:layout_height="40dp"
             android:src="@drawable/ic_back"
+            app:tint="@color/svgTintColor"
             android:scaleType="fitCenter"
             android:background="#00000000"
             android:padding="8dp"
@@ -39,11 +40,12 @@
             android:id="@+id/folderName"/>
 
 
-        <ImageButton
+        <androidx.appcompat.widget.AppCompatImageButton
             android:id="@+id/menuButton"
             android:layout_width="40dp"
             android:layout_height="40dp"
             android:src="@drawable/ic_more"
+            app:tint="?attr/colorPrimary"
             android:scaleType="fitCenter"
             android:padding="7dp"
             android:visibility="gone"
@@ -100,7 +102,6 @@
         android:text="@string/add_image"
         app:tint="@color/white"
         android:visibility="gone"
-        app:fabCustomSize="48dp"
         android:backgroundTint="?attr/colorPrimary"
         app:layout_constraintBottom_toTopOf="@+id/addVideo"
         app:layout_constraintEnd_toEndOf="@+id/addVideo"
@@ -113,7 +114,6 @@
         android:layout_marginBottom="10dp"
         android:src="@drawable/video_add"
         android:text="@string/add_image"
-        app:fabCustomSize="49dp"
         android:visibility="gone"
         app:tint="@color/white"
         android:backgroundTint="?attr/colorPrimary"
@@ -129,7 +129,6 @@
         android:layout_marginBottom="10dp"
         android:src="@drawable/music_add"
         android:text="@string/add_image"
-        app:fabCustomSize="51dp"
         android:visibility="gone"
         app:tint="@color/white"
         android:backgroundTint="?attr/colorPrimary"
@@ -144,7 +143,6 @@
         android:src="@drawable/document_add"
         android:text="@string/add_image"
         android:layout_marginBottom="10dp"
-        app:fabCustomSize="54dp"
         app:tint="@color/white"
         android:visibility="gone"
         android:backgroundTint="?attr/colorPrimary"
@@ -161,7 +159,6 @@
         android:src="@drawable/ic_add"
         android:backgroundTint="?attr/colorPrimary"
         android:text="@string/add_image"
-        app:fabCustomSize="60dp"
         app:tint="@color/white"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent" />

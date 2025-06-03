@@ -23,6 +23,7 @@
             android:layout_width="40dp"
             android:layout_height="40dp"
             android:src="@drawable/ic_back"
+            app:tint="@color/svgTintColor"
             android:scaleType="fitCenter"
             android:background="#00000000"
             android:padding="8dp"
@@ -38,17 +39,18 @@
             android:layout_weight="1"
             android:id="@+id/folderName"/>
 
-        <ImageButton
+        <androidx.appcompat.widget.AppCompatImageButton
             android:layout_width="40dp"
             android:layout_height="40dp"
             android:src="@drawable/ic_edit"
+            app:tint="?attr/colorPrimary"
             android:scaleType="fitCenter"
             android:padding="9dp"
             android:visibility="gone"
             android:background="#00000000"
             android:id="@+id/edit"/>
 
-        <ImageButton
+        <androidx.appcompat.widget.AppCompatImageButton
             android:id="@+id/delete"
             android:layout_width="40dp"
             android:layout_height="40dp"
@@ -56,31 +58,36 @@
             android:padding="9dp"
             android:scaleType="fitCenter"
             android:src="@drawable/ic_delete"
+            app:tint="?attr/colorPrimary"
             android:visibility="gone" />
 
-        <ImageButton
+        <androidx.appcompat.widget.AppCompatImageButton
             android:id="@+id/menuButton"
             android:layout_width="40dp"
             android:layout_height="40dp"
             android:src="@drawable/ic_more"
+            app:tint="?attr/colorPrimary"
             android:scaleType="fitCenter"
             android:padding="9dp"
             android:visibility="gone"
             android:background="#00000000"/>
 
-        <ImageButton
+        <androidx.appcompat.widget.AppCompatImageButton
             android:layout_width="40dp"
             android:layout_height="40dp"
             android:src="@drawable/ic_list"
             android:scaleType="fitCenter"
+            app:tint="?attr/colorPrimary"
             android:background="#00000000"
             android:padding="8dp"
             android:id="@+id/folderOrientation"/>
-        <ImageButton
+        <androidx.appcompat.widget.AppCompatImageButton
             android:layout_width="40dp"
             android:layout_height="40dp"
             android:src="@drawable/ic_settings"
             android:scaleType="fitCenter"
+            app:tint="?attr/colorPrimary"
+
             android:background="#00000000"
             android:padding="8dp"
             android:id="@+id/settings"/>

@@ -125,7 +125,7 @@ class PreviewActivity : AppCompatActivity() {
 
     private fun clickListeners() {
         binding.delete.setOnClickListener {
-            val fileUri = FileManager.FileManager().getContentUriImage(this, files[binding.viewPager.currentItem], filetype)
+            val fileUri = FileManager.FileManager().getContentUriImage(this, files[binding.viewPager.currentItem])
             if (fileUri != null) {
                 dialogUtil.showMaterialDialog(
                     getString(R.string.delete_file),
@@ -153,7 +153,7 @@ class PreviewActivity : AppCompatActivity() {
         }
 
         binding.unHide.setOnClickListener {
-            val fileUri = FileManager.FileManager().getContentUriImage(this, files[binding.viewPager.currentItem], filetype)
+            val fileUri = FileManager.FileManager().getContentUriImage(this, files[binding.viewPager.currentItem])
             if (fileUri != null) {
                 dialogUtil.showMaterialDialog(
                     getString(R.string.un_hide_file),

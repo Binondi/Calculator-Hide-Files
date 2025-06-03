@@ -3,6 +3,7 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
+    android:layout_marginHorizontal="8dp"
     android:layout_height="wrap_content">
 
     <com.google.android.material.card.MaterialCardView
@@ -48,6 +49,7 @@
                     android:layout_height="48dp"
                     android:padding="8dp"
                     android:layout_gravity="center"
+                    app:tint="?attr/colorPrimary"
                     android:src="@drawable/ic_folder" />
 
                 <LinearLayout

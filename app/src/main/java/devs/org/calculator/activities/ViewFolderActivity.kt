@@ -27,7 +27,6 @@ import devs.org.calculator.utils.DialogUtil
 import devs.org.calculator.utils.FileManager
 import devs.org.calculator.utils.FileManager.Companion.HIDDEN_DIR
 import devs.org.calculator.utils.FolderManager
-import devs.org.calculator.utils.PrefsUtil
 import kotlinx.coroutines.launch
 import java.io.File
 
@@ -52,7 +51,7 @@ class ViewFolderActivity : AppCompatActivity() {
     private var customDialog: androidx.appcompat.app.AlertDialog? = null
 
     private var dialogShowTime: Long = 0
-    private val MINIMUM_DIALOG_DURATION = 1700L
+    private val MINIMUM_DIALOG_DURATION = 1200L
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -110,6 +109,7 @@ class ViewFolderActivity : AppCompatActivity() {
         }
     }
 
+    @SuppressLint("SetTextI18n")
     private fun showCustomDialog(count: Int) {
         val dialogView = ProccessingDialogBinding.inflate(layoutInflater)
         customDialog = MaterialAlertDialogBuilder(this)
@@ -129,16 +129,26 @@ class ViewFolderActivity : AppCompatActivity() {
             mainHandler.postDelayed({
                 customDialog?.dismiss()
                 customDialog = null
+                updateFilesToAdapter()
             }, remainingTime)
         } else {
             customDialog?.dismiss()
             customDialog = null
+            updateFilesToAdapter()
         }
+    }
+
+    private fun updateFilesToAdapter() {
+        openFolder(currentFolder!!)
     }
 
 
     private fun processSelectedFiles(uriList: List<Uri>) {
         val targetFolder = currentFolder ?: hiddenDir
+        if (!targetFolder.exists()) {
+            targetFolder.mkdirs()
+            File(targetFolder, ".nomedia").createNewFile()
+        }
 
         showCustomDialog(uriList.size)
         lifecycleScope.launch {
@@ -147,8 +157,9 @@ class ViewFolderActivity : AppCompatActivity() {
                     object : FileProcessCallback {
                         override fun onFilesProcessedSuccessfully(copiedFiles: List<File>) {
                             mainHandler.post {
-                                refreshCurrentView()
-                                dismissCustomDialog()
+                                mainHandler.postDelayed({
+                                    dismissCustomDialog()
+                                }, 1000)
                             }
                         }
 
@@ -188,6 +199,11 @@ class ViewFolderActivity : AppCompatActivity() {
     }
 
     private fun openFolder(folder: File) {
+        // Ensure folder exists and has .nomedia file
+        if (!folder.exists()) {
+            folder.mkdirs()
+            File(folder, ".nomedia").createNewFile()
+        }
 
         val files = folderManager.getFilesInFolder(folder)
         binding.folderName.text = folder.name
@@ -212,7 +228,7 @@ class ViewFolderActivity : AppCompatActivity() {
 
         fileAdapter = FileAdapter(this, this, folder, prefs.getBoolean("showFileName", true),
             onFolderLongClick = { isSelected ->
-                handleFileSelectionModeChange(isSelected, 0)
+                handleFileSelectionModeChange(isSelected)
             }).apply {
             setFileOperationCallback(object : FileAdapter.FileOperationCallback {
                 override fun onFileDeleted(file: File) {
@@ -228,7 +244,7 @@ class ViewFolderActivity : AppCompatActivity() {
                 }
 
                 override fun onSelectionModeChanged(isSelectionMode: Boolean, selectedCount: Int) {
-                    handleFileSelectionModeChange(isSelectionMode, selectedCount)
+                    handleFileSelectionModeChange(isSelectionMode)
                 }
 
                 override fun onSelectionCountChanged(selectedCount: Int) {
@@ -243,18 +259,16 @@ class ViewFolderActivity : AppCompatActivity() {
         binding.recyclerView.visibility = View.VISIBLE
         binding.noItems.visibility = View.GONE
 
-        // Setup menu button click listener
         binding.menuButton.setOnClickListener {
             fileAdapter?.let { adapter ->
                 showFileOptionsMenu(adapter.getSelectedItems())
             }
         }
-
-        // Set initial UI state
         showFileViewIcons()
     }
 
 
+    @Deprecated("This method has been deprecated in favor of using the\n      {@link OnBackPressedDispatcher} via {@link #getOnBackPressedDispatcher()}.\n      The OnBackPressedDispatcher controls how back button events are dispatched\n      to one or more {@link OnBackPressedCallback} objects.")
     @SuppressLint("MissingSuperCall")
     override fun onBackPressed() {
         handleBackPress()
@@ -268,7 +282,7 @@ class ViewFolderActivity : AppCompatActivity() {
         super.onBackPressed()
     }
 
-    private fun handleFileSelectionModeChange(isSelectionMode: Boolean, selectedCount: Int) {
+    private fun handleFileSelectionModeChange(isSelectionMode: Boolean) {
         if (isSelectionMode) {
             showFileSelectionIcons()
         } else {
@@ -277,7 +291,6 @@ class ViewFolderActivity : AppCompatActivity() {
     }
 
     private fun updateSelectionCountDisplay(selectedCount: Int) {
-        // Update any UI elements that show selection count
         if (selectedCount > 0) {
             showFileSelectionIcons()
         } else {
@@ -366,13 +379,10 @@ class ViewFolderActivity : AppCompatActivity() {
     private fun refreshCurrentFolder() {
         currentFolder?.let { folder ->
             val files = folderManager.getFilesInFolder(folder)
-            fileAdapter?.submitList(files)
-
-            if (files.isEmpty()) {
-                showEmptyState()
-            } else {
+            if (files.isNotEmpty()) {
                 binding.recyclerView.visibility = View.VISIBLE
                 binding.noItems.visibility = View.GONE
+                fileAdapter?.submitList(files.toMutableList())
                 fileAdapter?.let { adapter ->
                     if (adapter.isInSelectionMode()) {
                         showFileSelectionIcons()
@@ -380,6 +390,8 @@ class ViewFolderActivity : AppCompatActivity() {
                         showFileViewIcons()
                     }
                 }
+            } else {
+                showEmptyState()
             }
         }
     }
@@ -414,6 +426,7 @@ class ViewFolderActivity : AppCompatActivity() {
             addFlags(Intent.FLAG_GRANT_WRITE_URI_PERMISSION)
             addFlags(Intent.FLAG_GRANT_PERSISTABLE_URI_PERMISSION)
         }
+        closeFabs()
         pickImageLauncher.launch(intent)
     }
 
@@ -481,14 +494,17 @@ class ViewFolderActivity : AppCompatActivity() {
             var allUnhidden = true
             selectedFiles.forEach { file ->
                 try {
-                    val fileUri = Uri.fromFile(file)
-                    val result = fileManager.copyFileToNormalDir(fileUri)
-                    if (result == null) {
-                        allUnhidden = false
+                    val fileUri = FileManager.FileManager().getContentUriImage(this@ViewFolderActivity, file)
+
+                    if (fileUri != null) {
+                        val result = fileManager.copyFileToNormalDir(fileUri)
+                        if (result == null) {
+                            allUnhidden = false
+                        }
                     } else {
-                        // Delete the hidden file after successful copy
-                        file.delete()
+                        allUnhidden = false
                     }
+
                 } catch (e: Exception) {
                     allUnhidden = false
                 }
