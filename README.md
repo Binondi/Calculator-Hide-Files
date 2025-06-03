@@ -68,7 +68,9 @@ The **Calculator Hide File App** is an innovative **Android file-hiding app** th
 
 3. **Manage Hidden Files**  
    - Add, remove, and restore hidden files.  
-   - Files stay protected even after closing the app.  
+   - Files stay protected even after closing the app.
+   - Create Hidden Folders.
+   - Move & Copy Hidden Files Between Hidden Folders.
 
 ---
 
@@ -78,7 +80,8 @@ The **Calculator Hide File App** is an innovative **Android file-hiding app** th
 
 ### 🔹 Prerequisites
 - **Android 6.0 or higher**  
-- **Storage permissions enabled**  
+- **Storage permissions enabled**
+- **Need Manage All Files Permissons For Android 11 and Higher Versions.**
 
 ### 🔹 Installation Steps
 ```bash
