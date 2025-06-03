@@ -49,10 +49,21 @@ The **Calculator Hide File App** is an innovative **Android file-hiding app** th
 ## 🖼️ Screenshots
 
 <div align="center">
-  <img src="app/src/main/assets/Screenshot_1.jpg" alt="Calculator Hide File App - Home Screen" width="24%">
-  <img src="app/src/main/assets/Screenshot_2.jpg" alt="Calculator Hide File App - Secure File Storage" width="24%">
-  <img src="app/src/main/assets/Screenshot_3.jpg" alt="Calculator Hide File App - Passcode Protection" width="24%">
-  <img src="app/src/main/assets/Screenshot_4.jpg" alt="Calculator Hide File App - Hidden Files Manager" width="24%">
+  <img src="app/src/main/assets/Screenshot_1.jpg" alt="Calculator Hide File App - Home Screen" width="32%">
+  <img src="app/src/main/assets/Screenshot_2.jpg" alt="Calculator Hide File App - Secure File Storage" width="32%">
+  <img src="app/src/main/assets/Screenshot_3.jpg" alt="Calculator Hidle File App - Passcode Protection" width="32%">
+</div>
+
+<div align="center">
+  <img src="app/src/main/assets/Screenshot_4.jpg" alt="Calculator Hide File App - Hidden Files Manager" width="32%">
+  <img src="app/src/main/assets/Screenshot_5.jpg" alt="Calculator Hide File App - Hidden Files Manager" width="32%">
+    <img src="app/src/main/assets/Screenshot_6.jpg" alt="Calculator Hide File App - Hidden Files Manager" width="32%">
+</div>
+
+<div align="center">
+    <img src="app/src/main/assets/Screenshot_7.jpg" alt="Calculator Hide File App - Hidden Files Manager" width="32%">
+    <img src="app/src/main/assets/Screenshot_8.jpg" alt="Calculator Hide File App - Hidden Files Manager" width="32%">
+    <img src="app/src/main/assets/Screenshot_9.jpg" alt="Calculator Hide File App - Hidden Files Manager" width="32%">
 </div>
 
 ---
