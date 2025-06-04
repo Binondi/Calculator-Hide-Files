@@ -24,7 +24,7 @@
     <string name="preview_videos">Preview Videos</string>
     <string name="preview_audios">Preview Audios</string>
     <string name="preview_documents">Preview Documents</string>
-    <string name="delete_file">Delete File</string>
+    <string name="delete_file">Delete File!</string>
     <string name="are_you_sure_to_delete_this_file_permanently">Are you sure to Delete this file permanently?</string>
     <string name="delete_permanently">Delete Permanently</string>
     <string name="cancel">Cancel</string>
@@ -148,4 +148,5 @@
     <string name="ok">OK</string>
     <string name="if_you_turn_on_off_this_option_dynamic_theme_changes_will_be_visible_after_you_reopen_the_app">If you turn on/off this option, dynamic theme changes will be visible after you reopen the app.</string>
     <string name="attention">Attention!</string>
+    <string name="are_you_sure_to_delete_selected_files_permanently">Are you sure to delete selected files permanently ?</string>
 </resources>

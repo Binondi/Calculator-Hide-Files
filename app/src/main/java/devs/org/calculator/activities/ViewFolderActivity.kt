@@ -347,8 +347,8 @@ class ViewFolderActivity : AppCompatActivity() {
 
     private fun deleteSelectedFiles(selectedFiles: List<File>) {
         dialogUtil.showMaterialDialog(
-            getString(R.string.delete_items),
-            getString(R.string.are_you_sure_you_want_to_delete_selected_items),
+            getString(R.string.delete_file),
+            getString(R.string.are_you_sure_to_delete_selected_files_permanently),
             getString(R.string.delete),
             getString(R.string.cancel),
             object : DialogUtil.DialogCallback {
