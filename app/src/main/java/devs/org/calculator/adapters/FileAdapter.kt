@@ -141,6 +141,7 @@ class FileAdapter(
                 else -> {
                     playIcon.visibility = View.GONE
                     imageView.setImageResource(R.drawable.ic_document)
+                    imageView.setPadding(50,50,50,50)
                 }
             }
         }
