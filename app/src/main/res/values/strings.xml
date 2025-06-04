@@ -107,8 +107,8 @@
     <string name="are_you_sure_you_want_to_un_hide_selected_files">Are you sure you want to unhide the selected files?</string>
     <string name="files_unhidden_successfully">Files unhidden successfully</string>
     <string name="some_files_could_not_be_unhidden">Some files could not be unhidden</string>
-    <string name="copy_to_another_folder">Copy to Another Folder</string>
-    <string name="move_to_another_folder">Move to Another Folder</string>
+    <string name="copy_to_another_folder">Copy</string>
+    <string name="move_to_another_folder">Move</string>
     <string name="select_destination_folder">Select Destination Folder</string>
     <string name="no_folders_available">No other folders available</string>
     <string name="change_password">Change Password</string>
