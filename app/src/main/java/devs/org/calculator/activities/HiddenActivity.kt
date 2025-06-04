@@ -320,7 +320,7 @@ class HiddenActivity : AppCompatActivity() {
         if (selectedFolders.isNotEmpty()) {
             dialogUtil.showMaterialDialog(
                 getString(R.string.delete_items),
-                getString(R.string.are_you_sure_you_want_to_delete_selected_items),
+               "${getString(R.string.are_you_sure_you_want_to_delete_selected_items)}\n ${getString(R.string.folder_will_be_deleted_permanently)}" ,
                 getString(R.string.delete),
                 getString(R.string.cancel),
                 object : DialogUtil.DialogCallback {

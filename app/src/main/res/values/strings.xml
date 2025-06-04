@@ -79,6 +79,7 @@
     <string name="error_loading_files">Error loading files</string>
     <string name="delete_items">Delete Folder</string>
     <string name="are_you_sure_you_want_to_delete_selected_items">Are you sure you want to delete selected Folders?</string>
+    <string name="folder_will_be_deleted_permanently">Note: If you delete the folder(S) all the files available inside the folder will be deleted !</string>
     <string name="items_deleted_successfully">Items deleted successfully</string>
     <string name="folder_deleted_successfully">Folder deleted successfully</string>
     <string name="some_items_could_not_be_deleted">Some items could not be deleted</string>
