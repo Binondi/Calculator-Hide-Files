@@ -77,19 +77,11 @@
                         android:gravity="center_vertical"
                         android:orientation="horizontal">
 
-                        <androidx.cardview.widget.CardView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            app:cardCornerRadius="10dp"
-                            android:background="#00000000"
-                            android:backgroundTint="#00000000"
-                            app:cardElevation="0dp">
-                            <ImageView
-                                android:id="@+id/appLogo"
-                                android:layout_width="48dp"
-                                android:layout_height="48dp"
-                                android:src="@mipmap/ic_launcher" />
-                        </androidx.cardview.widget.CardView>
+                        <ImageView
+                            android:id="@+id/appLogo"
+                            android:layout_width="58dp"
+                            android:layout_height="58dp"
+                            android:src="@drawable/logo" />
 
 
                         <LinearLayout
