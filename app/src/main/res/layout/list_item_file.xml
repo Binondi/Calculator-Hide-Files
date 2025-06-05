@@ -60,6 +60,13 @@
             android:src="@drawable/ic_play_circle"
             android:layout_gravity="center"/>
         <ImageView
+            android:layout_width="30dp"
+            android:layout_height="30dp"
+            android:visibility="gone"
+            android:src="@drawable/encrypted"
+            android:layout_gravity="end"
+            android:id="@+id/encrypted"/>
+        <ImageView
             android:id="@+id/selected"
             android:layout_width="20dp"
             android:layout_height="20dp"
@@ -69,6 +76,7 @@
             android:src="@drawable/selected"
             android:background="@drawable/gradient_bg"
             android:layout_gravity="end"/>
+
     </FrameLayout>
 
 

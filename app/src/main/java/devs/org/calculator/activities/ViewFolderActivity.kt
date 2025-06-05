@@ -7,6 +7,7 @@ import android.os.Bundle
 import android.os.Environment
 import android.os.Handler
 import android.os.Looper
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.animation.Animation
@@ -20,19 +21,21 @@ import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.bottomsheet.BottomSheetDialog
-import com.google.android.material.color.DynamicColors
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import devs.org.calculator.R
 import devs.org.calculator.adapters.FileAdapter
 import devs.org.calculator.adapters.FolderSelectionAdapter
 import devs.org.calculator.callbacks.FileProcessCallback
+import devs.org.calculator.database.HiddenFileEntity
 import devs.org.calculator.databinding.ActivityViewFolderBinding
 import devs.org.calculator.databinding.ProccessingDialogBinding
 import devs.org.calculator.utils.DialogUtil
 import devs.org.calculator.utils.FileManager
+import devs.org.calculator.utils.FileManager.Companion.ENCRYPTED_EXTENSION
 import devs.org.calculator.utils.FileManager.Companion.HIDDEN_DIR
 import devs.org.calculator.utils.FolderManager
 import devs.org.calculator.utils.PrefsUtil
+import devs.org.calculator.utils.SecurityUtils
 import kotlinx.coroutines.launch
 import java.io.File
 
@@ -84,8 +87,8 @@ class ViewFolderActivity : AppCompatActivity() {
         fileManager = FileManager(this, this)
         folderManager = FolderManager()
         dialogUtil = DialogUtil(this)
-    }
 
+    }
 
     private fun setupActivityResultLaunchers() {
         pickImageLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
@@ -163,6 +166,35 @@ class ViewFolderActivity : AppCompatActivity() {
                     object : FileProcessCallback {
                         override fun onFilesProcessedSuccessfully(copiedFiles: List<File>) {
                             mainHandler.post {
+                                // Add files to Room database
+                                copiedFiles.forEach { file ->
+                                    val fileType = fileManager.getFileType(file)
+                                    var finalFile = file
+                                    val extension = ".${file.extension}"
+                                    val isEncrypted = prefs.getBoolean("encryption",false)
+
+                                    if (isEncrypted) {
+                                        val encryptedFile = SecurityUtils.changeFileExtension(file, ENCRYPTED_EXTENSION)
+                                        if (SecurityUtils.encryptFile(this@ViewFolderActivity, file, encryptedFile)) {
+                                            finalFile = encryptedFile
+                                            file.delete()
+                                        }
+                                    }
+
+                                    lifecycleScope.launch {
+                                        fileAdapter?.hiddenFileRepository?.insertHiddenFile(
+                                            HiddenFileEntity(
+                                                filePath = finalFile.absolutePath,
+                                                fileName = file.name,
+                                                fileType = fileType,
+                                                originalExtension = extension,
+                                                isEncrypted = isEncrypted,
+                                                encryptedFileName = finalFile.name
+                                            )
+                                        )
+                                    }
+                                }
+
                                 mainHandler.postDelayed({
                                     dismissCustomDialog()
                                 }, 1000)
@@ -298,24 +330,54 @@ class ViewFolderActivity : AppCompatActivity() {
     private fun showFileOptionsMenu(selectedFiles: List<File>) {
         if (selectedFiles.isEmpty()) return
 
-        val options = arrayOf(
-            getString(R.string.un_hide),
-            getString(R.string.delete),
-            getString(R.string.copy_to_another_folder),
-            getString(R.string.move_to_another_folder)
-        )
-
-        MaterialAlertDialogBuilder(this)
-            .setTitle(getString(R.string.file_options))
-            .setItems(options) { _, which ->
-                when (which) {
-                    0 -> unhideSelectedFiles(selectedFiles)
-                    1 -> deleteSelectedFiles(selectedFiles)
-                    2 -> copyToAnotherFolder(selectedFiles)
-                    3 -> moveToAnotherFolder(selectedFiles)
+        lifecycleScope.launch {
+            // Check if any files are encrypted
+            var hasEncryptedFiles = false
+            var hasDecryptedFiles = false
+            
+            for (file in selectedFiles) {
+                val hiddenFile = fileAdapter?.hiddenFileRepository?.getHiddenFileByPath(file.absolutePath)
+                if (hiddenFile?.isEncrypted == true) {
+                    hasEncryptedFiles = true
+                } else {
+                    hasDecryptedFiles = true
                 }
             }
-            .show()
+
+            val options = mutableListOf(
+                getString(R.string.un_hide),
+                getString(R.string.delete),
+                getString(R.string.copy_to_another_folder),
+                getString(R.string.move_to_another_folder)
+            )
+
+            // Add encryption/decryption options based on file status
+            if (hasDecryptedFiles) {
+                options.add(getString(R.string.encrypt_file))
+            }
+            if (hasEncryptedFiles) {
+                options.add(getString(R.string.decrypt_file))
+            }
+
+            MaterialAlertDialogBuilder(this@ViewFolderActivity)
+                .setTitle(getString(R.string.file_options))
+                .setItems(options.toTypedArray()) { _, which ->
+                    when (which) {
+                        0 -> unhideSelectedFiles(selectedFiles)
+                        1 -> deleteSelectedFiles(selectedFiles)
+                        2 -> copyToAnotherFolder(selectedFiles)
+                        3 -> moveToAnotherFolder(selectedFiles)
+                        else -> {
+                            val option = options[which]
+                            when (option) {
+                                getString(R.string.encrypt_file) -> fileAdapter?.encryptSelectedFiles()
+                                getString(R.string.decrypt_file) -> fileAdapter?.decryptSelectedFiles()
+                            }
+                        }
+                    }
+                }
+                .show()
+        }
     }
 
     private fun moveToAnotherFolder(selectedFiles: List<File>) {
@@ -334,6 +396,7 @@ class ViewFolderActivity : AppCompatActivity() {
             object : DialogUtil.DialogCallback {
                 override fun onPositiveButtonClicked() {
                     performFileUnhiding(selectedFiles)
+
                 }
 
                 override fun onNegativeButtonClicked() {}
@@ -367,20 +430,25 @@ class ViewFolderActivity : AppCompatActivity() {
 
     private fun refreshCurrentFolder() {
         currentFolder?.let { folder ->
-            val files = folderManager.getFilesInFolder(folder)
-            if (files.isNotEmpty()) {
-                binding.recyclerView.visibility = View.VISIBLE
-                binding.noItems.visibility = View.GONE
-                fileAdapter?.submitList(files.toMutableList())
-                fileAdapter?.let { adapter ->
-                    if (adapter.isInSelectionMode()) {
-                        showFileSelectionIcons()
+            lifecycleScope.launch {
+                val files = folderManager.getFilesInFolder(folder)
+                mainHandler.post {
+                    if (files.isNotEmpty()) {
+                        binding.recyclerView.visibility = View.VISIBLE
+                        binding.noItems.visibility = View.GONE
+                        // Submit new list directly
+                        fileAdapter?.submitList(files.toMutableList())
+                        fileAdapter?.let { adapter ->
+                            if (adapter.isInSelectionMode()) {
+                                showFileSelectionIcons()
+                            } else {
+                                showFileViewIcons()
+                            }
+                        }
                     } else {
-                        showFileViewIcons()
+                        showEmptyState()
                     }
                 }
-            } else {
-                showEmptyState()
             }
         }
     }
@@ -478,58 +546,34 @@ class ViewFolderActivity : AppCompatActivity() {
         isFabOpen = false
     }
 
-    private fun performFileUnhiding(selectedFiles: List<File>) {
+    private fun performFileDeletion(selectedFiles: List<File>) {
         lifecycleScope.launch {
-            var allUnhidden = true
+            var allDeleted = true
             selectedFiles.forEach { file ->
                 try {
-                    val fileUri = FileManager.FileManager().getContentUriImage(this@ViewFolderActivity, file)
-
-                    if (fileUri != null) {
-                        val result = fileManager.copyFileToNormalDir(fileUri)
-                        if (result == null) {
-                            allUnhidden = false
-                        }
-                    } else {
-                        allUnhidden = false
+                    val hiddenFile = fileAdapter?.hiddenFileRepository?.getHiddenFileByPath(file.absolutePath)
+                    hiddenFile?.let {
+                        fileAdapter?.hiddenFileRepository?.deleteHiddenFile(it)
                     }
-
+                    if (!file.delete()) {
+                        allDeleted = false
+                    }
                 } catch (e: Exception) {
-                    allUnhidden = false
+                    Log.e("ViewFolderActivity", "Error deleting file: ${e.message}")
+                    allDeleted = false
                 }
             }
 
-            mainHandler.post {
-                val message = if (allUnhidden) {
-                    getString(R.string.files_unhidden_successfully)
-                } else {
-                    getString(R.string.some_files_could_not_be_unhidden)
-                }
-
-                Toast.makeText(this@ViewFolderActivity, message, Toast.LENGTH_SHORT).show()
-                fileAdapter?.exitSelectionMode()
-                refreshCurrentFolder()
+            val message = if (allDeleted) {
+                getString(R.string.files_deleted_successfully)
+            } else {
+                getString(R.string.some_items_could_not_be_deleted)
             }
-        }
-    }
 
-    private fun performFileDeletion(selectedFiles: List<File>) {
-        var allDeleted = true
-        selectedFiles.forEach { file ->
-            if (!file.delete()) {
-                allDeleted = false
-            }
+            Toast.makeText(this@ViewFolderActivity, message, Toast.LENGTH_SHORT).show()
+            fileAdapter?.exitSelectionMode()
+            refreshCurrentFolder()
         }
-
-        val message = if (allDeleted) {
-            getString(R.string.files_deleted_successfully)
-        } else {
-            getString(R.string.some_items_could_not_be_deleted)
-        }
-
-        Toast.makeText(this, message, Toast.LENGTH_SHORT).show()
-        fileAdapter?.exitSelectionMode()
-        refreshCurrentFolder()
     }
 
     private fun copyToAnotherFolder(selectedFiles: List<File>) {
@@ -539,38 +583,67 @@ class ViewFolderActivity : AppCompatActivity() {
     }
 
     private fun copyFilesToFolder(selectedFiles: List<File>, destinationFolder: File) {
-        var allCopied = true
-        selectedFiles.forEach { file ->
-            try {
-                val newFile = File(destinationFolder, file.name)
-                file.copyTo(newFile, overwrite = true)
-            } catch (e: Exception) {
-                allCopied = false
+        lifecycleScope.launch {
+            var allCopied = true
+            selectedFiles.forEach { file ->
+                try {
+                    val newFile = File(destinationFolder, file.name)
+                    file.copyTo(newFile, overwrite = true)
+                    val hiddenFile = fileAdapter?.hiddenFileRepository?.getHiddenFileByPath(file.absolutePath)
+                    hiddenFile?.let {
+                        fileAdapter?.hiddenFileRepository?.insertHiddenFile(
+                            HiddenFileEntity(
+                                filePath = newFile.absolutePath,
+                                fileName = it.fileName,
+                                fileType = it.fileType,
+                                originalExtension = it.originalExtension,
+                                isEncrypted = it.isEncrypted,
+                                encryptedFileName = it.encryptedFileName
+                            )
+                        )
+                    }
+                } catch (e: Exception) {
+                    Log.e("ViewFolderActivity", "Error copying file: ${e.message}")
+                    allCopied = false
+                }
             }
-        }
 
-        val message = if (allCopied) getString(R.string.files_copied_successfully) else getString(R.string.some_files_could_not_be_copied)
-        Toast.makeText(this, message, Toast.LENGTH_SHORT).show()
-        fileAdapter?.exitSelectionMode()
-        refreshCurrentFolder()
+            val message = if (allCopied) getString(R.string.files_copied_successfully) else getString(R.string.some_files_could_not_be_copied)
+            Toast.makeText(this@ViewFolderActivity, message, Toast.LENGTH_SHORT).show()
+            fileAdapter?.exitSelectionMode()
+            refreshCurrentFolder()
+        }
     }
 
     private fun moveFilesToFolder(selectedFiles: List<File>, destinationFolder: File) {
-        var allMoved = true
-        selectedFiles.forEach { file ->
-            try {
-                val newFile = File(destinationFolder, file.name)
-                file.copyTo(newFile, overwrite = true)
-                file.delete()
-            } catch (e: Exception) {
-                allMoved = false
-            }
-        }
+        lifecycleScope.launch {
+            var allMoved = true
+            selectedFiles.forEach { file ->
+                try {
+                    val newFile = File(destinationFolder, file.name)
+                    file.copyTo(newFile, overwrite = true)
+                    val hiddenFile = fileAdapter?.hiddenFileRepository?.getHiddenFileByPath(file.absolutePath)
+                    hiddenFile?.let {
+                        fileAdapter?.hiddenFileRepository?.updateEncryptionStatus(
+                            filePath = file.absolutePath,
+                            newFilePath = newFile.absolutePath,
+                            encryptedFileName = it.encryptedFileName,
+                            isEncrypted = it.isEncrypted
+                        )
+                    }
 
-        val message = if (allMoved) getString(R.string.files_moved_successfully) else getString(R.string.some_files_could_not_be_moved)
-        Toast.makeText(this, message, Toast.LENGTH_SHORT).show()
-        fileAdapter?.exitSelectionMode()
-        refreshCurrentFolder()
+                    file.delete()
+                } catch (e: Exception) {
+                    Log.e("ViewFolderActivity", "Error moving file: ${e.message}")
+                    allMoved = false
+                }
+            }
+
+            val message = if (allMoved) getString(R.string.files_moved_successfully) else getString(R.string.some_files_could_not_be_moved)
+            Toast.makeText(this@ViewFolderActivity, message, Toast.LENGTH_SHORT).show()
+            fileAdapter?.exitSelectionMode()
+            refreshCurrentFolder()
+        }
     }
 
     private fun showFolderSelectionDialog(onFolderSelected: (File) -> Unit) {
@@ -595,5 +668,81 @@ class ViewFolderActivity : AppCompatActivity() {
         }
 
         bottomSheetDialog.show()
+    }
+
+    private fun performFileUnhiding(selectedFiles: List<File>) {
+        lifecycleScope.launch {
+            var allUnhidden = true
+            selectedFiles.forEach { file ->
+                try {
+                    val hiddenFile = fileAdapter?.hiddenFileRepository?.getHiddenFileByPath(file.absolutePath)
+
+                    if (hiddenFile?.isEncrypted == true) {
+                        val originalExtension = hiddenFile.originalExtension
+                        val decryptedFile = SecurityUtils.changeFileExtension(file, originalExtension)
+                        
+                        if (SecurityUtils.decryptFile(this@ViewFolderActivity, file, decryptedFile)) {
+                            if (decryptedFile.exists() && decryptedFile.length() > 0) {
+                                val fileUri = FileManager.FileManager().getContentUriImage(this@ViewFolderActivity, decryptedFile)
+                                if (fileUri != null) {
+                                    val result = fileManager.copyFileToNormalDir(fileUri)
+                                    if (result != null) {
+                                        hiddenFile.let {
+                                            fileAdapter?.hiddenFileRepository?.deleteHiddenFile(it)
+                                        }
+                                        file.delete()
+                                        decryptedFile.delete()
+                                    } else {
+                                        decryptedFile.delete()
+                                        allUnhidden = false
+                                    }
+                                } else {
+                                    decryptedFile.delete()
+                                    allUnhidden = false
+                                }
+                            } else {
+                                decryptedFile.delete()
+                                allUnhidden = false
+                            }
+                        } else {
+                            if (decryptedFile.exists()) {
+                                decryptedFile.delete()
+                            }
+                            allUnhidden = false
+                        }
+                    } else {
+                        val fileUri = FileManager.FileManager().getContentUriImage(this@ViewFolderActivity, file)
+                        if (fileUri != null) {
+                            val result = fileManager.copyFileToNormalDir(fileUri)
+                            if (result != null) {
+                                hiddenFile?.let {
+                                    fileAdapter?.hiddenFileRepository?.deleteHiddenFile(it)
+                                }
+                                file.delete()
+                            } else {
+                                allUnhidden = false
+                            }
+                        } else {
+                            allUnhidden = false
+                        }
+                    }
+                } catch (e: Exception) {
+                    Log.e("ViewFolderActivity", "Error unhiding file: ${e.message}")
+                    allUnhidden = false
+                }
+            }
+
+            mainHandler.post {
+                val message = if (allUnhidden) {
+                    getString(R.string.files_unhidden_successfully)
+                } else {
+                    getString(R.string.some_files_could_not_be_unhidden)
+                }
+
+                Toast.makeText(this@ViewFolderActivity, message, Toast.LENGTH_SHORT).show()
+                fileAdapter?.exitSelectionMode()
+                refreshCurrentFolder()
+            }
+        }
     }
 }

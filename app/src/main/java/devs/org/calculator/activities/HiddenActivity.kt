@@ -188,7 +188,6 @@ class HiddenActivity : AppCompatActivity() {
     }
 
     private fun setupFlagSecure() {
-        val prefs = getSharedPreferences("app_settings", MODE_PRIVATE)
         if (prefs.getBoolean("screenshot_restriction", true)) {
             window.setFlags(
                 WindowManager.LayoutParams.FLAG_SECURE,

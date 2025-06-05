@@ -27,10 +27,20 @@ import java.io.File
 import android.Manifest
 import androidx.core.content.FileProvider
 import devs.org.calculator.R
+import devs.org.calculator.database.AppDatabase
+import devs.org.calculator.database.HiddenFileRepository
+import devs.org.calculator.utils.PrefsUtil
+import android.util.Log
+import devs.org.calculator.database.HiddenFileEntity
+import java.io.FileOutputStream
 
 class FileManager(private val context: Context, private val lifecycleOwner: LifecycleOwner) {
     private lateinit var intentSenderLauncher: ActivityResultLauncher<IntentSenderRequest>
     val intent = Intent()
+    private val prefs: PrefsUtil by lazy { PrefsUtil(context) }
+    val hiddenFileRepository: HiddenFileRepository by lazy {
+        HiddenFileRepository(AppDatabase.getDatabase(context).hiddenFileDao())
+    }
 
     companion object {
         const val HIDDEN_DIR = ".CalculatorHide"
@@ -38,6 +48,7 @@ class FileManager(private val context: Context, private val lifecycleOwner: Life
         const val VIDEOS_DIR = "videos"
         const val AUDIO_DIR = "audio"
         const val DOCS_DIR = "documents"
+        const val ENCRYPTED_EXTENSION = ".enc"
     }
 
     fun getHiddenDirectory(): File {
@@ -92,7 +103,7 @@ class FileManager(private val context: Context, private val lifecycleOwner: Life
             val extension = MimeTypeMap.getSingleton()
                 .getExtensionFromMimeType(mimeType) ?: ""
             val fileName = "${System.currentTimeMillis()}.${extension}"
-            val targetFile = File(targetDir, fileName)
+            var targetFile = File(targetDir, fileName)
 
             // Copy file using DocumentFile
             contentResolver.openInputStream(uri)?.use { input ->
@@ -105,6 +116,8 @@ class FileManager(private val context: Context, private val lifecycleOwner: Life
             if (!targetFile.exists() || targetFile.length() == 0L) {
                 throw Exception("File copy failed")
             }
+
+            // Encrypt file if encryption is enabled
 
             // Media scan the new file to hide it
             val mediaScanIntent = Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE)
@@ -179,41 +192,39 @@ class FileManager(private val context: Context, private val lifecycleOwner: Life
                     targetFile
                 }
 
-                // Copy file content
-                file.copyTo(finalTargetFile, overwrite = false)
-
-                // Verify copy success
-                if (finalTargetFile.exists() && finalTargetFile.length() > 0) {
-                    // Delete original hidden file
-                    if (file.delete()) {
-                        // Trigger media scan for the new file
-                        val mediaScanIntent = Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE)
-                        mediaScanIntent.data = Uri.fromFile(finalTargetFile)
-                        context.sendBroadcast(mediaScanIntent)
-
-                        withContext(Dispatchers.Main) {
-                            Toast.makeText(context, context.getString(R.string.file_unhidden_successfully), Toast.LENGTH_SHORT).show()
-                            onSuccess?.invoke() // Call success callback
-                        }
+                // Check if file is encrypted
+                if (file.extension == ENCRYPTED_EXTENSION) {
+                    // Decrypt file
+                    val decryptedFile = SecurityUtils.changeFileExtension(file, SecurityUtils.getFileExtension(file))
+                    if (SecurityUtils.decryptFile(context, file, decryptedFile)) {
+                        decryptedFile.copyTo(finalTargetFile, overwrite = false)
+                        decryptedFile.delete()
                     } else {
-                        withContext(Dispatchers.Main) {
-                            Toast.makeText(context, "File copied but failed to remove from hidden folder", Toast.LENGTH_SHORT).show()
-                            onError?.invoke("Failed to remove from hidden folder")
-                        }
+                        throw Exception("Failed to decrypt file")
                     }
                 } else {
-                    withContext(Dispatchers.Main) {
-                        Toast.makeText(context, "Failed to copy file", Toast.LENGTH_SHORT).show()
-                        onError?.invoke("Failed to copy file")
-                    }
+                    // Copy file content
+                    file.copyTo(finalTargetFile, overwrite = false)
                 }
 
-            } catch (e: Exception) {
-                withContext(Dispatchers.Main) {
-                    Toast.makeText(context, "Error unhiding file: ${e.message}", Toast.LENGTH_LONG).show()
-                    onError?.invoke(e.message ?: "Unknown error")
+                // Verify copy success
+                if (!finalTargetFile.exists() || finalTargetFile.length() == 0L) {
+                    throw Exception("File copy failed")
                 }
+
+                // Media scan the new file
+                val mediaScanIntent = Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE)
+                mediaScanIntent.data = Uri.fromFile(finalTargetFile)
+                context.sendBroadcast(mediaScanIntent)
+
+                withContext(Dispatchers.Main) {
+                    onSuccess?.invoke()
+                }
+            } catch (e: Exception) {
                 e.printStackTrace()
+                withContext(Dispatchers.Main) {
+                    onError?.invoke(e.message ?: "Unknown error occurred")
+                }
             }
         }
     }

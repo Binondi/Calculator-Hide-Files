@@ -15,6 +15,9 @@ import devs.org.calculator.utils.FileManager
 import devs.org.calculator.utils.PrefsUtil
 import kotlinx.coroutines.launch
 import java.io.File
+import devs.org.calculator.database.AppDatabase
+import devs.org.calculator.database.HiddenFileRepository
+import android.util.Log
 
 class PreviewActivity : AppCompatActivity() {
 
@@ -27,7 +30,14 @@ class PreviewActivity : AppCompatActivity() {
     private lateinit var adapter: ImagePreviewAdapter
     private lateinit var fileManager: FileManager
     private val dialogUtil = DialogUtil(this)
-    private val prefs:PrefsUtil by lazy { PrefsUtil(this) }
+    private val prefs: PrefsUtil by lazy { PrefsUtil(this) }
+    private val hiddenFileRepository: HiddenFileRepository by lazy {
+        HiddenFileRepository(AppDatabase.getDatabase(this).hiddenFileDao())
+    }
+
+    companion object {
+        private const val TAG = "PreviewActivity"
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -141,8 +151,6 @@ class PreviewActivity : AppCompatActivity() {
         }
     }
 
-
-
     private fun setupClickListeners() {
         binding.back.setOnClickListener {
             finish()
@@ -180,10 +188,18 @@ class PreviewActivity : AppCompatActivity() {
                     override fun onPositiveButtonClicked() {
                         lifecycleScope.launch {
                             try {
+                                // First delete from database
+                                val hiddenFile = hiddenFileRepository.getHiddenFileByPath(currentFile.absolutePath)
+                                hiddenFile?.let {
+                                    hiddenFileRepository.deleteHiddenFile(it)
+                                    Log.d(TAG, "Deleted file metadata from database: ${it.filePath}")
+                                }
+
+                                // Then delete the actual file
                                 fileManager.deletePhotoFromExternalStorage(fileUri)
                                 removeFileFromList(currentPosition)
                             } catch (e: Exception) {
-                                e.printStackTrace()
+                                Log.e(TAG, "Error deleting file: ${e.message}", e)
                             }
                         }
                     }
@@ -212,10 +228,19 @@ class PreviewActivity : AppCompatActivity() {
                     override fun onPositiveButtonClicked() {
                         lifecycleScope.launch {
                             try {
-                                fileManager.copyFileToNormalDir(fileUri)
-                                removeFileFromList(currentPosition)
+                                // First copy the file to normal directory
+                                val result = fileManager.copyFileToNormalDir(fileUri)
+                                if (result != null) {
+                                    val hiddenFile = hiddenFileRepository.getHiddenFileByPath(currentFile.absolutePath)
+                                    hiddenFile?.let {
+                                        hiddenFileRepository.deleteHiddenFile(it)
+                                        Log.d(TAG, "Deleted file metadata from database: ${it.filePath}")
+                                    }
+
+                                    removeFileFromList(currentPosition)
+                                }
                             } catch (e: Exception) {
-                                e.printStackTrace()
+                                Log.e(TAG, "Error unhiding file: ${e.message}", e)
                             }
                         }
                     }

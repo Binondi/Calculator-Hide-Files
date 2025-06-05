@@ -256,6 +256,15 @@
                         android:layout_marginTop="16dp"
                         android:text="@string/restrict_screenshots_in_hidden_section"
                         android:textAppearance="?attr/textAppearanceBodyLarge" />
+
+                    <com.google.android.material.materialswitch.MaterialSwitch
+                        android:id="@+id/encryptionSwitch"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="16dp"
+                        android:text="@string/encrypt_file_when_hiding"
+                        android:textAppearance="?attr/textAppearanceBodyLarge" />
+
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
 

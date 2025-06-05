@@ -121,7 +121,7 @@
     <string name="app_settings">App Settings</string>
     <string name="restrict_screenshots_in_hidden_section">Restrict Screenshots in Hidden Section</string>
     <string name="security_settings">Security Settings</string>
-    <string name="version">Version 1.3</string>
+    <string name="version">Version 1.4.0</string>
     <string name="app_details">App Details</string>
     <string name="setup_password">Setup Password</string>
     <string name="security_question_for_password_reset">Security Question (For Password Reset)</string>
@@ -150,4 +150,13 @@
     <string name="if_you_turn_on_off_this_option_dynamic_theme_changes_will_be_visible_after_you_reopen_the_app">If you turn on/off this option, dynamic theme changes will be visible after you reopen the app.</string>
     <string name="attention">Attention!</string>
     <string name="are_you_sure_to_delete_selected_files_permanently">Are you sure to delete selected files permanently ?</string>
+    <string name="encrypt_file_when_hiding">Encrypt File When Hiding</string>
+    <string name="encrypt_file">Encrypt File</string>
+    <string name="decrypt_file">Decrypt File</string>
+    <string name="encrypt_files">Encrypt Files</string>
+    <string name="decrypt_files">Decrypt Files</string>
+    <string name="encrypt">Encrypt</string>
+    <string name="decrypt">Decrypt</string>
+    <string name="encryption_disclaimer">Warning: This will encrypt the selected files. The original files will be deleted after successful encryption. Make sure to do this. Do you want to continue?</string>
+    <string name="decryption_disclaimer">Warning: This will decrypt the selected files. The encrypted files will be deleted after successful decryption. Make sure to do this. Do you want to continue?</string>
 </resources>

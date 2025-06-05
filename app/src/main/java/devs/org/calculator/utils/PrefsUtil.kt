@@ -48,6 +48,10 @@ class PrefsUtil(context: Context) {
         return stored == hashPassword(input)
     }
 
+    fun getPassword(): String{
+        return prefs.getString("password", "") ?: ""
+    }
+
     fun saveSecurityQA(question: String, answer: String) {
         prefs.edit {
             putString("security_question", question)

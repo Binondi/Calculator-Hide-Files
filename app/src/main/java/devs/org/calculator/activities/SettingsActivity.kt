@@ -54,6 +54,7 @@ class SettingsActivity : AppCompatActivity() {
 
         binding.screenshotRestrictionSwitch.isChecked = prefs.getBoolean("screenshot_restriction", true)
         binding.showFileNames.isChecked = prefs.getBoolean("showFileName", true)
+        binding.encryptionSwitch.isChecked = prefs.getBoolean("encryption", false)
 
         updateThemeModeVisibility()
     }
@@ -78,6 +79,9 @@ class SettingsActivity : AppCompatActivity() {
                     DynamicColors.applyToActivityIfAvailable(this)
                 }
             }
+        }
+        binding.encryptionSwitch.setOnCheckedChangeListener { _, isChecked ->
+            prefs.setBoolean("encryption", isChecked)
         }
 
 

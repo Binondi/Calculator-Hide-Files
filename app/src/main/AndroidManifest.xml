@@ -59,7 +59,7 @@
 
         <provider
             android:name="androidx.core.content.FileProvider"
-            android:authorities="devs.org.calculator.fileprovider"
+            android:authorities="devs.org.calculator.provider"
             android:exported="false"
             android:grantUriPermissions="true">
             <meta-data

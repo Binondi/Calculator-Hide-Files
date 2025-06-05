@@ -1,8 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <paths xmlns:android="http://schemas.android.com/apk/res/android">
-    <!-- Allow access to external files -->
     <external-path name="external_files" path="." />
-    <!-- Allow access to hidden directories -->
     <external-files-path name="hidden_files" path=".CalculatorHide/" />
+    <cache-path name="cache_files" path="." />
 </paths>
 
