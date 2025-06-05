@@ -157,6 +157,6 @@
     <string name="decrypt_files">Decrypt Files</string>
     <string name="encrypt">Encrypt</string>
     <string name="decrypt">Decrypt</string>
-    <string name="encryption_disclaimer">Warning: This will encrypt the selected files. The original files will be deleted after successful encryption. Make sure to do this. Do you want to continue?</string>
+    <string name="encryption_disclaimer">Warning: This will encrypt the selected files. The original files will be deleted after successful encryption. Make sure to decrypt all the files if you are uninstalling the application otherwise all your encrypted files will be lost. Do you want to continue?</string>
     <string name="decryption_disclaimer">Warning: This will decrypt the selected files. The encrypted files will be deleted after successful decryption. Make sure to do this. Do you want to continue?</string>
 </resources>
