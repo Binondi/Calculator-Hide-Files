@@ -1,14 +1,15 @@
+![App banner](media/banner.jpg)
+
 <div align="center">
-  <img src="app/src/main/assets/logo.png" alt="Calculator Hide File App Logo" width="200" />
 
 # 📂 Calculator Hide File App for Android 📂
 
 <a href="https://github.com/Binondi/Calculator-Hide-Files/releases/latest">
-      <img alt="Latest release" src="https://img.shields.io/badge/Releases-v1.0-blue?logo=github&style=for-the-badge">
+      <img alt="Latest release" src="https://img.shields.io/badge/Releases-v1.4.0-blue?logo=github&style=for-the-badge">
 </a>
 
 <a href="https://github.com/Binondi/Calculator-Hide-Files/releases/latest">
-      <img alt="Downloads" src="https://img.shields.io/badge/Downloads-1.3k-blue?logo=github&style=for-the-badge">
+      <img alt="Downloads" src="https://img.shields.io/badge/Downloads-1.4k-blue?logo=github&style=for-the-badge">
 </a>
 
 <a href="LICENSE">
@@ -18,6 +19,9 @@
 </div>
 
 ---
+
+# Download
+[<img src="https://github.com/machiav3lli/oandbackupx/blob/034b226cea5c1b30eb4f6a6f313e4dadcbb0ece4/badge_github.png" alt="Get it on GitHub" height="80">](https://github.com/binondi/Calculator-Hide-Files/releases)
 
 ## 😍 Why Choose This App?  
 The **Calculator Hide File App** is an **open-source** application, allowing you to inspect the code yourself. This ensures **complete transparency** and guarantees that your **privacy remains uncompromised**. 🔒✅  
@@ -33,37 +37,37 @@ The **Calculator Hide File App** is an innovative **Android file-hiding app** th
 > - Hide images, videos, documents & other files securely.  
 > - Works like a **real calculator** with hidden storage mode.  
 > - No one will suspect it’s a file vault!  
-
+> - **Encrypt** files with your **custom key** to secure your hidden files.
 ---
 
 ## 🚀 Features
 
 ✅ **Dual Functionality** – A working **calculator** & a **file vault** in one app.  
 ✅ **Secret Passcode** – Unlock hidden files by entering a secret code.  
-✅ **Secure File Manager** – Hide/unhide files easily.  
+✅ **Secure File Manager** – Hide/Unhide files easily.  
 ✅ **Fast & Lightweight** – Smooth performance on all Android devices.  
 ✅ **No Root Required** – Works without rooting your phone.  
-
+✅ **Security** – Encrypt & Decrypt files.
 ---
 
 ## 🖼️ Screenshots
 
 <div align="center">
-  <img src="app/src/main/assets/Screenshot_1.jpg" alt="Calculator Hide File App - Home Screen" width="32%">
-  <img src="app/src/main/assets/Screenshot_2.jpg" alt="Calculator Hide File App - Secure File Storage" width="32%">
-  <img src="app/src/main/assets/Screenshot_3.jpg" alt="Calculator Hidle File App - Passcode Protection" width="32%">
+  <img src="media/Screenshot_1.jpg" alt="Calculator Hide File App - Home Screen" width="32%">
+  <img src="media/Screenshot_2.jpg" alt="Calculator Hide File App - Secure File Storage" width="32%">
+  <img src="media/Screenshot_3.jpg" alt="Calculator Hide File App - Passcode Protection" width="32%">
 </div>
 
 <div align="center">
-  <img src="app/src/main/assets/Screenshot_4.jpg" alt="Calculator Hide File App - Hidden Files Manager" width="32%">
-  <img src="app/src/main/assets/Screenshot_5.jpg" alt="Calculator Hide File App - Hidden Files Manager" width="32%">
-    <img src="app/src/main/assets/Screenshot_6.jpg" alt="Calculator Hide File App - Hidden Files Manager" width="32%">
+  <img src="media/Screenshot_4.jpg" alt="Calculator Hide File App - Hidden Files Manager" width="32%">
+  <img src="media/Screenshot_5.jpg" alt="Calculator Hide File App - Hidden Files Manager" width="32%">
+    <img src="media/Screenshot_6.jpg" alt="Calculator Hide File App - Hidden Files Manager" width="32%">
 </div>
 
 <div align="center">
-    <img src="app/src/main/assets/Screenshot_7.jpg" alt="Calculator Hide File App - Hidden Files Manager" width="32%">
-    <img src="app/src/main/assets/Screenshot_8.jpg" alt="Calculator Hide File App - Hidden Files Manager" width="32%">
-    <img src="app/src/main/assets/Screenshot_9.jpg" alt="Calculator Hide File App - Hidden Files Manager" width="32%">
+    <img src="media/Screenshot_7.jpg" alt="Calculator Hide File App - Hidden Files Manager" width="32%">
+    <img src="media/Screenshot_8.jpg" alt="Calculator Hide File App - Hidden Files Manager" width="32%">
+    <img src="media/Screenshot_9.jpg" alt="Calculator Hide File App - Hidden Files Manager" width="32%">
 </div>
 
 ---
@@ -106,7 +110,7 @@ git clone https://github.com/Binondi/Calculator-Hide-Files.git
 ## 🛠️ Technologies Used
 
 - **Programming Language**: Kotlin
-- **UI Framework**: XML (For UI)
+- **UI Framework**: XML
 - **File Storage**: Secure internal storage & MediaStore API  
 
 ---
@@ -125,6 +129,7 @@ If you find this app useful, please consider supporting the development. 🙏
 
 [![Sponsor on GitHub](https://img.shields.io/badge/sponsor-30363D?style=for-the-badge&logo=GitHub-Sponsors&logoColor=#EA4AAA)](https://github.com/sponsors/Binondi)
 [![Donate via PayPal](https://img.shields.io/badge/PayPal-00457C?style=for-the-badge&logo=paypal&logoColor=white)](https://paypal.me/BinondiBorthakur56)
+[![Buy Me a Coffee](https://img.shields.io/badge/Buy%20Me%20a%20Coffee-orange?logo=buy-me-a-coffee)](https://buymeacoffee.com/binondi)
 
 ---
 
