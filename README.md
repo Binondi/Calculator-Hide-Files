@@ -1,4 +1,4 @@
-![App banner](media/banner.jpg)
+![App banner](media/banner.png)
 
 <div align="center">
 
