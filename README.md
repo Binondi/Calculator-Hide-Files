@@ -32,7 +32,8 @@ The **Calculator Hide File App** is an innovative **Android file-hiding app** th
 > **⭐ Why Choose This App?**  
 > - Hide images, videos, documents & other files securely.  
 > - Works like a **real calculator** with hidden storage mode.  
-> - No one will suspect it’s a file vault!  
+> - No one will suspect it’s a file vault!
+> - **Encrypt** files with your **custom key** to secure your hidden files.
 
 ---
 
@@ -40,7 +41,7 @@ The **Calculator Hide File App** is an innovative **Android file-hiding app** th
 
 ✅ **Dual Functionality** – A working **calculator** & a **file vault** in one app.  
 ✅ **Secret Passcode** – Unlock hidden files by entering a secret code.  
-✅ **Secure File Manager** – Hide/unhide files easily.  
+✅ **Secure File Manager** – Hide/unhide files easily with encryption.  
 ✅ **Fast & Lightweight** – Smooth performance on all Android devices.  
 ✅ **No Root Required** – Works without rooting your phone.  
 
