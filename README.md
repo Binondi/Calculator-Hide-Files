@@ -1,10 +1,11 @@
+![App banner](https://i.ibb.co/Cs7733GJ/1000501775.jpg)
+
 <div align="center">
-  <img src="app/src/main/assets/logo.png" alt="Calculator Hide File App Logo" width="200" />
 
 # 📂 Calculator Hide File App for Android 📂
 
 <a href="https://github.com/Binondi/Calculator-Hide-Files/releases/latest">
-      <img alt="Latest release" src="https://img.shields.io/badge/Releases-v1.0-blue?logo=github&style=for-the-badge">
+      <img alt="Latest release" src="https://img.shields.io/badge/Releases-v1.4.0-blue?logo=github&style=for-the-badge">
 </a>
 
 <a href="https://github.com/Binondi/Calculator-Hide-Files/releases/latest">
