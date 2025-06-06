@@ -16,12 +16,16 @@
       <img alt="Apache License 2.0" src="https://img.shields.io/badge/License-Apache_2.0-blue?logo=github&style=for-the-badge">
 </a>
 
+
+<br>
 </div>
+<div align="center"> 
+         
+<h4>Download</h4>
 
----
+<a>[<img src="https://github.com/machiav3lli/oandbackupx/blob/034b226cea5c1b30eb4f6a6f313e4dadcbb0ece4/badge_github.png" alt="Get it on GitHub" height="80">](https://github.com/binondi/Calculator-Hide-Files/releases) </a><a href="https://apt.izzysoft.de/fdroid/index/apk/devs.org.calculator"><img src="https://gitlab.com/IzzyOnDroid/repo/-/raw/master/assets/IzzyOnDroid.png" height="80"></a> 
 
-# Download
-[<img src="https://github.com/machiav3lli/oandbackupx/blob/034b226cea5c1b30eb4f6a6f313e4dadcbb0ece4/badge_github.png" alt="Get it on GitHub" height="80">](https://github.com/binondi/Calculator-Hide-Files/releases)
+</div>
 
 ## 😍 Why Choose This App?  
 The **Calculator Hide File App** is an **open-source** application, allowing you to inspect the code yourself. This ensures **complete transparency** and guarantees that your **privacy remains uncompromised**. 🔒✅  
@@ -129,8 +133,7 @@ If you find this app useful, please consider supporting the development. 🙏
 
 [![Sponsor on GitHub](https://img.shields.io/badge/sponsor-30363D?style=for-the-badge&logo=GitHub-Sponsors&logoColor=#EA4AAA)](https://github.com/sponsors/Binondi)
 [![Donate via PayPal](https://img.shields.io/badge/PayPal-00457C?style=for-the-badge&logo=paypal&logoColor=white)](https://paypal.me/BinondiBorthakur56)
-[![Buy Me a Coffee](https://img.shields.io/badge/Buy%20Me%20a%20Coffee-orange?logo=buy-me-a-coffee)](https://buymeacoffee.com/binondi)
-
+[![Buy Me a Coffee](https://img.shields.io/badge/Buy%20Me%20a%20Coffee-FFDD00?style=for-the-badge&logo=buy-me-a-coffee&logoColor=black)](https://buymeacoffee.com/binondi)
 ---
 
 ## 🔧 Contributing
