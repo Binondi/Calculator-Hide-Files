@@ -2,7 +2,10 @@ package devs.org.calculator.activities
 
 import android.net.Uri
 import android.os.Bundle
+import android.os.Handler
+import android.os.Looper
 import android.view.WindowManager
+import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
 import androidx.viewpager2.widget.ViewPager2
@@ -14,6 +17,7 @@ import devs.org.calculator.databinding.ActivityPreviewBinding
 import devs.org.calculator.utils.DialogUtil
 import devs.org.calculator.utils.FileManager
 import devs.org.calculator.utils.PrefsUtil
+import devs.org.calculator.utils.SecurityUtils
 import kotlinx.coroutines.launch
 import java.io.File
 
@@ -28,6 +32,7 @@ class PreviewActivity : AppCompatActivity() {
     private lateinit var adapter: ImagePreviewAdapter
     private lateinit var fileManager: FileManager
     private val dialogUtil = DialogUtil(this)
+    private val mainHandler = Handler(Looper.getMainLooper())
     private val prefs: PrefsUtil by lazy { PrefsUtil(this) }
     private val hiddenFileRepository: HiddenFileRepository by lazy {
         HiddenFileRepository(AppDatabase.getDatabase(this).hiddenFileDao())
@@ -81,14 +86,17 @@ class PreviewActivity : AppCompatActivity() {
                 filetype = FileManager.FileType.IMAGE
                 binding.title.text = getString(R.string.preview_images)
             }
+
             "VIDEO" -> {
                 filetype = FileManager.FileType.VIDEO
                 binding.title.text = getString(R.string.preview_videos)
             }
+
             "AUDIO" -> {
                 filetype = FileManager.FileType.AUDIO
                 binding.title.text = getString(R.string.preview_audios)
             }
+
             else -> {
                 filetype = FileManager.FileType.DOCUMENT
                 binding.title.text = getString(R.string.preview_documents)
@@ -154,7 +162,7 @@ class PreviewActivity : AppCompatActivity() {
         }
 
         binding.unHide.setOnClickListener {
-            handleUnhideFile()
+            performFileUnHiding()
         }
         binding.viewPager.registerOnPageChangeCallback(object : ViewPager2.OnPageChangeCallback() {
             override fun onPageSelected(position: Int) {
@@ -181,7 +189,8 @@ class PreviewActivity : AppCompatActivity() {
                     override fun onPositiveButtonClicked() {
                         lifecycleScope.launch {
                             try {
-                                val hiddenFile = hiddenFileRepository.getHiddenFileByPath(currentFile.absolutePath)
+                                val hiddenFile =
+                                    hiddenFileRepository.getHiddenFileByPath(currentFile.absolutePath)
                                 hiddenFile?.let {
                                     hiddenFileRepository.deleteHiddenFile(it)
                                 }
@@ -202,43 +211,113 @@ class PreviewActivity : AppCompatActivity() {
         }
     }
 
-    private fun handleUnhideFile() {
+    private fun performFileUnHiding() {
         if (files.isEmpty() || currentPosition >= files.size) return
+        val file = files[currentPosition]
 
-        val currentFile = files[currentPosition]
-        val fileUri = FileManager.FileManager().getContentUriImage(this, currentFile)
+        dialogUtil.showMaterialDialog(
+            getString(R.string.un_hide_file),
+            getString(R.string.are_you_sure_you_want_to_un_hide_this_file),
+            getString(R.string.un_hide),
+            getString(R.string.cancel),
+            object : DialogUtil.DialogCallback {
+                override fun onPositiveButtonClicked() {
+                    lifecycleScope.launch {
+                        var allUnhidden = true
+                        try {
+                            val hiddenFile = hiddenFileRepository.getHiddenFileByPath(file.absolutePath)
+                            if (hiddenFile != null){
+                                if (hiddenFile.isEncrypted) {
+                                    val originalExtension = hiddenFile.originalExtension
+                                    val decryptedFile = SecurityUtils.changeFileExtension(file, originalExtension)
 
-        if (fileUri != null) {
-            dialogUtil.showMaterialDialog(
-                getString(R.string.un_hide_file),
-                getString(R.string.are_you_sure_you_want_to_un_hide_this_file),
-                getString(R.string.un_hide),
-                getString(R.string.cancel),
-                object : DialogUtil.DialogCallback {
-                    override fun onPositiveButtonClicked() {
-                        lifecycleScope.launch {
-                            try {
-                                val result = fileManager.copyFileToNormalDir(fileUri)
-                                if (result != null) {
-                                    val hiddenFile = hiddenFileRepository.getHiddenFileByPath(currentFile.absolutePath)
-                                    hiddenFile?.let {
-                                        hiddenFileRepository.deleteHiddenFile(it)
+                                    if (SecurityUtils.decryptFile(this@PreviewActivity, file, decryptedFile)) {
+                                        if (decryptedFile.exists() && decryptedFile.length() > 0) {
+                                            val fileUri = FileManager.FileManager()
+                                                .getContentUriImage(this@PreviewActivity, decryptedFile)
+                                            if (fileUri != null) {
+                                                val result = fileManager.copyFileToNormalDir(fileUri)
+                                                if (result != null) {
+                                                    hiddenFile.let {
+                                                        hiddenFileRepository.deleteHiddenFile(it)
+                                                    }
+                                                    file.delete()
+                                                    decryptedFile.delete()
+                                                    removeFileFromList(currentPosition)
+                                                } else {
+                                                    decryptedFile.delete()
+                                                    allUnhidden = false
+                                                }
+                                            } else {
+                                                decryptedFile.delete()
+                                                allUnhidden = false
+                                            }
+                                        } else {
+                                            decryptedFile.delete()
+                                            allUnhidden = false
+                                        }
+                                    } else {
+                                        if (decryptedFile.exists()) {
+                                            decryptedFile.delete()
+                                        }
+                                        allUnhidden = false
                                     }
-
-                                    removeFileFromList(currentPosition)
+                                } else {
+                                    val fileUri = FileManager.FileManager().getContentUriImage(this@PreviewActivity, file)
+                                    if (fileUri != null) {
+                                        val result = fileManager.copyFileToNormalDir(fileUri)
+                                        if (result != null) {
+                                            hiddenFile.let {
+                                                hiddenFileRepository.deleteHiddenFile(it)
+                                            }
+                                            file.delete()
+                                            removeFileFromList(currentPosition)
+                                        } else {
+                                            allUnhidden = false
+                                        }
+                                    } else {
+                                        allUnhidden = false
+                                    }
                                 }
-                            } catch (e: Exception) {
-                                e.printStackTrace()
+                            }else{
+                                val fileUri = FileManager.FileManager().getContentUriImage(this@PreviewActivity, file)
+                                if (fileUri != null) {
+                                    val result = fileManager.copyFileToNormalDir(fileUri)
+                                    if (result != null) {
+                                        file.delete()
+                                        removeFileFromList(currentPosition)
+                                    } else {
+                                        allUnhidden = false
+                                    }
+                                } else {
+                                    allUnhidden = false
+                                }
                             }
+
+                        } catch (_: Exception) {
+
+                            allUnhidden = false
+                        }
+
+                        mainHandler.post {
+                            val message = if (allUnhidden) {
+                                getString(R.string.file_unhidden_successfully)
+                            } else {
+                                getString(R.string.something_went_wrong)
+                            }
+
+                            Toast.makeText(this@PreviewActivity, message, Toast.LENGTH_SHORT).show()
                         }
                     }
-
-                    override fun onNegativeButtonClicked() {}
-
-                    override fun onNaturalButtonClicked() {}
                 }
-            )
-        }
+
+                override fun onNegativeButtonClicked() {}
+
+                override fun onNaturalButtonClicked() {}
+            }
+        )
+
+
     }
 
     private fun removeFileFromList(position: Int) {

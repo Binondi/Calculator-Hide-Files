@@ -175,4 +175,5 @@
     <string name="select_file_type">Select File Type!</string>
     <string name="please_select_the_type_of_file_to_decrypt">Please select the type of file to decrypt</string>
     <string name="file_no_longer_exists">File no longer exists</string>
+    <string name="something_went_wrong">Something went wrong !</string>
 </resources>
