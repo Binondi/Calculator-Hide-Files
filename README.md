@@ -9,11 +9,11 @@
 </a>
 
 <a href="https://github.com/Binondi/Calculator-Hide-Files/releases/latest">
-      <img alt="Downloads" src="https://img.shields.io/badge/Downloads-1.4k-blue?logo=github&style=for-the-badge">
+  <img alt="Downloads" src="https://img.shields.io/github/downloads/Binondi/Calculator-Hide-Files/total?style=for-the-badge">
 </a>
 
 <a href="LICENSE">
-      <img alt="Apache License 2.0" src="https://img.shields.io/badge/License-Apache_2.0-blue?logo=github&style=for-the-badge">
+  <img alt="Apache License 2.0" src="https://img.shields.io/badge/License-Apache_2.0-blue?logo=github&style=for-the-badge">
 </a>
 
 
