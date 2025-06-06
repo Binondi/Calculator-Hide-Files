@@ -6,18 +6,16 @@ import android.view.WindowManager
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
 import androidx.viewpager2.widget.ViewPager2
-import com.google.android.material.color.DynamicColors
 import devs.org.calculator.R
 import devs.org.calculator.adapters.ImagePreviewAdapter
+import devs.org.calculator.database.AppDatabase
+import devs.org.calculator.database.HiddenFileRepository
 import devs.org.calculator.databinding.ActivityPreviewBinding
 import devs.org.calculator.utils.DialogUtil
 import devs.org.calculator.utils.FileManager
 import devs.org.calculator.utils.PrefsUtil
 import kotlinx.coroutines.launch
 import java.io.File
-import devs.org.calculator.database.AppDatabase
-import devs.org.calculator.database.HiddenFileRepository
-import android.util.Log
 
 class PreviewActivity : AppCompatActivity() {
 
@@ -33,10 +31,6 @@ class PreviewActivity : AppCompatActivity() {
     private val prefs: PrefsUtil by lazy { PrefsUtil(this) }
     private val hiddenFileRepository: HiddenFileRepository by lazy {
         HiddenFileRepository(AppDatabase.getDatabase(this).hiddenFileDao())
-    }
-
-    companion object {
-        private const val TAG = "PreviewActivity"
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -73,7 +67,6 @@ class PreviewActivity : AppCompatActivity() {
     }
 
     private fun setupFlagSecure() {
-        val prefs = getSharedPreferences("app_settings", MODE_PRIVATE)
         if (prefs.getBoolean("screenshot_restriction", true)) {
             window.setFlags(
                 WindowManager.LayoutParams.FLAG_SECURE,
@@ -188,18 +181,15 @@ class PreviewActivity : AppCompatActivity() {
                     override fun onPositiveButtonClicked() {
                         lifecycleScope.launch {
                             try {
-                                // First delete from database
                                 val hiddenFile = hiddenFileRepository.getHiddenFileByPath(currentFile.absolutePath)
                                 hiddenFile?.let {
                                     hiddenFileRepository.deleteHiddenFile(it)
-                                    Log.d(TAG, "Deleted file metadata from database: ${it.filePath}")
                                 }
 
-                                // Then delete the actual file
                                 fileManager.deletePhotoFromExternalStorage(fileUri)
                                 removeFileFromList(currentPosition)
                             } catch (e: Exception) {
-                                Log.e(TAG, "Error deleting file: ${e.message}", e)
+                                e.printStackTrace()
                             }
                         }
                     }
@@ -228,19 +218,17 @@ class PreviewActivity : AppCompatActivity() {
                     override fun onPositiveButtonClicked() {
                         lifecycleScope.launch {
                             try {
-                                // First copy the file to normal directory
                                 val result = fileManager.copyFileToNormalDir(fileUri)
                                 if (result != null) {
                                     val hiddenFile = hiddenFileRepository.getHiddenFileByPath(currentFile.absolutePath)
                                     hiddenFile?.let {
                                         hiddenFileRepository.deleteHiddenFile(it)
-                                        Log.d(TAG, "Deleted file metadata from database: ${it.filePath}")
                                     }
 
                                     removeFileFromList(currentPosition)
                                 }
                             } catch (e: Exception) {
-                                Log.e(TAG, "Error unhiding file: ${e.message}", e)
+                                e.printStackTrace()
                             }
                         }
                     }

@@ -10,21 +10,19 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.MediaController
 import androidx.lifecycle.LifecycleOwner
+import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.AsyncListDiffer
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
-import devs.org.calculator.databinding.ViewpagerItemsBinding
-import devs.org.calculator.utils.FileManager
-import java.io.File
 import devs.org.calculator.R
 import devs.org.calculator.database.AppDatabase
 import devs.org.calculator.database.HiddenFileRepository
-import devs.org.calculator.utils.SecurityUtils
-import android.util.Log
-import androidx.lifecycle.lifecycleScope
+import devs.org.calculator.databinding.ViewpagerItemsBinding
+import devs.org.calculator.utils.FileManager
 import devs.org.calculator.utils.SecurityUtils.getDecryptedPreviewFile
 import devs.org.calculator.utils.SecurityUtils.getUriForPreviewFile
 import kotlinx.coroutines.launch
+import java.io.File
 
 class ImagePreviewAdapter(
     private val context: Context,
@@ -38,10 +36,6 @@ class ImagePreviewAdapter(
         HiddenFileRepository(AppDatabase.getDatabase(context).hiddenFileDao())
     }
 
-    companion object {
-        private const val TAG = "ImagePreviewAdapter"
-    }
-
     var images: List<File>
         get() = differ.currentList
         set(value) = differ.submitList(value)
@@ -53,10 +47,10 @@ class ImagePreviewAdapter(
 
     override fun onBindViewHolder(holder: ImageViewHolder, position: Int) {
         val imageUrl = images[position]
-
+        val fileType = FileManager(context,lifecycleOwner).getFileType(imageUrl)
         stopAndResetCurrentAudio()
 
-        holder.bind(imageUrl, position)
+        holder.bind(imageUrl, position,fileType)
     }
 
     override fun getItemCount(): Int = images.size
@@ -77,36 +71,42 @@ class ImagePreviewAdapter(
         private var currentPosition = 0
         private var tempDecryptedFile: File? = null
 
-        fun bind(file: File, position: Int) {
+        fun bind(file: File, position: Int,decryptedFileType: FileManager.FileType) {
             currentPosition = position
 
             releaseMediaPlayer()
             resetAudioUI()
             cleanupTempFile()
-            lifecycleOwner.lifecycleScope.launch {
-                try {
+            try {
+                lifecycleOwner.lifecycleScope.launch {
                     val hiddenFile = hiddenFileRepository.getHiddenFileByPath(file.absolutePath)
-                    val isEncrypted = hiddenFile?.isEncrypted == true
-                    val fileType = hiddenFile!!.fileType
-                    if (isEncrypted) {
-
-                        val tempDecryptedFile = getDecryptedPreviewFile(context, hiddenFile)
-                        if (tempDecryptedFile != null && tempDecryptedFile.exists() && tempDecryptedFile.length() > 0) {
-                            displayFile(tempDecryptedFile, fileType)
+                    if (hiddenFile != null){
+                        val isEncrypted = hiddenFile.isEncrypted
+                        val fileType = hiddenFile.fileType
+                        if (isEncrypted) {
+                            val tempDecryptedFile = getDecryptedPreviewFile(context, hiddenFile)
+                            if (tempDecryptedFile != null && tempDecryptedFile.exists() && tempDecryptedFile.length() > 0) {
+                                displayFile(tempDecryptedFile, fileType,true)
+                            } else {
+                                showEncryptedError()
+                            }
                         } else {
-                            showEncryptedError()
+                            displayFile(file, decryptedFileType,false)
                         }
-                    } else {
-                        displayFile(file, fileType)
+                    }else{
+                        displayFile(file, decryptedFileType,false)
                     }
-                } catch (e: Exception) {
-                    Log.e(TAG, "Error binding file: ${e.message}", e)
-                    showEncryptedError()
+
                 }
+
+            } catch (_: Exception) {
+
+                displayFile(file, decryptedFileType,false)
             }
+
         }
 
-        private fun displayFile(file: File, fileType: FileManager.FileType) {
+        private fun displayFile(file: File, fileType: FileManager.FileType,isEncrypted: Boolean = false) {
             val uri = getUriForPreviewFile(context, file)
             when (fileType) {
                 FileManager.FileType.VIDEO -> {
@@ -114,7 +114,11 @@ class ImagePreviewAdapter(
                     binding.audioBg.visibility = View.GONE
                     binding.videoView.visibility = View.VISIBLE
 
-                    val videoUri = uri
+                    val videoUri = if (isEncrypted){
+                        uri
+                    }else{
+                        Uri.fromFile(file)
+                    }
                     binding.videoView.setVideoURI(videoUri)
                     binding.videoView.start()
 
@@ -139,21 +143,30 @@ class ImagePreviewAdapter(
                     }
                 }
                 FileManager.FileType.IMAGE -> {
-
+                    val imageUri = if (isEncrypted){
+                        uri
+                    }else{
+                        Uri.fromFile(file)
+                    }
                     binding.imageView.visibility = View.VISIBLE
                     binding.videoView.visibility = View.GONE
                     binding.audioBg.visibility = View.GONE
                     Glide.with(context)
-                        .load(uri)
+                        .load(imageUri)
                         .into(binding.imageView)
                 }
                 FileManager.FileType.AUDIO -> {
+                    val audioFile: File? = if (isEncrypted) {
+                        getFileFromUri(context, uri!!)
+                    } else {
+                        file
+                    }
                     binding.imageView.visibility = View.GONE
                     binding.audioBg.visibility = View.VISIBLE
                     binding.videoView.visibility = View.GONE
                     binding.audioTitle.text = file.name
 
-                    setupAudioPlayer(file)
+                    setupAudioPlayer(audioFile!!)
                     setupPlaybackControls()
                 }
                 else -> {
@@ -161,6 +174,20 @@ class ImagePreviewAdapter(
                     binding.audioBg.visibility = View.GONE
                     binding.videoView.visibility = View.GONE
                 }
+            }
+        }
+
+        fun getFileFromUri(context: Context, uri: Uri): File? {
+            return try {
+                val inputStream = context.contentResolver.openInputStream(uri)
+                val tempFile = File.createTempFile("temp_audio", null, context.cacheDir)
+                tempFile.outputStream().use { output ->
+                    inputStream?.copyTo(output)
+                }
+                tempFile
+            } catch (e: Exception) {
+                e.printStackTrace()
+                null
             }
         }
 
@@ -176,9 +203,7 @@ class ImagePreviewAdapter(
                 if (file.exists()) {
                     try {
                         file.delete()
-                        Log.d(TAG, "Cleaned up temporary decrypted file: ${file.absolutePath}")
-                    } catch (e: Exception) {
-                        Log.e(TAG, "Error cleaning up temporary file: ${e.message}", e)
+                    } catch (_: Exception) {
                     }
                 }
                 tempDecryptedFile = null
@@ -188,7 +213,7 @@ class ImagePreviewAdapter(
         private fun resetAudioUI() {
             binding.playPause.setImageResource(R.drawable.play)
             binding.audioSeekBar.value = 0f
-            binding.audioSeekBar.valueTo = 100f // Default value
+            binding.audioSeekBar.valueTo = 100f
             seekRunnable?.let { seekHandler.removeCallbacks(it) }
         }
 

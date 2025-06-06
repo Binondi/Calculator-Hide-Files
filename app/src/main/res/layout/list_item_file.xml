@@ -21,6 +21,7 @@
                 android:layout_height="0dp"
                 app:cardCornerRadius="10dp"
                 android:layout_margin="5dp"
+                android:backgroundTint="#404040"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintDimensionRatio="1:1"
                 app:layout_constraintEnd_toEndOf="parent"
@@ -36,6 +37,11 @@
                         android:layout_gravity="center"
                         android:scaleType="centerCrop"
                         android:src="@drawable/add_image" />
+                    <View
+                        android:id="@+id/shade"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:background="@drawable/bottom_shade"/>
                     <LinearLayout
                         android:id="@+id/selectedLayer"
                         android:layout_width="match_parent"
@@ -49,6 +55,20 @@
 
 
             </com.google.android.material.card.MaterialCardView>
+
+            <TextView
+                android:id="@+id/fileNameTextView"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center_vertical"
+                android:paddingHorizontal="13dp"
+                android:paddingVertical="6dp"
+                android:textColor="#fff"
+                android:textSize="10sp"
+                android:textAppearance="@style/TextAppearance.AppCompat.Small"
+                app:layout_constraintBottom_toBottomOf="@+id/cardView"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent" />
 
         </androidx.constraintlayout.widget.ConstraintLayout>
         <ImageView
@@ -78,15 +98,5 @@
             android:layout_gravity="end"/>
 
     </FrameLayout>
-
-
-
-    <TextView
-        android:id="@+id/fileNameTextView"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:gravity="center_horizontal"
-        android:padding="5dp"
-        android:textAppearance="@style/TextAppearance.AppCompat.Small" />
 
 </LinearLayout> 

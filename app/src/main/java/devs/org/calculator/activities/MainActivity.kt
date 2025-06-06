@@ -24,7 +24,6 @@ import devs.org.calculator.utils.PrefsUtil
 import net.objecthunter.exp4j.ExpressionBuilder
 import java.util.regex.Pattern
 import androidx.core.content.edit
-import com.google.android.material.color.DynamicColors
 
 class MainActivity : AppCompatActivity(), DialogActionsCallback, DialogUtil.DialogCallback {
     private lateinit var binding: ActivityMainBinding
@@ -37,7 +36,6 @@ class MainActivity : AppCompatActivity(), DialogActionsCallback, DialogUtil.Dial
     private val dialogUtil = DialogUtil(this)
     private val fileManager = FileManager(this, this)
     private val sp by lazy { getSharedPreferences("app", MODE_PRIVATE) }
-    private val prefs:PrefsUtil by lazy { PrefsUtil(this) }
 
     @RequiresApi(Build.VERSION_CODES.R)
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -276,7 +274,7 @@ class MainActivity : AppCompatActivity(), DialogActionsCallback, DialogUtil.Dial
     private fun evaluateExpression(expression: String): Double {
         return try {
             ExpressionBuilder(expression).build().evaluate()
-        } catch (e: Exception) {
+        } catch (_: Exception) {
             expression.toDouble()
         }
     }
@@ -359,7 +357,7 @@ class MainActivity : AppCompatActivity(), DialogActionsCallback, DialogUtil.Dial
             if (sp.getBoolean("isFirst", true) && (currentExpression == "123456" || binding.display.text.toString() == "123456")){
                 binding.total.text = getString(R.string.now_enter_button)
             }else binding.total.text = formattedResult
-        } catch (e: Exception) {
+        } catch (_: Exception) {
             binding.total.text = ""
         }
     }
@@ -372,7 +370,6 @@ class MainActivity : AppCompatActivity(), DialogActionsCallback, DialogUtil.Dial
                 val lastChar = currentExpression.last()
                 currentExpression = currentExpression.substring(0, currentExpression.length - 1)
 
-                // Update flags based on what was removed
                 if (lastChar == '%') {
                     lastWasPercent = false
                 } else if (isOperator(lastChar.toString())) {

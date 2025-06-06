@@ -38,6 +38,9 @@ import devs.org.calculator.utils.PrefsUtil
 import devs.org.calculator.utils.SecurityUtils
 import kotlinx.coroutines.launch
 import java.io.File
+import android.widget.CheckBox
+import android.widget.CompoundButton
+import android.app.AlertDialog
 
 class ViewFolderActivity : AppCompatActivity() {
 
@@ -166,7 +169,6 @@ class ViewFolderActivity : AppCompatActivity() {
                     object : FileProcessCallback {
                         override fun onFilesProcessedSuccessfully(copiedFiles: List<File>) {
                             mainHandler.post {
-                                // Add files to Room database
                                 copiedFiles.forEach { file ->
                                     val fileType = fileManager.getFileType(file)
                                     var finalFile = file
@@ -331,14 +333,19 @@ class ViewFolderActivity : AppCompatActivity() {
         if (selectedFiles.isEmpty()) return
 
         lifecycleScope.launch {
-            // Check if any files are encrypted
             var hasEncryptedFiles = false
             var hasDecryptedFiles = false
+            var hasEncFilesWithoutMetadata = false
             
             for (file in selectedFiles) {
                 val hiddenFile = fileAdapter?.hiddenFileRepository?.getHiddenFileByPath(file.absolutePath)
-                if (hiddenFile?.isEncrypted == true) {
-                    hasEncryptedFiles = true
+                
+                if (file.name.endsWith(ENCRYPTED_EXTENSION)) {
+                    if (hiddenFile?.isEncrypted == true) {
+                        hasEncryptedFiles = true
+                    } else {
+                        hasEncFilesWithoutMetadata = true
+                    }
                 } else {
                     hasDecryptedFiles = true
                 }
@@ -351,13 +358,13 @@ class ViewFolderActivity : AppCompatActivity() {
                 getString(R.string.move_to_another_folder)
             )
 
-            // Add encryption/decryption options based on file status
             if (hasDecryptedFiles) {
                 options.add(getString(R.string.encrypt_file))
             }
-            if (hasEncryptedFiles) {
+            if (hasEncryptedFiles || hasEncFilesWithoutMetadata) {
                 options.add(getString(R.string.decrypt_file))
             }
+
 
             MaterialAlertDialogBuilder(this@ViewFolderActivity)
                 .setTitle(getString(R.string.file_options))
@@ -371,12 +378,197 @@ class ViewFolderActivity : AppCompatActivity() {
                             val option = options[which]
                             when (option) {
                                 getString(R.string.encrypt_file) -> fileAdapter?.encryptSelectedFiles()
-                                getString(R.string.decrypt_file) -> fileAdapter?.decryptSelectedFiles()
+                                getString(R.string.decrypt_file) -> {
+                                    lifecycleScope.launch {
+                                        val filesWithoutMetadata = selectedFiles.filter { file ->
+                                            file.name.endsWith(ENCRYPTED_EXTENSION) && 
+                                            fileAdapter?.hiddenFileRepository?.getHiddenFileByPath(file.absolutePath)?.isEncrypted != true
+                                        }
+                                        
+                                        if (filesWithoutMetadata.isNotEmpty()) {
+                                            showDecryptionTypeDialog(filesWithoutMetadata)
+                                        } else {
+                                            fileAdapter?.decryptSelectedFiles()
+                                        }
+                                    }
+                                }
                             }
                         }
                     }
                 }
                 .show()
+        }
+    }
+
+    private fun showDecryptionTypeDialog(selectedFiles: List<File>) {
+        val dialogView = layoutInflater.inflate(R.layout.dialog_file_type_selection, null)
+        val imageCheckbox = dialogView.findViewById<CheckBox>(R.id.checkboxImage)
+        val videoCheckbox = dialogView.findViewById<CheckBox>(R.id.checkboxVideo)
+        val audioCheckbox = dialogView.findViewById<CheckBox>(R.id.checkboxAudio)
+        val checkboxes = listOf(imageCheckbox, videoCheckbox, audioCheckbox)
+        checkboxes.forEach { checkbox ->
+            checkbox.setOnCheckedChangeListener { _, isChecked ->
+                if (isChecked) {
+                    checkboxes.filter { it != checkbox }.forEach { it.isChecked = false }
+                }
+            }
+        }
+
+        val dialog = MaterialAlertDialogBuilder(this)
+            .setTitle(getString(R.string.select_file_type))
+            .setMessage(getString(R.string.please_select_the_type_of_file_to_decrypt))
+            .setView(dialogView)
+            .setNegativeButton(getString(R.string.cancel), null)
+            .setPositiveButton(getString(R.string.decrypt), null)
+            .create()
+
+        dialog.setOnShowListener {
+            val positiveButton = dialog.getButton(AlertDialog.BUTTON_POSITIVE)
+            positiveButton.isEnabled = false
+            val checkboxListener = CompoundButton.OnCheckedChangeListener { _, _ ->
+                positiveButton.isEnabled = checkboxes.any { it.isChecked }
+            }
+            checkboxes.forEach { it.setOnCheckedChangeListener(checkboxListener) }
+        }
+
+        dialog.setOnDismissListener {
+            checkboxes.forEach { it.setOnCheckedChangeListener(null) }
+        }
+
+        dialog.show()
+        dialog.getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener {
+            val selectedType = when {
+                imageCheckbox.isChecked -> FileManager.FileType.IMAGE
+                videoCheckbox.isChecked -> FileManager.FileType.VIDEO
+                audioCheckbox.isChecked -> FileManager.FileType.AUDIO
+                else -> return@setOnClickListener
+            }
+            
+            lifecycleScope.launch {
+                performDecryptionWithType(selectedFiles, selectedType)
+            }
+            dialog.dismiss()
+        }
+    }
+
+    private fun performDecryptionWithType(selectedFiles: List<File>, fileType: FileManager.FileType) {
+        lifecycleScope.launch {
+            var successCount = 0
+            var failCount = 0
+
+            for (file in selectedFiles) {
+                try {
+                    val hiddenFile = fileAdapter?.hiddenFileRepository?.getHiddenFileByPath(file.absolutePath)
+
+                    
+                    if (hiddenFile?.isEncrypted == true) {
+
+                        val originalExtension = hiddenFile.originalExtension
+                        val decryptedFile = SecurityUtils.changeFileExtension(file, originalExtension)
+
+                        
+                        if (SecurityUtils.decryptFile(this@ViewFolderActivity, file, decryptedFile)) {
+                            if (decryptedFile.exists() && decryptedFile.length() > 0) {
+
+                                hiddenFile.let {
+                                    fileAdapter?.hiddenFileRepository?.updateEncryptionStatus(
+                                        filePath = file.absolutePath,
+                                        newFilePath = decryptedFile.absolutePath,
+                                        encryptedFileName = decryptedFile.name,
+                                        isEncrypted = false
+                                    )
+                                }
+                                if (file.delete()) {
+
+                                    successCount++
+                                } else {
+
+                                    decryptedFile.delete()
+                                    failCount++
+                                }
+                            } else {
+
+                                decryptedFile.delete()
+                                failCount++
+                            }
+                        } else {
+
+                            if (decryptedFile.exists()) {
+                                decryptedFile.delete()
+                            }
+                            failCount++
+                        }
+                    } else if (file.name.endsWith(ENCRYPTED_EXTENSION) && hiddenFile == null) {
+
+                        val extension = when (fileType) {
+                            FileManager.FileType.IMAGE -> ".jpg"
+                            FileManager.FileType.VIDEO -> ".mp4"
+                            FileManager.FileType.AUDIO -> ".mp3"
+                            else -> ".txt"
+                        }
+                        
+                        val decryptedFile = SecurityUtils.changeFileExtension(file, extension)
+
+                        
+                        if (SecurityUtils.decryptFile(this@ViewFolderActivity, file, decryptedFile)) {
+                            if (decryptedFile.exists() && decryptedFile.length() > 0) {
+
+
+                                fileAdapter?.hiddenFileRepository?.insertHiddenFile(
+                                    HiddenFileEntity(
+                                        filePath = decryptedFile.absolutePath,
+                                        fileName = decryptedFile.name,
+                                        encryptedFileName = file.name,
+                                        fileType = fileType,
+                                        originalExtension = extension,
+                                        isEncrypted = false
+                                    )
+                                )
+                                if (file.delete()) {
+
+                                    successCount++
+                                } else {
+
+                                    decryptedFile.delete()
+                                    failCount++
+                                }
+                            } else {
+
+                                decryptedFile.delete()
+                                failCount++
+                            }
+                        } else {
+
+                            if (decryptedFile.exists()) {
+                                decryptedFile.delete()
+                            }
+                            failCount++
+                        }
+                    } else {
+
+                        failCount++
+                    }
+                } catch (e: Exception) {
+
+                    failCount++
+                }
+            }
+
+            mainHandler.post {
+                fileAdapter?.exitSelectionMode()
+                when {
+                    successCount > 0 && failCount == 0 -> {
+                        Toast.makeText(this@ViewFolderActivity, "Decrypted $successCount file(s)", Toast.LENGTH_SHORT).show()
+                    }
+                    successCount > 0 && failCount > 0 -> {
+                        Toast.makeText(this@ViewFolderActivity, "Decrypted $successCount file(s), failed to decrypt $failCount", Toast.LENGTH_LONG).show()
+                    }
+                    failCount > 0 -> {
+                        Toast.makeText(this@ViewFolderActivity, "Failed to decrypt $failCount file(s)", Toast.LENGTH_SHORT).show()
+                    }
+                }
+                refreshCurrentFolder()
+            }
         }
     }
 
@@ -437,7 +629,7 @@ class ViewFolderActivity : AppCompatActivity() {
                         if (files.isNotEmpty()) {
                             binding.recyclerView.visibility = View.VISIBLE
                             binding.noItems.visibility = View.GONE
-                            // Submit new list directly
+
                             fileAdapter?.submitList(files.toMutableList())
                             fileAdapter?.let { adapter ->
                                 if (adapter.isInSelectionMode()) {
@@ -451,7 +643,7 @@ class ViewFolderActivity : AppCompatActivity() {
                         }
                     }
                 } catch (e: Exception) {
-                    Log.e("ViewFolderActivity", "Error refreshing folder: ${e.message}")
+
                     mainHandler.post {
                         showEmptyState()
                     }
@@ -610,7 +802,7 @@ class ViewFolderActivity : AppCompatActivity() {
                         }
                     }
                 } catch (e: Exception) {
-                    Log.e("ViewFolderActivity", "Error unhiding file: ${e.message}")
+
                     allUnhidden = false
                 }
             }
@@ -642,7 +834,7 @@ class ViewFolderActivity : AppCompatActivity() {
                         allDeleted = false
                     }
                 } catch (e: Exception) {
-                    Log.e("ViewFolderActivity", "Error deleting file: ${e.message}")
+
                     allDeleted = false
                 }
             }
@@ -689,7 +881,7 @@ class ViewFolderActivity : AppCompatActivity() {
                         )
                     }
                 } catch (e: Exception) {
-                    Log.e("ViewFolderActivity", "Error copying file: ${e.message}")
+
                     allCopied = false
                 }
             }
@@ -723,7 +915,7 @@ class ViewFolderActivity : AppCompatActivity() {
                     
                     file.delete()
                 } catch (e: Exception) {
-                    Log.e("ViewFolderActivity", "Error moving file: ${e.message}")
+
                     allMoved = false
                 }
             }

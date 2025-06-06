@@ -157,6 +157,22 @@
     <string name="decrypt_files">Decrypt Files</string>
     <string name="encrypt">Encrypt</string>
     <string name="decrypt">Decrypt</string>
-    <string name="encryption_disclaimer">Warning: This will encrypt the selected files. The original files will be deleted after successful encryption. Make sure to decrypt all the files if you are uninstalling the application otherwise all your encrypted files will be lost. Do you want to continue?</string>
+    <string name="encryption_disclaimer">Warning: This will encrypt the selected files. Please use a custom encryption key from Settings, you can only decrypt the encrypted files with the same key so if you use default key and uninstall the app without decrypting the file you cannot decrypt the file later!. Do you want to continue?</string>
     <string name="decryption_disclaimer">Warning: This will decrypt the selected files. The encrypted files will be deleted after successful decryption. Make sure to do this. Do you want to continue?</string>
+    <string name="custom_encryption_key_cleared">Custom encryption key cleared</string>
+    <string name="failed_to_set_custom_key">Failed to set custom key</string>
+    <string name="custom_key_set_successfully">Custom key set successfully</string>
+    <string name="keys_do_not_match">Keys do not match</string>
+    <string name="key_cannot_be_empty">Key cannot be empty</string>
+    <string name="set_custom_encryption_key">Set Custom Encryption Key</string>
+    <string name="set">Set</string>
+    <string name="delete_key">Delete Key</string>
+    <string name="enter_folder_name_to_create">Enter Folder Name To Create</string>
+    <string name="please_select_exactly_one_folder_to_edit">Please select exactly one folder to edit</string>
+    <string name="invalid_folder_name">Invalid folder name</string>
+    <string name="folder_with_this_name_already_exists">Folder with this name already exists</string>
+    <string name="failed_to_rename_folder">Failed to rename folder</string>
+    <string name="select_file_type">Select File Type!</string>
+    <string name="please_select_the_type_of_file_to_decrypt">Please select the type of file to decrypt</string>
+    <string name="file_no_longer_exists">File no longer exists</string>
 </resources>

@@ -4,6 +4,8 @@ import android.content.Intent
 import android.os.Bundle
 import android.view.View
 import android.view.WindowManager
+import android.widget.EditText
+import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.core.net.toUri
@@ -13,11 +15,12 @@ import com.google.android.material.snackbar.Snackbar
 import devs.org.calculator.R
 import devs.org.calculator.databinding.ActivitySettingsBinding
 import devs.org.calculator.utils.PrefsUtil
+import devs.org.calculator.utils.SecurityUtils
 
 class SettingsActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivitySettingsBinding
-    private val prefs:PrefsUtil by lazy { PrefsUtil(this) }
+    private lateinit var prefs: PrefsUtil
     private var DEV_GITHUB_URL = ""
     private var GITHUB_URL = ""
 
@@ -25,6 +28,7 @@ class SettingsActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         binding = ActivitySettingsBinding.inflate(layoutInflater)
         setContentView(binding.root)
+        prefs = PrefsUtil(this)
         DEV_GITHUB_URL = getString(R.string.github_profile)
         GITHUB_URL = getString(R.string.calculator_hide_files, DEV_GITHUB_URL)
         setupUI()
@@ -52,6 +56,8 @@ class SettingsActivity : AppCompatActivity() {
             else -> binding.systemThemeRadio.isChecked = true
         }
 
+        val isUsingCustomKey = SecurityUtils.isUsingCustomKey(this)
+        binding.customKeyStatus.isChecked = isUsingCustomKey
         binding.screenshotRestrictionSwitch.isChecked = prefs.getBoolean("screenshot_restriction", true)
         binding.showFileNames.isChecked = prefs.getBoolean("showFileName", true)
         binding.encryptionSwitch.isChecked = prefs.getBoolean("encryption", false)
@@ -113,6 +119,10 @@ class SettingsActivity : AppCompatActivity() {
         binding.showFileNames.setOnCheckedChangeListener { _, isChecked ->
             prefs.setBoolean("showFileName", isChecked)
         }
+
+        binding.customKeyStatus.setOnClickListener {
+            showCustomKeyDialog()
+        }
     }
 
     private fun updateThemeModeVisibility() {
@@ -153,5 +163,58 @@ class SettingsActivity : AppCompatActivity() {
             Snackbar.make(binding.root,
                 getString(R.string.could_not_open_url), Snackbar.LENGTH_SHORT).show()
         }
+    }
+
+    private fun showCustomKeyDialog() {
+        val dialogView = layoutInflater.inflate(R.layout.dialog_custom_key, null)
+        val keyInput = dialogView.findViewById<EditText>(R.id.keyInput)
+        val confirmKeyInput = dialogView.findViewById<EditText>(R.id.confirmKeyInput)
+
+        MaterialAlertDialogBuilder(this)
+            .setTitle(getString(R.string.set_custom_encryption_key))
+            .setView(dialogView)
+            .setPositiveButton(getString(R.string.set)) { dialog, _ ->
+                val key = keyInput.text.toString()
+                val confirmKey = confirmKeyInput.text.toString()
+
+                if (key.isEmpty()) {
+                    Toast.makeText(this, getString(R.string.key_cannot_be_empty), Toast.LENGTH_SHORT).show()
+                    updateUI()
+                    return@setPositiveButton
+                }
+
+                if (key != confirmKey) {
+                    Toast.makeText(this, getString(R.string.keys_do_not_match), Toast.LENGTH_SHORT).show()
+                    updateUI()
+                    return@setPositiveButton
+                }
+
+                if (SecurityUtils.setCustomKey(this, key)) {
+                    Toast.makeText(this,
+                        getString(R.string.custom_key_set_successfully), Toast.LENGTH_SHORT).show()
+                    updateUI()
+                } else {
+                    Toast.makeText(this,
+                        getString(R.string.failed_to_set_custom_key), Toast.LENGTH_SHORT).show()
+                    updateUI()
+                }
+            }
+            .setNegativeButton(getString(R.string.cancel)){ _, _ ->
+                updateUI()
+            }
+            .setNeutralButton(getString(R.string.delete_key)) { _, _ ->
+                SecurityUtils.clearCustomKey(this)
+                Toast.makeText(this,
+                    getString(R.string.custom_encryption_key_cleared), Toast.LENGTH_SHORT).show()
+                updateUI()
+            }
+            .show()
+    }
+
+    private fun updateUI() {
+        binding.showFileNames.isChecked = prefs.getBoolean("showFileName", true)
+        binding.encryptionSwitch.isChecked = prefs.getBoolean("encryption", false)
+        val isUsingCustomKey = SecurityUtils.isUsingCustomKey(this)
+        binding.customKeyStatus.isChecked = isUsingCustomKey
     }
 }

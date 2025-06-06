@@ -13,7 +13,6 @@ import android.widget.Toast
 import androidx.activity.OnBackPressedCallback
 import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.GridLayoutManager
-import com.google.android.material.color.DynamicColors
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import devs.org.calculator.R
 import devs.org.calculator.adapters.FolderAdapter
@@ -138,7 +137,7 @@ class HiddenActivity : AppCompatActivity() {
             } else {
                 showEmptyState()
             }
-        } catch (e: Exception) {
+        } catch (_: Exception) {
 
             showEmptyState()
         }
@@ -158,25 +157,25 @@ class HiddenActivity : AppCompatActivity() {
         val inputEditText = dialogView.findViewById<EditText>(R.id.editText)
 
         MaterialAlertDialogBuilder(this)
-            .setTitle("Enter Folder Name To Create")
+            .setTitle(getString(R.string.enter_folder_name_to_create))
             .setView(dialogView)
-            .setPositiveButton("Create") { dialog, _ ->
+            .setPositiveButton(getString(R.string.create)) { dialog, _ ->
                 val newName = inputEditText.text.toString().trim()
                 if (newName.isNotEmpty()) {
                     try {
                         folderManager.createFolder(hiddenDir, newName)
                         refreshCurrentView()
-                    } catch (e: Exception) {
+                    } catch (_: Exception) {
                         Toast.makeText(
                             this@HiddenActivity,
-                            "Failed to create folder",
+                            getString(R.string.failed_to_create_folder),
                             Toast.LENGTH_SHORT
                         ).show()
                     }
                 }
                 dialog.dismiss()
             }
-            .setNegativeButton("Cancel") { dialog, _ ->
+            .setNegativeButton(getString(R.string.cancel)) { dialog, _ ->
                 dialog.cancel()
             }
             .show()
@@ -214,7 +213,7 @@ class HiddenActivity : AppCompatActivity() {
             } else {
                 showEmptyState()
             }
-        } catch (e: Exception) {
+        } catch (_: Exception) {
             showEmptyState()
         }
     }
@@ -434,7 +433,8 @@ class HiddenActivity : AppCompatActivity() {
         }
 
         if (selectedFolders.size != 1) {
-            Toast.makeText(this, "Please select exactly one folder to edit", Toast.LENGTH_SHORT).show()
+            Toast.makeText(this,
+                getString(R.string.please_select_exactly_one_folder_to_edit), Toast.LENGTH_SHORT).show()
             return
         }
 
@@ -449,20 +449,21 @@ class HiddenActivity : AppCompatActivity() {
         inputEditText.selectAll()
 
         MaterialAlertDialogBuilder(this)
-            .setTitle("Rename Folder")
+            .setTitle(getString(R.string.rename_folder))
             .setView(dialogView)
-            .setPositiveButton("Rename") { dialog, _ ->
+            .setPositiveButton(getString(R.string.rename)) { dialog, _ ->
                 val newName = inputEditText.text.toString().trim()
                 if (newName.isNotEmpty() && newName != folder.name) {
                     if (isValidFolderName(newName)) {
                         renameFolder(folder, newName)
                     } else {
-                        Toast.makeText(this, "Invalid folder name", Toast.LENGTH_SHORT).show()
+                        Toast.makeText(this,
+                            getString(R.string.invalid_folder_name), Toast.LENGTH_SHORT).show()
                     }
                 }
                 dialog.dismiss()
             }
-            .setNegativeButton("Cancel") { dialog, _ ->
+            .setNegativeButton(getString(R.string.cancel)) { dialog, _ ->
                 dialog.cancel()
             }
             .show()
@@ -481,7 +482,8 @@ class HiddenActivity : AppCompatActivity() {
         if (parentDir != null) {
             val newFolder = File(parentDir, newName)
             if (newFolder.exists()) {
-                Toast.makeText(this, "Folder with this name already exists", Toast.LENGTH_SHORT).show()
+                Toast.makeText(this,
+                    getString(R.string.folder_with_this_name_already_exists), Toast.LENGTH_SHORT).show()
                 return
             }
 
@@ -492,7 +494,7 @@ class HiddenActivity : AppCompatActivity() {
 
                 refreshCurrentView()
             } else {
-                Toast.makeText(this, "Failed to rename folder", Toast.LENGTH_SHORT).show()
+                Toast.makeText(this, getString(R.string.failed_to_rename_folder), Toast.LENGTH_SHORT).show()
             }
         }
     }

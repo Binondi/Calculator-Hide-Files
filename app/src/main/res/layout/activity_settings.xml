@@ -265,6 +265,14 @@
                         android:text="@string/encrypt_file_when_hiding"
                         android:textAppearance="?attr/textAppearanceBodyLarge" />
 
+                    <com.google.android.material.materialswitch.MaterialSwitch
+                        android:id="@+id/customKeyStatus"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="16dp"
+                        android:text="@string/set_custom_encryption_key"
+                        android:textAppearance="?attr/textAppearanceBodyLarge" />
+
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
 

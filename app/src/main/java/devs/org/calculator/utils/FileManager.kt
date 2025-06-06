@@ -51,6 +51,7 @@ class FileManager(private val context: Context, private val lifecycleOwner: Life
         const val ENCRYPTED_EXTENSION = ".enc"
     }
 
+
     fun getHiddenDirectory(): File {
         val dir = File(Environment.getExternalStorageDirectory(), HIDDEN_DIR)
         if (!dir.exists()) {
@@ -58,7 +59,6 @@ class FileManager(private val context: Context, private val lifecycleOwner: Life
             if (!created) {
                 throw RuntimeException("Failed to create hidden directory: ${dir.absolutePath}")
             }
-            // Create .nomedia file to hide from media scanners
             val nomediaFile = File(dir, ".nomedia")
             if (!nomediaFile.exists()) {
                 nomediaFile.createNewFile()
@@ -399,4 +399,6 @@ class FileManager(private val context: Context, private val lifecycleOwner: Life
         DOCUMENT(DOCS_DIR),
         ALL("all")
     }
+
+
 }
