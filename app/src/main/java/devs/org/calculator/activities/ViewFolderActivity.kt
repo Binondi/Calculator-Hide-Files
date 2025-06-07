@@ -142,10 +142,12 @@ class ViewFolderActivity : AppCompatActivity() {
                 customDialog?.dismiss()
                 customDialog = null
                 updateFilesToAdapter()
+                refreshCurrentFolder()
             }, remainingTime)
         } else {
             customDialog?.dismiss()
             customDialog = null
+            refreshCurrentFolder()
             updateFilesToAdapter()
         }
     }
@@ -200,6 +202,16 @@ class ViewFolderActivity : AppCompatActivity() {
 
                                 mainHandler.postDelayed({
                                     dismissCustomDialog()
+                                    val files = folderManager.getFilesInFolder(targetFolder)
+                                    if (files.isNotEmpty()) {
+                                        binding.swipeLayout.visibility = View.VISIBLE
+                                        binding.noItems.visibility = View.GONE
+                                        if (fileAdapter == null) {
+                                            showFileList(files, targetFolder)
+                                        } else {
+                                            fileAdapter?.submitList(files.toMutableList())
+                                        }
+                                    }
                                 }, 1000)
                             }
                         }
