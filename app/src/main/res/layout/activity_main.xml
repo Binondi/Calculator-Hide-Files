@@ -48,7 +48,7 @@
                     android:gravity="end|bottom"
                     android:autoSizeTextType="uniform"
                     android:padding="10dp"
-                    android:text=""
+                    android:text="0"
                     android:textSize="70sp"
                     tools:ignore="Suspicious0dp" />
             </LinearLayout>

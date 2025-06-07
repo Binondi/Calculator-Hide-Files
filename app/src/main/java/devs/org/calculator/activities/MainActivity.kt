@@ -150,7 +150,7 @@ class MainActivity : AppCompatActivity(), DialogActionsCallback, DialogUtil.Dial
     }
 
     private fun clearDisplay() {
-        currentExpression = ""
+        currentExpression = "0"
         binding.total.text = ""
         lastWasOperator = false
         lastWasPercent = false
@@ -335,12 +335,16 @@ class MainActivity : AppCompatActivity(), DialogActionsCallback, DialogUtil.Dial
         }
 
         try {
-            if (currentExpression.isEmpty() ||
-                (isOperator(currentExpression.last().toString()) && currentExpression.last() != '%')) {
+            if (currentExpression.isEmpty()) {
                 binding.total.text = ""
                 return
             }
+
             var processedExpression = currentExpression.replace("×", "*")
+
+            if (isOperator(processedExpression.last().toString())) {
+                processedExpression = processedExpression.substring(0, processedExpression.length - 1)
+            }
 
             if (processedExpression.contains("%")) {
                 processedExpression = preprocessExpression(processedExpression)
