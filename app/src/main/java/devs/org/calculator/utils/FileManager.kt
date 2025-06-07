@@ -1,5 +1,6 @@
 package devs.org.calculator.utils
 
+import android.Manifest
 import android.app.Activity
 import android.app.RecoverableSecurityException
 import android.content.ActivityNotFoundException
@@ -8,6 +9,8 @@ import android.content.Intent
 import android.net.Uri
 import android.os.Build
 import android.os.Environment
+import android.os.Handler
+import android.os.Looper
 import android.provider.MediaStore
 import android.provider.Settings
 import android.webkit.MimeTypeMap
@@ -15,26 +18,19 @@ import android.widget.Toast
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.IntentSenderRequest
 import androidx.core.app.ActivityCompat
+import androidx.core.content.FileProvider
 import androidx.documentfile.provider.DocumentFile
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.lifecycleScope
 import devs.org.calculator.callbacks.FileProcessCallback
+import devs.org.calculator.database.AppDatabase
+import devs.org.calculator.database.HiddenFileEntity
+import devs.org.calculator.database.HiddenFileRepository
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.io.File
-import android.Manifest
-import android.os.Handler
-import android.os.Looper
-import androidx.core.content.FileProvider
-import devs.org.calculator.R
-import devs.org.calculator.database.AppDatabase
-import devs.org.calculator.database.HiddenFileRepository
-import devs.org.calculator.utils.PrefsUtil
-import android.util.Log
-import devs.org.calculator.database.HiddenFileEntity
-import java.io.FileOutputStream
 
 class FileManager(private val context: Context, private val lifecycleOwner: LifecycleOwner) {
     private lateinit var intentSenderLauncher: ActivityResultLauncher<IntentSenderRequest>
@@ -169,7 +165,6 @@ class FileManager(private val context: Context, private val lifecycleOwner: Life
                 // First try to delete using DocumentFile
                 val documentFile = DocumentFile.fromSingleUri(context, photoUri)
                 if (documentFile?.exists() == true && documentFile.canWrite()) {
-                    val deleted = documentFile.delete()
                     withContext(Dispatchers.Main) {
 //                            Toast.makeText(context, "File deleted successfully", Toast.LENGTH_SHORT).show()
                     }
