@@ -35,8 +35,7 @@
                         android:layout_width="match_parent"
                         android:layout_height="match_parent"
                         android:layout_gravity="center"
-                        android:scaleType="centerCrop"
-                        android:src="@drawable/add_image" />
+                        android:scaleType="centerCrop"/>
                     <View
                         android:id="@+id/shade"
                         android:layout_width="match_parent"

@@ -17,11 +17,13 @@ import android.content.SharedPreferences
 import androidx.core.content.FileProvider
 import devs.org.calculator.database.HiddenFileEntity
 import androidx.core.content.edit
+import android.util.Log
 
 object SecurityUtils {
     private const val ALGORITHM = "AES"
     private const val TRANSFORMATION = "AES/CBC/PKCS5Padding"
     private const val KEY_SIZE = 256
+    val ENCRYPTED_EXTENSION = ".enc"
 
     private fun getSecretKey(context: Context): SecretKey {
         val keyStore = context.getSharedPreferences("keystore", Context.MODE_PRIVATE)
@@ -109,43 +111,58 @@ object SecurityUtils {
         try {
             val encryptedFile = File(meta.filePath)
             if (!encryptedFile.exists()) {
+                Log.e("SecurityUtils", "Encrypted file does not exist: ${meta.filePath}")
                 return null
             }
 
             val tempDir = File(context.cacheDir, "preview_temp")
-            if (!tempDir.exists()) tempDir.mkdirs()
+            if (!tempDir.exists()) {
+                if (!tempDir.mkdirs()) {
+                    Log.e("SecurityUtils", "Failed to create temp directory")
+                    return null
+                }
+            }
+
+            // Clean up old preview files
+            tempDir.listFiles()?.forEach { 
+                if (it.lastModified() < System.currentTimeMillis() - 5 * 60 * 1000) { // 5 minutes
+                    it.delete()
+                }
+            }
 
             val tempFile = File(tempDir, "preview_${System.currentTimeMillis()}_${meta.fileName}")
-
-            tempDir.listFiles()?.forEach { it.delete() }
-
+            
             val success = decryptFile(context, encryptedFile, tempFile)
             
             if (success && tempFile.exists() && tempFile.length() > 0) {
                 return tempFile
             } else {
+                Log.e("SecurityUtils", "Failed to decrypt preview file: ${meta.filePath}")
                 if (tempFile.exists()) tempFile.delete()
                 return null
             }
-        } catch (_: Exception) {
+        } catch (e: Exception) {
+            Log.e("SecurityUtils", "Error in getDecryptedPreviewFile: ${e.message}")
             return null
         }
     }
 
-
     fun getUriForPreviewFile(context: Context, file: File): Uri? {
         return try {
+            if (!file.exists() || file.length() == 0L) {
+                Log.e("SecurityUtils", "Preview file does not exist or is empty: ${file.absolutePath}")
+                return null
+            }
             FileProvider.getUriForFile(
                 context,
-                "${context.packageName}.provider", // Must match AndroidManifest
+                "${context.packageName}.provider",
                 file
             )
-        } catch (_: Exception) {
+        } catch (e: Exception) {
+            Log.e("SecurityUtils", "Error getting URI for preview file: ${e.message}")
             null
         }
     }
-
-
 
     fun decryptFile(context: Context, inputFile: File, outputFile: File): Boolean {
         return try {

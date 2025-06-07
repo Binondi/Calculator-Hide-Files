@@ -37,6 +37,10 @@ class FileDiffCallback : DiffUtil.ItemCallback<File>() {
             changes.add("EXISTENCE_CHANGED")
         }
 
+        if (oldItem.absolutePath != newItem.absolutePath) {
+            changes.add("FILE_CHANGED")
+        }
+
         return changes.ifEmpty { null }
     }
 }

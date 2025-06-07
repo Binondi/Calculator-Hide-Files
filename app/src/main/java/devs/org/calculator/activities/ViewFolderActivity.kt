@@ -7,7 +7,6 @@ import android.os.Bundle
 import android.os.Environment
 import android.os.Handler
 import android.os.Looper
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.animation.Animation
@@ -23,7 +22,6 @@ import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import devs.org.calculator.R
-import devs.org.calculator.adapters.FileAdapter
 import devs.org.calculator.adapters.FolderSelectionAdapter
 import devs.org.calculator.callbacks.FileProcessCallback
 import devs.org.calculator.database.HiddenFileEntity
@@ -41,6 +39,8 @@ import java.io.File
 import android.widget.CheckBox
 import android.widget.CompoundButton
 import android.app.AlertDialog
+import android.view.WindowManager
+import devs.org.calculator.adapters.FileAdapter
 
 class ViewFolderActivity : AppCompatActivity() {
 
@@ -151,7 +151,8 @@ class ViewFolderActivity : AppCompatActivity() {
     }
 
     private fun updateFilesToAdapter() {
-        openFolder(currentFolder!!)
+        val files = folderManager.getFilesInFolder(currentFolder!!)
+        fileAdapter?.submitList(files)
     }
 
 
@@ -223,6 +224,7 @@ class ViewFolderActivity : AppCompatActivity() {
                     ).show()
                     dismissCustomDialog()
                 }
+                e.printStackTrace()
             }
         }
     }
@@ -230,9 +232,19 @@ class ViewFolderActivity : AppCompatActivity() {
     override fun onResume() {
         super.onResume()
         refreshCurrentFolder()
+        setupFlagSecure()
     }
 
-    private fun openFolder(folder: File) {
+    private fun setupFlagSecure() {
+        if (prefs.getBoolean("screenshot_restriction", true)) {
+            window.setFlags(
+                WindowManager.LayoutParams.FLAG_SECURE,
+                WindowManager.LayoutParams.FLAG_SECURE
+            )
+        }
+    }
+
+    fun openFolder(folder: File) {
         if (!folder.exists()) {
             folder.mkdirs()
             File(folder, ".nomedia").createNewFile()
@@ -246,11 +258,12 @@ class ViewFolderActivity : AppCompatActivity() {
         } else {
             showEmptyState()
         }
+        binding.swipeLayout.isRefreshing = false
     }
 
     private fun showEmptyState() {
         binding.noItems.visibility = View.VISIBLE
-        binding.recyclerView.visibility = View.GONE
+        binding.swipeLayout.visibility = View.GONE
     }
 
     private fun showFileList(files: List<File>, folder: File) {
@@ -261,17 +274,20 @@ class ViewFolderActivity : AppCompatActivity() {
             onFolderLongClick = { isSelected ->
                 handleFileSelectionModeChange(isSelected)
             }).apply {
-            setFileOperationCallback(object : FileAdapter.FileOperationCallback {
+            setFilesOperationCallback(object : FileAdapter.FilesOperationCallback {
                 override fun onFileDeleted(file: File) {
                     refreshCurrentFolder()
+                    updateFilesToAdapter()
                 }
 
                 override fun onFileRenamed(oldFile: File, newFile: File) {
                     refreshCurrentFolder()
+                    updateFilesToAdapter()
                 }
 
                 override fun onRefreshNeeded() {
                     refreshCurrentFolder()
+                    updateFilesToAdapter()
                 }
 
                 override fun onSelectionModeChanged(isSelectionMode: Boolean, selectedCount: Int) {
@@ -287,7 +303,7 @@ class ViewFolderActivity : AppCompatActivity() {
         }
 
         binding.recyclerView.adapter = fileAdapter
-        binding.recyclerView.visibility = View.VISIBLE
+        binding.swipeLayout.visibility = View.VISIBLE
         binding.noItems.visibility = View.GONE
 
         binding.menuButton.setOnClickListener {
@@ -381,10 +397,10 @@ class ViewFolderActivity : AppCompatActivity() {
                                 getString(R.string.decrypt_file) -> {
                                     lifecycleScope.launch {
                                         val filesWithoutMetadata = selectedFiles.filter { file ->
-                                            file.name.endsWith(ENCRYPTED_EXTENSION) && 
+                                            file.name.endsWith(ENCRYPTED_EXTENSION) &&
                                             fileAdapter?.hiddenFileRepository?.getHiddenFileByPath(file.absolutePath)?.isEncrypted != true
                                         }
-                                        
+
                                         if (filesWithoutMetadata.isNotEmpty()) {
                                             showDecryptionTypeDialog(filesWithoutMetadata)
                                         } else {
@@ -455,21 +471,18 @@ class ViewFolderActivity : AppCompatActivity() {
         lifecycleScope.launch {
             var successCount = 0
             var failCount = 0
+            val decryptedFiles = mutableMapOf<File, File>()
 
             for (file in selectedFiles) {
                 try {
                     val hiddenFile = fileAdapter?.hiddenFileRepository?.getHiddenFileByPath(file.absolutePath)
 
-                    
                     if (hiddenFile?.isEncrypted == true) {
-
                         val originalExtension = hiddenFile.originalExtension
                         val decryptedFile = SecurityUtils.changeFileExtension(file, originalExtension)
 
-                        
                         if (SecurityUtils.decryptFile(this@ViewFolderActivity, file, decryptedFile)) {
                             if (decryptedFile.exists() && decryptedFile.length() > 0) {
-
                                 hiddenFile.let {
                                     fileAdapter?.hiddenFileRepository?.updateEncryptionStatus(
                                         filePath = file.absolutePath,
@@ -479,27 +492,23 @@ class ViewFolderActivity : AppCompatActivity() {
                                     )
                                 }
                                 if (file.delete()) {
-
+                                    decryptedFiles[file] = decryptedFile
                                     successCount++
                                 } else {
-
                                     decryptedFile.delete()
                                     failCount++
                                 }
                             } else {
-
                                 decryptedFile.delete()
                                 failCount++
                             }
                         } else {
-
                             if (decryptedFile.exists()) {
                                 decryptedFile.delete()
                             }
                             failCount++
                         }
                     } else if (file.name.endsWith(ENCRYPTED_EXTENSION) && hiddenFile == null) {
-
                         val extension = when (fileType) {
                             FileManager.FileType.IMAGE -> ".jpg"
                             FileManager.FileType.VIDEO -> ".mp4"
@@ -509,11 +518,8 @@ class ViewFolderActivity : AppCompatActivity() {
                         
                         val decryptedFile = SecurityUtils.changeFileExtension(file, extension)
 
-                        
                         if (SecurityUtils.decryptFile(this@ViewFolderActivity, file, decryptedFile)) {
                             if (decryptedFile.exists() && decryptedFile.length() > 0) {
-
-
                                 fileAdapter?.hiddenFileRepository?.insertHiddenFile(
                                     HiddenFileEntity(
                                         filePath = decryptedFile.absolutePath,
@@ -525,37 +531,32 @@ class ViewFolderActivity : AppCompatActivity() {
                                     )
                                 )
                                 if (file.delete()) {
-
+                                    decryptedFiles[file] = decryptedFile
                                     successCount++
                                 } else {
-
                                     decryptedFile.delete()
                                     failCount++
                                 }
                             } else {
-
                                 decryptedFile.delete()
                                 failCount++
                             }
                         } else {
-
                             if (decryptedFile.exists()) {
                                 decryptedFile.delete()
                             }
                             failCount++
                         }
                     } else {
-
                         failCount++
                     }
                 } catch (e: Exception) {
-
                     failCount++
+                    e.printStackTrace()
                 }
             }
 
             mainHandler.post {
-                fileAdapter?.exitSelectionMode()
                 when {
                     successCount > 0 && failCount == 0 -> {
                         Toast.makeText(this@ViewFolderActivity, "Decrypted $successCount file(s)", Toast.LENGTH_SHORT).show()
@@ -567,7 +568,10 @@ class ViewFolderActivity : AppCompatActivity() {
                         Toast.makeText(this@ViewFolderActivity, "Failed to decrypt $failCount file(s)", Toast.LENGTH_SHORT).show()
                     }
                 }
-                refreshCurrentFolder()
+                if (successCount > 0) {
+                    refreshCurrentFolder()
+                    fileAdapter?.exitSelectionMode()
+                }
             }
         }
     }
@@ -627,10 +631,19 @@ class ViewFolderActivity : AppCompatActivity() {
                     val files = folderManager.getFilesInFolder(folder)
                     mainHandler.post {
                         if (files.isNotEmpty()) {
-                            binding.recyclerView.visibility = View.VISIBLE
+                            binding.swipeLayout.visibility = View.VISIBLE
                             binding.noItems.visibility = View.GONE
 
-                            fileAdapter?.submitList(files.toMutableList())
+                            val currentFiles = fileAdapter?.currentList ?: emptyList()
+                            val hasChanges = files.size != currentFiles.size || 
+                                files.any { newFile -> 
+                                    currentFiles.none { it.absolutePath == newFile.absolutePath }
+                                }
+
+                            if (hasChanges) {
+                                fileAdapter?.submitList(files.toMutableList())
+                            }
+
                             fileAdapter?.let { adapter ->
                                 if (adapter.isInSelectionMode()) {
                                     showFileSelectionIcons()
@@ -642,8 +655,7 @@ class ViewFolderActivity : AppCompatActivity() {
                             showEmptyState()
                         }
                     }
-                } catch (e: Exception) {
-
+                } catch (_: Exception) {
                     mainHandler.post {
                         showEmptyState()
                     }
@@ -658,6 +670,9 @@ class ViewFolderActivity : AppCompatActivity() {
         }
         binding.back.setOnClickListener {
             finish()
+        }
+        binding.swipeLayout.setOnRefreshListener {
+            openFolder(currentFolder!!)
         }
 
         binding.addImage.setOnClickListener { openFilePicker("image/*") }
@@ -748,6 +763,7 @@ class ViewFolderActivity : AppCompatActivity() {
     private fun performFileUnhiding(selectedFiles: List<File>) {
         lifecycleScope.launch {
             var allUnhidden = true
+            val unhiddenFiles = mutableListOf<File>()
             selectedFiles.forEach { file ->
                 try {
                     val hiddenFile = fileAdapter?.hiddenFileRepository?.getHiddenFileByPath(file.absolutePath)
@@ -767,6 +783,7 @@ class ViewFolderActivity : AppCompatActivity() {
                                         }
                                         file.delete()
                                         decryptedFile.delete()
+                                        unhiddenFiles.add(file)
                                     } else {
                                         decryptedFile.delete()
                                         allUnhidden = false
@@ -794,6 +811,7 @@ class ViewFolderActivity : AppCompatActivity() {
                                     fileAdapter?.hiddenFileRepository?.deleteHiddenFile(it)
                                 }
                                 file.delete()
+                                unhiddenFiles.add(file)
                             } else {
                                 allUnhidden = false
                             }
@@ -802,8 +820,8 @@ class ViewFolderActivity : AppCompatActivity() {
                         }
                     }
                 } catch (e: Exception) {
-
                     allUnhidden = false
+                    e.printStackTrace()
                 }
             }
 
@@ -815,8 +833,8 @@ class ViewFolderActivity : AppCompatActivity() {
                 }
 
                 Toast.makeText(this@ViewFolderActivity, message, Toast.LENGTH_SHORT).show()
-                fileAdapter?.exitSelectionMode()
                 refreshCurrentFolder()
+                fileAdapter?.exitSelectionMode()
             }
         }
     }
@@ -824,17 +842,19 @@ class ViewFolderActivity : AppCompatActivity() {
     private fun performFileDeletion(selectedFiles: List<File>) {
         lifecycleScope.launch {
             var allDeleted = true
+            val deletedFiles = mutableListOf<File>()
             selectedFiles.forEach { file ->
                 try {
                     val hiddenFile = fileAdapter?.hiddenFileRepository?.getHiddenFileByPath(file.absolutePath)
                     hiddenFile?.let {
                         fileAdapter?.hiddenFileRepository?.deleteHiddenFile(it)
                     }
-                    if (!file.delete()) {
+                    if (file.delete()) {
+                        deletedFiles.add(file)
+                    } else {
                         allDeleted = false
                     }
-                } catch (e: Exception) {
-
+                } catch (_: Exception) {
                     allDeleted = false
                 }
             }
@@ -847,8 +867,8 @@ class ViewFolderActivity : AppCompatActivity() {
                 }
 
                 Toast.makeText(this@ViewFolderActivity, message, Toast.LENGTH_SHORT).show()
-                fileAdapter?.exitSelectionMode()
                 refreshCurrentFolder()
+                fileAdapter?.exitSelectionMode()
             }
         }
     }
@@ -862,6 +882,7 @@ class ViewFolderActivity : AppCompatActivity() {
     private fun copyFilesToFolder(selectedFiles: List<File>, destinationFolder: File) {
         lifecycleScope.launch {
             var allCopied = true
+            val copiedFiles = mutableListOf<File>()
             selectedFiles.forEach { file ->
                 try {
                     val newFile = File(destinationFolder, file.name)
@@ -880,17 +901,18 @@ class ViewFolderActivity : AppCompatActivity() {
                             )
                         )
                     }
+                    copiedFiles.add(file)
                 } catch (e: Exception) {
-
                     allCopied = false
+                    e.printStackTrace()
                 }
             }
 
             mainHandler.post {
                 val message = if (allCopied) getString(R.string.files_copied_successfully) else getString(R.string.some_files_could_not_be_copied)
                 Toast.makeText(this@ViewFolderActivity, message, Toast.LENGTH_SHORT).show()
-                fileAdapter?.exitSelectionMode()
                 refreshCurrentFolder()
+                fileAdapter?.exitSelectionMode()
             }
         }
     }
@@ -898,6 +920,7 @@ class ViewFolderActivity : AppCompatActivity() {
     private fun moveFilesToFolder(selectedFiles: List<File>, destinationFolder: File) {
         lifecycleScope.launch {
             var allMoved = true
+            val movedFiles = mutableListOf<File>()
             selectedFiles.forEach { file ->
                 try {
                     val newFile = File(destinationFolder, file.name)
@@ -913,22 +936,27 @@ class ViewFolderActivity : AppCompatActivity() {
                         )
                     }
                     
-                    file.delete()
+                    if (file.delete()) {
+                        movedFiles.add(file)
+                    } else {
+                        allMoved = false
+                    }
                 } catch (e: Exception) {
-
                     allMoved = false
+                    e.printStackTrace()
                 }
             }
 
             mainHandler.post {
                 val message = if (allMoved) getString(R.string.files_moved_successfully) else getString(R.string.some_files_could_not_be_moved)
                 Toast.makeText(this@ViewFolderActivity, message, Toast.LENGTH_SHORT).show()
-                fileAdapter?.exitSelectionMode()
                 refreshCurrentFolder()
+                fileAdapter?.exitSelectionMode()
             }
         }
     }
 
+    @SuppressLint("InflateParams")
     private fun showFolderSelectionDialog(onFolderSelected: (File) -> Unit) {
         val folders = folderManager.getFoldersInDirectory(hiddenDir)
             .filter { it != currentFolder }

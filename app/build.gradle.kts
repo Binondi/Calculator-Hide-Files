@@ -11,9 +11,10 @@ android {
     defaultConfig {
         applicationId = "devs.org.calculator"
         minSdk = 26
+        //noinspection OldTargetApi
         targetSdk = 34
-        versionCode = 5
-        versionName = "1.4.0"
+        versionCode = 6
+        versionName = "1.4.1"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
@@ -81,6 +82,7 @@ dependencies {
     implementation(libs.androidx.viewpager)
     implementation(libs.zoomage)
     implementation(libs.lottie)
+    implementation("androidx.swiperefreshlayout:swiperefreshlayout:1.2.0-beta01")
 
     // Room dependencies
     implementation(libs.androidx.room.runtime)

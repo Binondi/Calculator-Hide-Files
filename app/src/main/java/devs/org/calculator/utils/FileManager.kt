@@ -25,6 +25,8 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.io.File
 import android.Manifest
+import android.os.Handler
+import android.os.Looper
 import androidx.core.content.FileProvider
 import devs.org.calculator.R
 import devs.org.calculator.database.AppDatabase
@@ -37,7 +39,6 @@ import java.io.FileOutputStream
 class FileManager(private val context: Context, private val lifecycleOwner: LifecycleOwner) {
     private lateinit var intentSenderLauncher: ActivityResultLauncher<IntentSenderRequest>
     val intent = Intent()
-    private val prefs: PrefsUtil by lazy { PrefsUtil(context) }
     val hiddenFileRepository: HiddenFileRepository by lazy {
         HiddenFileRepository(AppDatabase.getDatabase(context).hiddenFileDao())
     }
@@ -67,15 +68,6 @@ class FileManager(private val context: Context, private val lifecycleOwner: Life
         return dir
     }
 
-    fun getFilesInHiddenDir(type: FileType): List<File> {
-        val hiddenDir = getHiddenDirectory()
-        val typeDir = File(hiddenDir, type.dirName)
-        if (!typeDir.exists()) {
-            typeDir.mkdirs()
-            File(typeDir, ".nomedia").createNewFile()
-        }
-        return typeDir.listFiles()?.filterNotNull()?.filter { it.name != ".nomedia" } ?: emptyList()
-    }
     fun getFilesInHiddenDirFromFolder(type: FileType, folder: String): List<File> {
         val typeDir = File(folder)
         if (!typeDir.exists()) {
@@ -116,8 +108,6 @@ class FileManager(private val context: Context, private val lifecycleOwner: Life
             if (!targetFile.exists() || targetFile.length() == 0L) {
                 throw Exception("File copy failed")
             }
-
-            // Encrypt file if encryption is enabled
 
             // Media scan the new file to hide it
             val mediaScanIntent = Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE)
@@ -170,62 +160,6 @@ class FileManager(private val context: Context, private val lifecycleOwner: Life
         } catch (e: Exception) {
             e.printStackTrace()
             null
-        }
-    }
-
-    fun unHideFile(file: File, onSuccess: (() -> Unit)? = null, onError: ((String) -> Unit)? = null) {
-        lifecycleOwner.lifecycleScope.launch(Dispatchers.IO) {
-            try {
-                // Create target directory (Downloads)
-                val targetDir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS)
-                targetDir.mkdirs()
-
-                // Create target file with same name or timestamp
-                val targetFile = File(targetDir, file.name)
-
-                // If file with same name exists, add timestamp
-                val finalTargetFile = if (targetFile.exists()) {
-                    val nameWithoutExt = file.nameWithoutExtension
-                    val extension = file.extension
-                    File(targetDir, "${nameWithoutExt}_${System.currentTimeMillis()}.${extension}")
-                } else {
-                    targetFile
-                }
-
-                // Check if file is encrypted
-                if (file.extension == ENCRYPTED_EXTENSION) {
-                    // Decrypt file
-                    val decryptedFile = SecurityUtils.changeFileExtension(file, SecurityUtils.getFileExtension(file))
-                    if (SecurityUtils.decryptFile(context, file, decryptedFile)) {
-                        decryptedFile.copyTo(finalTargetFile, overwrite = false)
-                        decryptedFile.delete()
-                    } else {
-                        throw Exception("Failed to decrypt file")
-                    }
-                } else {
-                    // Copy file content
-                    file.copyTo(finalTargetFile, overwrite = false)
-                }
-
-                // Verify copy success
-                if (!finalTargetFile.exists() || finalTargetFile.length() == 0L) {
-                    throw Exception("File copy failed")
-                }
-
-                // Media scan the new file
-                val mediaScanIntent = Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE)
-                mediaScanIntent.data = Uri.fromFile(finalTargetFile)
-                context.sendBroadcast(mediaScanIntent)
-
-                withContext(Dispatchers.Main) {
-                    onSuccess?.invoke()
-                }
-            } catch (e: Exception) {
-                e.printStackTrace()
-                withContext(Dispatchers.Main) {
-                    onError?.invoke(e.message ?: "Unknown error occurred")
-                }
-            }
         }
     }
     
@@ -398,6 +332,142 @@ class FileManager(private val context: Context, private val lifecycleOwner: Life
         AUDIO(AUDIO_DIR),
         DOCUMENT(DOCS_DIR),
         ALL("all")
+    }
+
+    fun performEncryption(selectedFiles: List<File>,onEncryptionEnded :(MutableMap<File, File>)-> Unit) {
+        lifecycleOwner.lifecycleScope.launch {
+            var successCount = 0
+            var failCount = 0
+            val encryptedFiles = mutableMapOf<File, File>()
+
+            for (file in selectedFiles) {
+                try {
+                    val hiddenFile = hiddenFileRepository.getHiddenFileByPath(file.absolutePath)
+                    if (hiddenFile?.isEncrypted == true) continue
+                    val originalExtension = ".${file.extension.lowercase()}"
+                    val fileType = FileManager(context,lifecycleOwner).getFileType(file)
+                    val encryptedFile = SecurityUtils.changeFileExtension(file, devs.org.calculator.utils.FileManager.ENCRYPTED_EXTENSION)
+                    if (SecurityUtils.encryptFile(context, file, encryptedFile)) {
+                        if (encryptedFile.exists()) {
+                            if (hiddenFile == null){
+                                hiddenFileRepository.insertHiddenFile(
+                                    HiddenFileEntity(
+                                        filePath = encryptedFile.absolutePath,
+                                        isEncrypted = true,
+                                        encryptedFileName = encryptedFile.name,
+                                        fileType = fileType,
+                                        fileName = file.name,
+                                        originalExtension = originalExtension
+                                    )
+                                )
+                            }else{
+                                hiddenFile.let {
+                                    hiddenFileRepository.updateEncryptionStatus(
+                                        filePath = hiddenFile.filePath,
+                                        newFilePath = encryptedFile.absolutePath,
+                                        encryptedFileName = encryptedFile.name,
+                                        isEncrypted = true
+                                    )
+                                }
+                            }
+                            if (file.delete()) {
+                                encryptedFiles[file] = encryptedFile
+                                successCount++
+                            } else {
+                                failCount++
+                            }
+                        } else {
+                            failCount++
+                        }
+                    } else {
+                        failCount++
+                    }
+                } catch (e: Exception) {
+                    failCount++
+                }
+            }
+
+            Handler(Looper.getMainLooper()).post{
+                when {
+                    successCount > 0 && failCount == 0 -> {
+                        Toast.makeText(context, "Files encrypted successfully", Toast.LENGTH_SHORT).show()
+                        onEncryptionEnded(encryptedFiles)
+                    }
+                    successCount > 0 && failCount > 0 -> {
+                        Toast.makeText(context, "Some files could not be encrypted", Toast.LENGTH_SHORT).show()
+                        onEncryptionEnded(encryptedFiles)
+                    }
+                    else -> {
+                        Toast.makeText(context, "Failed to encrypt files", Toast.LENGTH_SHORT).show()
+                        onEncryptionEnded(encryptedFiles)
+                    }
+                }
+            }
+        }
+    }
+
+    fun performDecryption(selectedFiles: List<File>,onDecryptionEnded :(MutableMap<File, File>) -> Unit) {
+        lifecycleOwner.lifecycleScope.launch {
+            var successCount = 0
+            var failCount = 0
+            val decryptedFiles = mutableMapOf<File, File>()
+
+            for (file in selectedFiles) {
+                try {
+                    val hiddenFile = hiddenFileRepository.getHiddenFileByPath(file.absolutePath)
+                    if (hiddenFile?.isEncrypted == true) {
+                        val originalExtension = hiddenFile.originalExtension
+                        val decryptedFile = SecurityUtils.changeFileExtension(file, originalExtension)
+                        if (SecurityUtils.decryptFile(context, file, decryptedFile)) {
+                            if (decryptedFile.exists() && decryptedFile.length() > 0) {
+                                hiddenFile.let {
+                                    hiddenFileRepository.updateEncryptionStatus(
+                                        filePath = file.absolutePath,
+                                        newFilePath = decryptedFile.absolutePath,
+                                        encryptedFileName = decryptedFile.name,
+                                        isEncrypted = false
+                                    )
+                                }
+                                if (file.delete()) {
+                                    decryptedFiles[file] = decryptedFile
+                                    successCount++
+                                } else {
+                                    decryptedFile.delete()
+                                    failCount++
+                                }
+                            } else {
+                                decryptedFile.delete()
+                                failCount++
+                            }
+                        } else {
+                            if (decryptedFile.exists()) {
+                                decryptedFile.delete()
+                            }
+                            failCount++
+                        }
+                    }
+                } catch (e: Exception) {
+                    failCount++
+                }
+            }
+
+            Handler(Looper.getMainLooper()).post{
+                when {
+                    successCount > 0 && failCount == 0 -> {
+                        Toast.makeText(context, "Files decrypted successfully", Toast.LENGTH_SHORT).show()
+                        onDecryptionEnded(decryptedFiles)
+                    }
+                    successCount > 0 && failCount > 0 -> {
+                        Toast.makeText(context, "Some files could not be decrypted", Toast.LENGTH_SHORT).show()
+                        onDecryptionEnded(decryptedFiles)
+                    }
+                    else -> {
+                        Toast.makeText(context, "Failed to decrypt files", Toast.LENGTH_SHORT).show()
+                        onDecryptionEnded(decryptedFiles)
+                    }
+                }
+            }
+        }
     }
 
 
