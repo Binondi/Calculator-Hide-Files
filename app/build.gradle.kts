@@ -82,7 +82,7 @@ dependencies {
     implementation(libs.androidx.viewpager)
     implementation(libs.zoomage)
     implementation(libs.lottie)
-    implementation("androidx.swiperefreshlayout:swiperefreshlayout:1.2.0-beta01")
+    implementation(libs.androidx.swiperefreshlayout)
 
     // Room dependencies
     implementation(libs.androidx.room.runtime)
