@@ -9,7 +9,7 @@
 </a>
 
 <a href="https://github.com/Binondi/Calculator-Hide-Files/releases/latest">
-  <img alt="Downloads" src="https://img.shields.io/github/downloads/Binondi/Calculator-Hide-Files/total?style=for-the-badge">
+  <img alt="Downloads" src="https://img.shields.io/badge/downloads-1.1k-blue?logo=github&style=for-the-badge">
 </a>
 
 <a href="LICENSE">
