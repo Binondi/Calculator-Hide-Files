@@ -165,6 +165,7 @@ class FileManager(private val context: Context, private val lifecycleOwner: Life
                 // First try to delete using DocumentFile
                 val documentFile = DocumentFile.fromSingleUri(context, photoUri)
                 if (documentFile?.exists() == true && documentFile.canWrite()) {
+                    documentFile.delete()
                     withContext(Dispatchers.Main) {
 //                            Toast.makeText(context, "File deleted successfully", Toast.LENGTH_SHORT).show()
                     }

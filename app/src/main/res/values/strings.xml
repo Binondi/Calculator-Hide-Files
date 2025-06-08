@@ -1,5 +1,6 @@
 <resources>
-    <string name="app_name">Calculator</string>
+    <string name="app_name" translatable="false">Calculator</string>
+    <string name="version" translatable="false">Version 1.4.1</string>
     <string name="invalid_message">Invalid Value Entered</string>
     <string name="add_image">Add Image</string>
     <string name="add_audio">Add Audio</string>
@@ -121,7 +122,6 @@
     <string name="app_settings">App Settings</string>
     <string name="restrict_screenshots_in_hidden_section">Restrict Screenshots in Hidden Section</string>
     <string name="security_settings">Security Settings</string>
-    <string name="version">Version 1.4.0</string>
     <string name="app_details">App Details</string>
     <string name="setup_password">Setup Password</string>
     <string name="security_question_for_password_reset">Security Question (For Password Reset)</string>
