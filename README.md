@@ -135,9 +135,6 @@ If you find this app useful, please consider supporting the development. 🙏
 [![Donate via PayPal](https://img.shields.io/badge/PayPal-00457C?style=for-the-badge&logo=paypal&logoColor=white)](https://paypal.me/BinondiBorthakur56)
 [![Buy Me a Coffee](https://img.shields.io/badge/Buy%20Me%20a%20Coffee-FFDD00?style=for-the-badge&logo=buy-me-a-coffee&logoColor=black)](https://buymeacoffee.com/binondi)
 
-**If you are from india you can donate via UPI**
-
-<img src="media/payment_qr.png" alt="Payment QR for UPI" width="32%">
 ---
 
 ## 🔧 Contributing
