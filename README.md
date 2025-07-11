@@ -9,7 +9,7 @@
 </a>
 
 <a href="https://github.com/Binondi/Calculator-Hide-Files/releases/latest">
-  <img alt="Downloads" src="https://img.shields.io/github/downloads/Binondi/Calculator-Hide-Files/total?style=for-the-badge">
+  <img alt="Downloads" src="https://img.shields.io/badge/downloads-1.1k-blue?logo=github&style=for-the-badge">
 </a>
 
 <a href="LICENSE">
@@ -134,6 +134,11 @@ If you find this app useful, please consider supporting the development. 🙏
 [![Sponsor on GitHub](https://img.shields.io/badge/sponsor-30363D?style=for-the-badge&logo=GitHub-Sponsors&logoColor=#EA4AAA)](https://github.com/sponsors/Binondi)
 [![Donate via PayPal](https://img.shields.io/badge/PayPal-00457C?style=for-the-badge&logo=paypal&logoColor=white)](https://paypal.me/BinondiBorthakur56)
 [![Buy Me a Coffee](https://img.shields.io/badge/Buy%20Me%20a%20Coffee-FFDD00?style=for-the-badge&logo=buy-me-a-coffee&logoColor=black)](https://buymeacoffee.com/binondi)
+
+- **UPI ID** 📱
+``
+binondi@naviaxis
+``
 ---
 
 ## 🔧 Contributing
