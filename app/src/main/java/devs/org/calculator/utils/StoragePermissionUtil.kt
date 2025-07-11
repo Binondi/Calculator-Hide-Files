@@ -7,6 +7,7 @@ import android.net.Uri
 import android.os.Build
 import android.os.Environment
 import android.provider.Settings
+import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
@@ -15,20 +16,15 @@ import androidx.core.content.PermissionChecker
 import androidx.core.net.toUri
 
 class StoragePermissionUtil(private val activity: AppCompatActivity) {
-    
-    private val requestPermissionLauncher = activity.registerForActivityResult(
-        ActivityResultContracts.RequestMultiplePermissions()
-    ) { permissions ->
-        if (permissions.all { it.value }) {
-            onPermissionGranted?.invoke()
-        }
-    }
 
     private var onPermissionGranted: (() -> Unit)? = null
 
-    fun requestStoragePermission(onGranted: () -> Unit) {
+    fun requestStoragePermission(
+        launcher: ActivityResultLauncher<Array<String>>,
+        onGranted: () -> Unit
+    ) {
         onPermissionGranted = onGranted
-        
+
         when {
             Build.VERSION.SDK_INT >= Build.VERSION_CODES.R -> {
                 if (Environment.isExternalStorageManager()) {
@@ -45,7 +41,7 @@ class StoragePermissionUtil(private val activity: AppCompatActivity) {
                     Manifest.permission.READ_EXTERNAL_STORAGE,
                     Manifest.permission.WRITE_EXTERNAL_STORAGE
                 )
-                requestPermissionLauncher.launch(permissions)
+                launcher.launch(permissions)
             }
         }
     }
@@ -66,4 +62,10 @@ class StoragePermissionUtil(private val activity: AppCompatActivity) {
                     writePermission == PermissionChecker.PERMISSION_GRANTED
         }
     }
-} 
+
+    fun handlePermissionResult(permissions: Map<String, Boolean>) {
+        if (permissions.all { it.value }) {
+            onPermissionGranted?.invoke()
+        }
+    }
+}

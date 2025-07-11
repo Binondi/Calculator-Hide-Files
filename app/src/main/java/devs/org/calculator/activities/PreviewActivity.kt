@@ -6,7 +6,10 @@ import android.os.Handler
 import android.os.Looper
 import android.view.WindowManager
 import android.widget.Toast
+import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.view.ViewCompat
+import androidx.core.view.WindowInsetsCompat
 import androidx.lifecycle.lifecycleScope
 import androidx.viewpager2.widget.ViewPager2
 import devs.org.calculator.R
@@ -42,7 +45,12 @@ class PreviewActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         binding = ActivityPreviewBinding.inflate(layoutInflater)
         setContentView(binding.root)
-
+        enableEdgeToEdge()
+        ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main)) { v, insets ->
+            val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
+            v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)
+            insets
+        }
         fileManager = FileManager(this, this)
 
         currentPosition = intent.getIntExtra("position", 0)

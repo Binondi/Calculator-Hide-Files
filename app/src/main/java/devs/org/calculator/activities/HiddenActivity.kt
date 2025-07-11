@@ -11,7 +11,10 @@ import android.view.WindowManager
 import android.widget.EditText
 import android.widget.Toast
 import androidx.activity.OnBackPressedCallback
+import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.view.ViewCompat
+import androidx.core.view.WindowInsetsCompat
 import androidx.recyclerview.widget.GridLayoutManager
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import devs.org.calculator.R
@@ -47,7 +50,12 @@ class HiddenActivity : AppCompatActivity() {
         fileManager = FileManager(this, this)
         folderManager = FolderManager()
         dialogUtil = DialogUtil(this)
-
+        enableEdgeToEdge()
+        ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main)) { v, insets ->
+            val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
+            v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)
+            insets
+        }
 
         setupInitialUIState()
         setupClickListeners()

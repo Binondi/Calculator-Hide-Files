@@ -40,6 +40,9 @@ import android.widget.CheckBox
 import android.widget.CompoundButton
 import android.app.AlertDialog
 import android.view.WindowManager
+import androidx.activity.enableEdgeToEdge
+import androidx.core.view.ViewCompat
+import androidx.core.view.WindowInsetsCompat
 import devs.org.calculator.adapters.FileAdapter
 
 class ViewFolderActivity : AppCompatActivity() {
@@ -71,6 +74,12 @@ class ViewFolderActivity : AppCompatActivity() {
 
         binding = ActivityViewFolderBinding.inflate(layoutInflater)
         setContentView(binding.root)
+        enableEdgeToEdge()
+        ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main)) { v, insets ->
+            val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
+            v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)
+            insets
+        }
         setupAnimations()
         initialize()
         setupClickListeners()

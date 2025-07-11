@@ -24,6 +24,10 @@ import devs.org.calculator.utils.PrefsUtil
 import net.objecthunter.exp4j.ExpressionBuilder
 import java.util.regex.Pattern
 import androidx.core.content.edit
+import androidx.core.view.ViewCompat
+import androidx.core.view.WindowInsetsCompat
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
+import devs.org.calculator.utils.StoragePermissionUtil
 
 class MainActivity : AppCompatActivity(), DialogActionsCallback, DialogUtil.DialogCallback {
     private lateinit var binding: ActivityMainBinding
@@ -36,6 +40,8 @@ class MainActivity : AppCompatActivity(), DialogActionsCallback, DialogUtil.Dial
     private val dialogUtil = DialogUtil(this)
     private val fileManager = FileManager(this, this)
     private val sp by lazy { getSharedPreferences("app", MODE_PRIVATE) }
+    private lateinit var storagePermissionUtil: StoragePermissionUtil
+    private lateinit var permissionLauncher: ActivityResultLauncher<Array<String>>
 
     @RequiresApi(Build.VERSION_CODES.R)
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -43,15 +49,30 @@ class MainActivity : AppCompatActivity(), DialogActionsCallback, DialogUtil.Dial
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
         enableEdgeToEdge()
+        ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main)) { v, insets ->
+            val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
+            v.setPadding(systemBars.left, 0, systemBars.right, systemBars.bottom)
+            insets
+        }
+
+        permissionLauncher = registerForActivityResult(
+            ActivityResultContracts.RequestMultiplePermissions()
+        ) { permissions ->
+            storagePermissionUtil.handlePermissionResult(permissions)
+        }
+
+        // Initialize StoragePermissionUtil
+        storagePermissionUtil = StoragePermissionUtil(this)
+
         launcher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
             handleActivityResult(result)
         }
-
         if (sp.getBoolean("isFirst", true)){
             binding.display.text = getString(R.string.enter_123456)
         }
 
-        if(!Environment.isExternalStorageManager()) {
+
+        if (!storagePermissionUtil.hasStoragePermission()) {
             dialogUtil.showMaterialDialog(
                 getString(R.string.storage_permission),
                 getString(R.string.to_ensure_the_app_works_properly_and_allows_you_to_easily_hide_or_un_hide_your_private_files_please_grant_storage_access_permission) +
@@ -61,7 +82,10 @@ class MainActivity : AppCompatActivity(), DialogActionsCallback, DialogUtil.Dial
                 getString(R.string.later),
                 object : DialogUtil.DialogCallback {
                     override fun onPositiveButtonClicked() {
-                        fileManager.askPermission(this@MainActivity)
+                        storagePermissionUtil.requestStoragePermission(permissionLauncher) {
+                            Toast.makeText(this@MainActivity, getString(R.string.permission_granted), Toast.LENGTH_SHORT).show()
+                        }
+
                     }
 
                     override fun onNegativeButtonClicked() {
@@ -75,9 +99,11 @@ class MainActivity : AppCompatActivity(), DialogActionsCallback, DialogUtil.Dial
                             getString(R.string.you_can_grant_permission_later_from_settings),
                             Toast.LENGTH_LONG).show()
                     }
-                }
-            )
+                })
         }
+
+
+
         setupNumberButton(binding.btn0, "0")
         setupNumberButton(binding.btn00, "00")
         setupNumberButton(binding.btn1, "1")
