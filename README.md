@@ -23,7 +23,7 @@
          
 <h4>Download</h4>
 
-<a>[<img src="https://github.com/machiav3lli/oandbackupx/blob/034b226cea5c1b30eb4f6a6f313e4dadcbb0ece4/badge_github.png" alt="Get it on GitHub" height="80">](https://github.com/binondi/Calculator-Hide-Files/releases) </a><a href="https://apt.izzysoft.de/fdroid/index/apk/devs.org.calculator"><img src="https://gitlab.com/IzzyOnDroid/repo/-/raw/master/assets/IzzyOnDroid.png" height="80"></a> 
+<a>[<img src="https://github.com/machiav3lli/oandbackupx/blob/034b226cea5c1b30eb4f6a6f313e4dadcbb0ece4/badge_github.png" alt="Get it on GitHub" height="80">](https://github.com/binondi/Calculator-Hide-Files/releases) </a><a href="https://apt.izzysoft.de/fdroid/index/apk/devs.org.calculator"><img src="https://gitlab.com/IzzyOnDroid/repo/-/raw/master/assets/IzzyOnDroid.png" height="80"></a> <a href="https://www.androidfreeware.net/download-apk-devs-org-calculator.html"><img src="https://www.androidfreeware.net/images/androidfreeware-badge.png" height="80"></a> 
 
 </div>
 
