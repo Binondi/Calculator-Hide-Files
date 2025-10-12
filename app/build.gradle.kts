@@ -6,15 +6,15 @@ plugins {
 
 android {
     namespace = "devs.org.calculator"
-    compileSdk = 35
+    compileSdk = 36
 
     defaultConfig {
         applicationId = "devs.org.calculator"
         minSdk = 26
         //noinspection OldTargetApi
         targetSdk = 34
-        versionCode = 7
-        versionName = "1.4.2"
+        versionCode = 8
+        versionName = "1.4.3"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }

@@ -26,4 +26,39 @@
         android:text="Audio"
         android:padding="8dp" />
 
+    <CheckBox
+        android:id="@+id/checkboxOther"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Other"
+        android:padding="8dp" />
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:visibility="gone"
+        android:id="@+id/otherLayer">
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:paddingVertical="4dp"
+            android:text="Enter file extension"/>
+
+        <com.google.android.material.textfield.TextInputLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Ex: .pdf">
+
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/editExtension"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:inputType="text"
+                android:maxLines="1" />
+
+        </com.google.android.material.textfield.TextInputLayout>
+
+    </LinearLayout>
+
 </LinearLayout> 

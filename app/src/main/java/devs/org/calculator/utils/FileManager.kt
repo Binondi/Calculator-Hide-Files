@@ -13,6 +13,7 @@ import android.os.Handler
 import android.os.Looper
 import android.provider.MediaStore
 import android.provider.Settings
+import android.util.Log
 import android.webkit.MimeTypeMap
 import android.widget.Toast
 import androidx.activity.result.ActivityResultLauncher
@@ -101,9 +102,16 @@ class FileManager(private val context: Context, private val lifecycleOwner: Life
             }
 
             // Verify copy success
-            if (!targetFile.exists() || targetFile.length() == 0L) {
-                throw Exception("File copy failed")
+            if (!targetFile.exists()) {
+                throw Exception("File copy failed — target file does not exist.")
             }
+
+            // Allow 0 KB files; create placeholder if needed
+            if (targetFile.length() == 0L) {
+                Log.w("FileManager", "Copied 0 KB file: ${targetFile.name}")
+                if (!targetFile.exists()) targetFile.createNewFile()
+            }
+
 
             // Media scan the new file to hide it
             val mediaScanIntent = Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE)

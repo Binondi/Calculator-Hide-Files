@@ -14,6 +14,7 @@ import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.content.ContextCompat
 import com.google.android.material.button.MaterialButton
 import devs.org.calculator.R
 import devs.org.calculator.callbacks.DialogActionsCallback
@@ -43,7 +44,6 @@ class MainActivity : AppCompatActivity(), DialogActionsCallback, DialogUtil.Dial
     private lateinit var storagePermissionUtil: StoragePermissionUtil
     private lateinit var permissionLauncher: ActivityResultLauncher<Array<String>>
 
-    @RequiresApi(Build.VERSION_CODES.R)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityMainBinding.inflate(layoutInflater)
@@ -72,7 +72,17 @@ class MainActivity : AppCompatActivity(), DialogActionsCallback, DialogUtil.Dial
         }
 
 
-        if (!storagePermissionUtil.hasStoragePermission()) {
+        val hasPermission = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+            Environment.isExternalStorageManager()
+        } else {
+            // Fallback for Android 10 and below
+            ContextCompat.checkSelfPermission(
+                this,
+                android.Manifest.permission.WRITE_EXTERNAL_STORAGE
+            ) == PackageManager.PERMISSION_GRANTED
+        }
+
+        if (!hasPermission) {
             dialogUtil.showMaterialDialog(
                 getString(R.string.storage_permission),
                 getString(R.string.to_ensure_the_app_works_properly_and_allows_you_to_easily_hide_or_un_hide_your_private_files_please_grant_storage_access_permission) +
@@ -85,22 +95,26 @@ class MainActivity : AppCompatActivity(), DialogActionsCallback, DialogUtil.Dial
                         storagePermissionUtil.requestStoragePermission(permissionLauncher) {
                             Toast.makeText(this@MainActivity, getString(R.string.permission_granted), Toast.LENGTH_SHORT).show()
                         }
-
                     }
 
                     override fun onNegativeButtonClicked() {
-                        Toast.makeText(this@MainActivity,
+                        Toast.makeText(
+                            this@MainActivity,
                             getString(R.string.storage_permission_is_required_for_the_app_to_function_properly),
-                            Toast.LENGTH_LONG).show()
+                            Toast.LENGTH_LONG
+                        ).show()
                     }
 
                     override fun onNaturalButtonClicked() {
-                        Toast.makeText(this@MainActivity,
+                        Toast.makeText(
+                            this@MainActivity,
                             getString(R.string.you_can_grant_permission_later_from_settings),
-                            Toast.LENGTH_LONG).show()
+                            Toast.LENGTH_LONG
+                        ).show()
                     }
                 })
         }
+
 
 
 

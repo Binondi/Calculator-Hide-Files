@@ -40,10 +40,14 @@ import android.widget.CheckBox
 import android.widget.CompoundButton
 import android.app.AlertDialog
 import android.view.WindowManager
+import android.widget.EditText
+import android.widget.LinearLayout
 import androidx.activity.enableEdgeToEdge
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
+import com.google.android.material.textfield.TextInputEditText
 import devs.org.calculator.adapters.FileAdapter
+import devs.org.calculator.databinding.DialogFileTypeSelectionBinding
 
 class ViewFolderActivity : AppCompatActivity() {
 
@@ -442,14 +446,24 @@ class ViewFolderActivity : AppCompatActivity() {
         val imageCheckbox = dialogView.findViewById<CheckBox>(R.id.checkboxImage)
         val videoCheckbox = dialogView.findViewById<CheckBox>(R.id.checkboxVideo)
         val audioCheckbox = dialogView.findViewById<CheckBox>(R.id.checkboxAudio)
-        val checkboxes = listOf(imageCheckbox, videoCheckbox, audioCheckbox)
-        checkboxes.forEach { checkbox ->
-            checkbox.setOnCheckedChangeListener { _, isChecked ->
-                if (isChecked) {
-                    checkboxes.filter { it != checkbox }.forEach { it.isChecked = false }
-                }
+        val otherCheckbox = dialogView.findViewById<CheckBox>(R.id.checkboxOther)
+        val otherLayer = dialogView.findViewById<LinearLayout>(R.id.otherLayer)
+        val edtExtension = dialogView.findViewById<TextInputEditText>(R.id.editExtension)
+
+        val checkboxes = listOf(imageCheckbox, videoCheckbox, audioCheckbox, otherCheckbox)
+
+        // General listener for all checkboxes
+        val mutualExclusiveListener = CompoundButton.OnCheckedChangeListener { button, isChecked ->
+            if (isChecked) {
+                // Uncheck all other checkboxes
+                checkboxes.filter { it != button }.forEach { it.isChecked = false }
             }
+            // Show otherLayer only if "Other" is checked
+            otherLayer.visibility = if (otherCheckbox.isChecked) View.VISIBLE else View.GONE
         }
+
+        // Attach listener to all checkboxes
+        checkboxes.forEach { it.setOnCheckedChangeListener(mutualExclusiveListener) }
 
         val dialog = MaterialAlertDialogBuilder(this)
             .setTitle(getString(R.string.select_file_type))
@@ -461,34 +475,69 @@ class ViewFolderActivity : AppCompatActivity() {
 
         dialog.setOnShowListener {
             val positiveButton = dialog.getButton(AlertDialog.BUTTON_POSITIVE)
-            positiveButton.isEnabled = false
-            val checkboxListener = CompoundButton.OnCheckedChangeListener { _, _ ->
+
+            // Enable positive button only if any checkbox is checked
+            val updatePositiveButton = {
                 positiveButton.isEnabled = checkboxes.any { it.isChecked }
             }
-            checkboxes.forEach { it.setOnCheckedChangeListener(checkboxListener) }
+
+            // Re-attach listeners to update positive button state
+            checkboxes.forEach {
+                it.setOnCheckedChangeListener { button, isChecked ->
+                    mutualExclusiveListener.onCheckedChanged(button, isChecked)
+                    updatePositiveButton()
+                }
+            }
+
+            updatePositiveButton()
         }
 
         dialog.setOnDismissListener {
+            // Clean up listeners
             checkboxes.forEach { it.setOnCheckedChangeListener(null) }
         }
 
         dialog.show()
         dialog.getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener {
+            // If "Other" is checked, validate the extension
+            if (otherCheckbox.isChecked) {
+                val extension = edtExtension.text.toString().trim()
+                // Check if empty
+                if (extension.isEmpty()) {
+                    edtExtension.error = "Please enter a file extension"
+                    return@setOnClickListener
+                }
+                // Check format (must start with a dot and have at least one character after it)
+                val regex = Regex("""\.\w+""")  // Matches .pdf, .mp4, .docx etc.
+                if (!regex.matches(extension)) {
+                    edtExtension.error = "Invalid extension format. Example: .pdf, .mp4"
+                    return@setOnClickListener
+                }
+            }
+
             val selectedType = when {
                 imageCheckbox.isChecked -> FileManager.FileType.IMAGE
                 videoCheckbox.isChecked -> FileManager.FileType.VIDEO
                 audioCheckbox.isChecked -> FileManager.FileType.AUDIO
+                otherCheckbox.isChecked -> FileManager.FileType.DOCUMENT
                 else -> return@setOnClickListener
             }
-            
+
             lifecycleScope.launch {
-                performDecryptionWithType(selectedFiles, selectedType)
+                performDecryptionWithType(
+                    selectedFiles,
+                    selectedType,
+                    if (otherCheckbox.isChecked) edtExtension.text.toString().trim() else ".pdf"
+                )
             }
             dialog.dismiss()
         }
+
     }
 
-    private fun performDecryptionWithType(selectedFiles: List<File>, fileType: FileManager.FileType) {
+
+
+    private fun performDecryptionWithType(selectedFiles: List<File>, fileType: FileManager.FileType, fileExtension: String = ".pdf") {
         lifecycleScope.launch {
             var successCount = 0
             var failCount = 0
@@ -534,6 +583,7 @@ class ViewFolderActivity : AppCompatActivity() {
                             FileManager.FileType.IMAGE -> ".jpg"
                             FileManager.FileType.VIDEO -> ".mp4"
                             FileManager.FileType.AUDIO -> ".mp3"
+                            FileManager.FileType.DOCUMENT -> fileExtension
                             else -> ".txt"
                         }
                         
