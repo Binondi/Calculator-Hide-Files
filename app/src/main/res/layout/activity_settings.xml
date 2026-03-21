@@ -107,6 +107,7 @@
                                 android:textAppearance="?attr/textAppearanceBodyLarge" />
 
                             <TextView
+                                android:id="@+id/version"
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
                                 android:text="@string/version"

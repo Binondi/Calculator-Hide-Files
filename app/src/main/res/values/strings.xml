@@ -1,6 +1,6 @@
 <resources>
     <string name="app_name" translatable="false">Calculator</string>
-    <string name="version" translatable="false">Version 1.4.1</string>
+    <string name="version" translatable="false">Version 1.4.4</string>
     <string name="invalid_message">Invalid Value Entered</string>
     <string name="add_image">Add Image</string>
     <string name="add_audio">Add Audio</string>

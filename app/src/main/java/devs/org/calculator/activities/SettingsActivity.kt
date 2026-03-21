@@ -1,6 +1,8 @@
 package devs.org.calculator.activities
 
 import android.content.Intent
+import android.content.pm.PackageManager
+import android.os.Build
 import android.os.Bundle
 import android.view.View
 import android.view.WindowManager
@@ -38,6 +40,14 @@ class SettingsActivity : AppCompatActivity() {
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)
             insets
         }
+        val versionName = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            packageManager
+                .getPackageInfo(packageName, PackageManager.PackageInfoFlags.of(0))
+                .versionName
+        } else {
+            packageManager.getPackageInfo(packageName, 0).versionName
+        }
+        binding.version.text = "Version $versionName"
         DEV_GITHUB_URL = getString(R.string.github_profile)
         GITHUB_URL = getString(R.string.calculator_hide_files, DEV_GITHUB_URL)
         setupUI()
