@@ -27,7 +27,8 @@ import java.io.File
 
 class ImagePreviewAdapter(
     private val context: Context,
-    private var lifecycleOwner: LifecycleOwner
+    private var lifecycleOwner: LifecycleOwner,
+    private val onFullscreenClick: () -> Unit
 ) : RecyclerView.Adapter<ImagePreviewAdapter.ImageViewHolder>() {
 
     private val differ = AsyncListDiffer(this, FileDiffCallback())
@@ -125,6 +126,7 @@ class ImagePreviewAdapter(
                         binding.imageView.visibility = View.GONE
                         binding.audioBg.visibility = View.GONE
                         binding.videoView.visibility = View.VISIBLE
+                        binding.btnFullscreen.visibility = View.VISIBLE
 
                         binding.videoView.setVideoURI(uri)
                         binding.videoView.start()
@@ -132,6 +134,10 @@ class ImagePreviewAdapter(
                         val mediaController = MediaController(context)
                         mediaController.setAnchorView(binding.videoView)
                         binding.videoView.setMediaController(mediaController)
+
+                        binding.btnFullscreen.setOnClickListener {
+                            onFullscreenClick()
+                        }
 
                         mediaController.setPrevNextListeners(
                             {
@@ -153,6 +159,7 @@ class ImagePreviewAdapter(
                         binding.imageView.visibility = View.VISIBLE
                         binding.videoView.visibility = View.GONE
                         binding.audioBg.visibility = View.GONE
+                        binding.btnFullscreen.visibility = View.GONE
                         Glide.with(context)
                             .load(uri)
                             .error(R.drawable.encrypted)
@@ -172,6 +179,7 @@ class ImagePreviewAdapter(
                         binding.imageView.visibility = View.GONE
                         binding.audioBg.visibility = View.VISIBLE
                         binding.videoView.visibility = View.GONE
+                        binding.btnFullscreen.visibility = View.GONE
                         binding.audioTitle.text = file.name
 
                         setupAudioPlayer(audioFile)
@@ -181,6 +189,7 @@ class ImagePreviewAdapter(
                         binding.imageView.visibility = View.VISIBLE
                         binding.audioBg.visibility = View.GONE
                         binding.videoView.visibility = View.GONE
+                        binding.btnFullscreen.visibility = View.GONE
                         Glide.with(context)
                             .load(uri)
                             .error(R.drawable.encrypted)
@@ -211,6 +220,7 @@ class ImagePreviewAdapter(
             binding.imageView.visibility = View.VISIBLE
             binding.videoView.visibility = View.GONE
             binding.audioBg.visibility = View.GONE
+            binding.btnFullscreen.visibility = View.GONE
             binding.imageView.setImageResource(R.drawable.encrypted)
         }
 

@@ -176,4 +176,11 @@
     <string name="please_select_the_type_of_file_to_decrypt">Please select the type of file to decrypt</string>
     <string name="file_no_longer_exists">File no longer exists</string>
     <string name="something_went_wrong">Something went wrong !</string>
+    <string name="notes">Notes</string>
+    <string name="new_note">New Note</string>
+    <string name="no_secret_notes_yet">No secret notes yet</string>
+    <string name="secret_notes">Secret Notes</string>
+    <string name="edit_note">Edit Note</string>
+    <string name="save">Save</string>
+    <string name="add_music">Add Music</string>
 </resources>

@@ -1,27 +1,56 @@
 <resources xmlns:tools="http://schemas.android.com/tools">
 
     <style name="Base.Theme.Calculator" parent="Theme.Material3.DayNight.NoActionBar">
+        <!-- Primary brand color. -->
         <item name="colorPrimary">@color/primary</item>
-        <item name="colorPrimaryVariant">@color/colorPrimaryVariant</item>
-        <item name="colorAccent">@color/primary</item>
         <item name="colorOnPrimary">@color/white</item>
+        <item name="colorPrimaryContainer">#D1FADF</item>
+        <item name="colorOnPrimaryContainer">#002107</item>
+
         <item name="colorSecondary">@color/colorSecondary</item>
-        <item name="colorSecondaryVariant">@color/colorSecondary</item>
-        <item name="colorOnSecondary">@color/white</item>
-        <item name="fontFamily">@font/ubuntu_regular</item>
+        <item name="colorOnSecondary">@color/black</item>
+        <item name="colorSecondaryContainer">#BDFFCB</item>
+        <item name="colorOnSecondaryContainer">#00210B</item>
+
+        <item name="colorTertiary">#39E7FF</item>
+        <item name="colorOnTertiary">@color/black</item>
+        <item name="colorTertiaryContainer">#C8F7FF</item>
+        <item name="colorOnTertiaryContainer">#001F24</item>
+
         <item name="android:statusBarColor">@android:color/transparent</item>
         <item name="android:navigationBarColor">@android:color/transparent</item>
-        <item name="colorControlNormal">#483CFF61</item>
-        <item name="colorSecondaryContainer">#48BDFFCB</item>
-
         <item name="android:windowLightStatusBar">true</item>
         <item name="android:windowLightNavigationBar" tools:targetApi="o_mr1">true</item>
+
+        <!-- Expressive Typography -->
+        <item name="fontFamily">@font/ubuntu_regular</item>
+
+        <!-- Expressive Shapes -->
+        <item name="shapeAppearanceLargeComponent">@style/ShapeAppearance.Calculator.LargeComponent</item>
+        <item name="shapeAppearanceMediumComponent">@style/ShapeAppearance.Calculator.MediumComponent</item>
+        <item name="shapeAppearanceSmallComponent">@style/ShapeAppearance.Calculator.SmallComponent</item>
     </style>
 
     <style name="Theme.Calculator" parent="Base.Theme.Calculator" />
 
-    <style name="CustomMaterialButton" parent="Widget.MaterialComponents.Button">
+    <style name="ShapeAppearance.Calculator.SmallComponent" parent="ShapeAppearance.Material3.SmallComponent">
+        <item name="cornerFamily">rounded</item>
+        <item name="cornerSize">12dp</item>
+    </style>
+
+    <style name="ShapeAppearance.Calculator.MediumComponent" parent="ShapeAppearance.Material3.MediumComponent">
+        <item name="cornerFamily">rounded</item>
+        <item name="cornerSize">20dp</item>
+    </style>
+
+    <style name="ShapeAppearance.Calculator.LargeComponent" parent="ShapeAppearance.Material3.LargeComponent">
+        <item name="cornerFamily">rounded</item>
+        <item name="cornerSize">28dp</item>
+    </style>
+
+    <style name="CustomMaterialButton" parent="Widget.Material3.Button">
         <item name="android:background">@drawable/gradient_bg</item>
         <item name="backgroundTint">@null</item>
+        <item name="shapeAppearance">@style/ShapeAppearance.Calculator.MediumComponent</item>
     </style>
 </resources>

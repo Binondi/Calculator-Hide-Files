@@ -3,33 +3,39 @@
     android:layout_width="match_parent"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:orientation="vertical"
-    android:paddingVertical="15dp"
-    android:paddingHorizontal="10dp"
+    android:paddingVertical="24dp"
+    android:paddingHorizontal="16dp"
     android:gravity="center_horizontal"
     android:layout_height="wrap_content">
+
     <TextView
         android:id="@+id/title"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="@string/hiding_files"
-        android:padding="8dp"
-        android:textSize="20sp"/>
+        android:paddingBottom="24dp"
+        android:textAppearance="?attr/textAppearanceTitleLarge"
+        android:textStyle="bold"/>
 
     <com.airbnb.lottie.LottieAnimationView
         android:layout_width="match_parent"
-        android:layout_height="200dp"
+        android:layout_height="160dp"
         app:lottie_fileName="hiding_files.json"
         app:lottie_autoPlay="true"
-        android:scaleX="1.2"
-        android:scaleY="1.2"
-        android:scaleType="centerCrop"
+        android:scaleX="1.1"
+        android:scaleY="1.1"
+        android:scaleType="centerInside"
         app:lottie_loop="true"/>
 
     <com.google.android.material.progressindicator.LinearProgressIndicator
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginHorizontal="25dp"
-        android:layout_marginBottom="15dp"
-        android:indeterminate="true"/>
+        android:indeterminate="true"
+        app:trackThickness="12dp"
+        app:trackCornerRadius="6dp"
+        app:indicatorColor="?attr/colorPrimary"
+        app:indeterminateAnimationType="disjoint"
+        android:layout_marginHorizontal="24dp"
+        android:layout_marginBottom="32dp"/>
 
 </LinearLayout>

@@ -78,6 +78,9 @@ class HiddenActivity : AppCompatActivity() {
 
     private fun setupClickListeners() {
 
+        binding.addNotes.setOnClickListener {
+            startActivity(Intent(this, NotesActivity::class.java))
+        }
 
         binding.settings.setOnClickListener {
             startActivity(Intent(this, SettingsActivity::class.java))
@@ -401,6 +404,7 @@ class HiddenActivity : AppCompatActivity() {
     private fun showFolderViewIcons() {
         binding.folderOrientation.visibility = View.VISIBLE
         binding.settings.visibility = View.VISIBLE
+        binding.addNotes.visibility = View.VISIBLE
         binding.delete.visibility = View.GONE
         binding.deleteSelected.visibility = View.GONE
         binding.menuButton.visibility = View.GONE
@@ -414,6 +418,7 @@ class HiddenActivity : AppCompatActivity() {
     private fun showFolderSelectionIcons() {
         binding.folderOrientation.visibility = View.GONE
         binding.settings.visibility = View.GONE
+        binding.addNotes.visibility = View.GONE
         binding.delete.visibility = View.VISIBLE
         binding.deleteSelected.visibility = View.VISIBLE
         binding.menuButton.visibility = View.GONE

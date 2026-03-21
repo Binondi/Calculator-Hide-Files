@@ -54,8 +54,6 @@ class ViewFolderActivity : AppCompatActivity() {
     private var isFabOpen = false
     private lateinit var fabOpen: Animation
     private lateinit var fabClose: Animation
-    private lateinit var rotateOpen: Animation
-    private lateinit var rotateClose: Animation
     private lateinit var binding: ActivityViewFolderBinding
     private val mainHandler = Handler(Looper.getMainLooper())
     private lateinit var fileManager: FileManager
@@ -755,8 +753,6 @@ class ViewFolderActivity : AppCompatActivity() {
     private fun setupAnimations() {
         fabOpen = AnimationUtils.loadAnimation(this, R.anim.fab_open)
         fabClose = AnimationUtils.loadAnimation(this, R.anim.fab_close)
-        rotateOpen = AnimationUtils.loadAnimation(this, R.anim.rotate_open)
-        rotateClose = AnimationUtils.loadAnimation(this, R.anim.rotate_close)
     }
 
     private fun openFilePicker(mimeType: String) {
@@ -774,60 +770,71 @@ class ViewFolderActivity : AppCompatActivity() {
 
     private fun openFabs() {
         if (!isFabOpen) {
-            binding.addImage.startAnimation(fabOpen)
-            binding.addVideo.startAnimation(fabOpen)
-            binding.addAudio.startAnimation(fabOpen)
-            binding.addDocument.startAnimation(fabOpen)
-            binding.fabExpend.startAnimation(rotateOpen)
-
+            isFabOpen = true
+            
             binding.addImage.visibility = View.VISIBLE
             binding.addVideo.visibility = View.VISIBLE
             binding.addAudio.visibility = View.VISIBLE
             binding.addDocument.visibility = View.VISIBLE
 
-            isFabOpen = true
-            mainHandler.postDelayed({
-                binding.fabExpend.setImageResource(R.drawable.wrong)
-            }, 200)
+            binding.addImage.startAnimation(fabOpen)
+            binding.addVideo.startAnimation(fabOpen)
+            binding.addAudio.startAnimation(fabOpen)
+            binding.addDocument.startAnimation(fabOpen)
+            
+            // Smoothly rotate the FAB using ViewPropertyAnimator
+            binding.fabExpend.animate()
+                .rotation(45f)
+                .setDuration(200)
+                .start()
         }
     }
 
     private fun closeFabs() {
         if (isFabOpen) {
+            isFabOpen = false
+            
             binding.addImage.startAnimation(fabClose)
             binding.addVideo.startAnimation(fabClose)
             binding.addAudio.startAnimation(fabClose)
             binding.addDocument.startAnimation(fabClose)
-            binding.fabExpend.startAnimation(rotateClose)
+            
+            // Smoothly rotate back
+            binding.fabExpend.animate()
+                .rotation(0f)
+                .setDuration(200)
+                .start()
 
-            binding.addImage.visibility = View.INVISIBLE
-            binding.addVideo.visibility = View.INVISIBLE
-            binding.addAudio.visibility = View.INVISIBLE
-            binding.addDocument.visibility = View.INVISIBLE
-
-            isFabOpen = false
-            binding.fabExpend.setImageResource(R.drawable.ic_add)
+            mainHandler.postDelayed({
+                if (!isFabOpen) {
+                    binding.addImage.visibility = View.GONE
+                    binding.addVideo.visibility = View.GONE
+                    binding.addAudio.visibility = View.GONE
+                    binding.addDocument.visibility = View.GONE
+                }
+            }, 200)
         }
     }
 
     private fun showFileViewIcons() {
         binding.menuButton.visibility = View.GONE
         binding.fabExpend.visibility = View.VISIBLE
-        binding.addImage.visibility = View.INVISIBLE
-        binding.addVideo.visibility = View.INVISIBLE
-        binding.addAudio.visibility = View.INVISIBLE
-        binding.addDocument.visibility = View.INVISIBLE
+        binding.addImage.visibility = View.GONE
+        binding.addVideo.visibility = View.GONE
+        binding.addAudio.visibility = View.GONE
+        binding.addDocument.visibility = View.GONE
         isFabOpen = false
         binding.fabExpend.setImageResource(R.drawable.ic_add)
+        binding.fabExpend.rotation = 0f
     }
 
     private fun showFileSelectionIcons() {
         binding.menuButton.visibility = View.VISIBLE
         binding.fabExpend.visibility = View.GONE
-        binding.addImage.visibility = View.INVISIBLE
-        binding.addVideo.visibility = View.INVISIBLE
-        binding.addAudio.visibility = View.INVISIBLE
-        binding.addDocument.visibility = View.INVISIBLE
+        binding.addImage.visibility = View.GONE
+        binding.addVideo.visibility = View.GONE
+        binding.addAudio.visibility = View.GONE
+        binding.addDocument.visibility = View.GONE
         isFabOpen = false
     }
 

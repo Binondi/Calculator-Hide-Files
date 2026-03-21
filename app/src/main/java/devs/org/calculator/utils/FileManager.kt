@@ -46,6 +46,7 @@ class FileManager(private val context: Context, private val lifecycleOwner: Life
         const val VIDEOS_DIR = "videos"
         const val AUDIO_DIR = "audio"
         const val DOCS_DIR = "documents"
+        const val NOTES_DIR = "notes"
         const val ENCRYPTED_EXTENSION = ".enc"
     }
 
@@ -325,6 +326,8 @@ class FileManager(private val context: Context, private val lifecycleOwner: Life
             "jpg", "jpeg", "png", "gif", "bmp", "webp" -> FileType.IMAGE
             "mp4", "avi", "mkv", "mov", "wmv", "flv", "webm", "3gp" -> FileType.VIDEO
             "mp3", "wav", "flac", "aac", "ogg", "m4a" -> FileType.AUDIO
+            "txt" -> FileType.NOTE
+            "pdf" -> FileType.PDF
             else -> FileType.DOCUMENT
         }
     }
@@ -335,6 +338,8 @@ class FileManager(private val context: Context, private val lifecycleOwner: Life
         VIDEO(VIDEOS_DIR),
         AUDIO(AUDIO_DIR),
         DOCUMENT(DOCS_DIR),
+        NOTE(NOTES_DIR),
+        PDF(DOCS_DIR),
         ALL("all")
     }
 

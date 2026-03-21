@@ -78,12 +78,12 @@
         android:id="@+id/recyclerView"
         android:layout_width="match_parent"
         android:layout_height="0dp"
+        android:clipToPadding="false"
+        android:paddingBottom="88dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/toolBar">
-
-    </androidx.recyclerview.widget.RecyclerView>
+        app:layout_constraintTop_toBottomOf="@+id/toolBar" />
 
     <LinearLayout
         android:id="@+id/noItems"
@@ -98,48 +98,52 @@
         app:layout_constraintTop_toTopOf="parent">
 
         <ImageView
-            android:layout_width="48dp"
-            android:layout_height="48dp"
-            android:src="@drawable/ic_no_items" />
+            android:layout_width="64dp"
+            android:layout_height="64dp"
+            android:src="@drawable/ic_no_items"
+            app:tint="?attr/colorSecondary" />
 
         <TextView
             android:id="@+id/noItemsTxt"
-            android:layout_width="wrap_content"
+            android:layout_width="280dp"
             android:layout_height="wrap_content"
-            android:layout_marginTop="8dp"
+            android:layout_marginTop="16dp"
             android:gravity="center"
-            android:padding="10dp"
             android:text="@string/there_is_no_folders_available_create_one_by_clicking_on_the_add_folder_button_showing_in_the_bottom"
-            android:textSize="16sp" />
+            android:textAppearance="?attr/textAppearanceBodyMedium" />
 
     </LinearLayout>
 
-    <com.google.android.material.floatingactionbutton.FloatingActionButton
+    <com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton
+        android:id="@+id/addNotes"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="15dp"
+        android:layout_marginEnd="16dp"
+        android:text="@string/notes"
+        app:icon="@drawable/ic_edit"
+        app:layout_constraintBottom_toTopOf="@+id/addFolder"
+        app:layout_constraintEnd_toEndOf="parent" />
+
+    <com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton
         android:id="@+id/addFolder"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:src="@drawable/ic_folder_add"
-        android:text="@string/add_image"
-        android:backgroundTint="?attr/colorPrimary"
+        android:layout_margin="16dp"
+        android:text="@string/create_folder"
+        app:icon="@drawable/ic_folder_add"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        android:layout_marginEnd="16dp"
-        app:tint="@color/white"
-        android:layout_marginBottom="20dp"
-        app:fabCustomSize="57dp" />
+        app:layout_constraintEnd_toEndOf="parent" />
 
     <com.google.android.material.floatingactionbutton.FloatingActionButton
         android:id="@+id/deleteSelected"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_margin="16dp"
         android:src="@drawable/ic_delete"
         android:visibility="gone"
-        app:tint="@color/white"
-        android:backgroundTint="?attr/colorPrimary"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        android:layout_marginEnd="16dp"
-        android:layout_marginBottom="20dp"
-        app:fabCustomSize="57dp" />
+        style="@style/Widget.Material3.FloatingActionButton.Primary" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

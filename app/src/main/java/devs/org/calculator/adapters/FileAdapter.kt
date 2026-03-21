@@ -3,12 +3,14 @@ package devs.org.calculator.adapters
 import android.annotation.SuppressLint
 import android.content.Context
 import android.content.Intent
+import android.net.Uri
 import android.os.Handler
 import android.os.Looper
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.webkit.MimeTypeMap
 import android.widget.Toast
 import androidx.core.content.FileProvider
 import androidx.lifecycle.LifecycleOwner
@@ -19,6 +21,7 @@ import com.bumptech.glide.Glide
 import com.bumptech.glide.load.engine.DiskCacheStrategy
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import devs.org.calculator.R
+import devs.org.calculator.activities.EditNotesActivity
 import devs.org.calculator.activities.PreviewActivity
 import devs.org.calculator.database.AppDatabase
 import devs.org.calculator.database.HiddenFileEntity
@@ -29,7 +32,9 @@ import devs.org.calculator.utils.FolderManager
 import devs.org.calculator.utils.SecurityUtils
 import devs.org.calculator.utils.SecurityUtils.getDecryptedPreviewFile
 import devs.org.calculator.utils.SecurityUtils.getUriForPreviewFile
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import java.io.File
 import java.lang.ref.WeakReference
 import java.util.concurrent.Executors
@@ -90,20 +95,19 @@ class FileAdapter(
         @SuppressLint("FileEndsWithExt")
         fun bind(file: File) {
             val position = adapterPosition
-            lifecycleOwner.lifecycleScope.launch {
+            lifecycleOwner.lifecycleScope.launch(Dispatchers.Main) {
                 try {
-                    hiddenFileRepository.getHiddenFileByPath(file.absolutePath)
-                    val currentFileData =
+                    val currentFileData = withContext(Dispatchers.IO) {
                         hiddenFileRepository.getHiddenFileByPath(file.absolutePath)
+                    }
+                    
                     val currentFileType = currentFileData?.fileType ?: FileManager(
                         context,
                         lifecycleOwner
                     ).getFileType(file)
 
 
-                    val isCurrentFileEncrypted = currentFileData?.isEncrypted ?: file.endsWith(
-                        SecurityUtils.ENCRYPTED_EXTENSION
-                    )
+                    val isCurrentFileEncrypted = currentFileData?.isEncrypted ?: (file.extension == "enc")
 
                     setupClickListeners(file, currentFileType)
                     setupDisplay(
@@ -112,6 +116,7 @@ class FileAdapter(
                         isCurrentFileEncrypted,
                         currentFileData
                     )
+                    
                     binding.fileNameTextView.text = if (isCurrentFileEncrypted) currentFileData?.fileName else file.name
                     binding.fileNameTextView.visibility =
                         if (showFileName) View.VISIBLE else View.GONE
@@ -138,6 +143,8 @@ class FileAdapter(
 
             when (fileType) {
                 FileManager.FileType.AUDIO -> openAudioFile(file)
+                FileManager.FileType.NOTE -> openNoteFile(file)
+                FileManager.FileType.PDF -> openDocumentFile(file)
                 FileManager.FileType.IMAGE, FileManager.FileType.VIDEO -> {
                     lifecycleOwner.lifecycleScope.launch {
                         try {
@@ -193,7 +200,7 @@ class FileAdapter(
         }
 
         private fun showDecryptionTypeDialog(file: File) {
-            val options = arrayOf("Image", "Video", "Audio")
+            val options = arrayOf("Image", "Video", "Audio", "Note", "PDF")
             MaterialAlertDialogBuilder(context)
                 .setTitle("Select File Type")
                 .setMessage("Please select the type of file to decrypt")
@@ -202,6 +209,8 @@ class FileAdapter(
                         0 -> FileManager.FileType.IMAGE
                         1 -> FileManager.FileType.VIDEO
                         2 -> FileManager.FileType.AUDIO
+                        3 -> FileManager.FileType.NOTE
+                        4 -> FileManager.FileType.PDF
                         else -> FileManager.FileType.DOCUMENT
                     }
                     performDecryptionWithType(file, selectedType)
@@ -249,21 +258,37 @@ class FileAdapter(
             }
         }
 
+        private fun openNoteFile(file: File) {
+            val intent = Intent(context, EditNotesActivity::class.java).apply {
+                putExtra("note_path", file.absolutePath)
+            }
+            context.startActivity(intent)
+        }
+
         private fun openDocumentFile(file: File) {
             try {
                 val uri = FileProvider.getUriForFile(
                     context,
-                    "${context.packageName}.fileprovider",
+                    "devs.org.calculator.fileprovider",
                     file
                 )
+
+                // Resolve the real MIME type from the file extension
+                val mimeType = MimeTypeMap.getSingleton()
+                    .getMimeTypeFromExtension(file.extension.lowercase())
+                    ?: "*/*"  // fallback only if truly unknown
+
                 val intent = Intent(Intent.ACTION_VIEW).apply {
-                    setDataAndType(uri, "*/*")
+                    setDataAndType(uri, mimeType)
                     putExtra("folder", currentFolder.toString())
                     addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
                 }
-                context.startActivity(intent)
-            } catch (_: Exception) {
 
+                // Use Intent.createChooser to ensure user is asked which app to use
+                val chooser = Intent.createChooser(intent, "Open with")
+                context.startActivity(chooser)
+
+            } catch (e: Exception) {
                 Toast.makeText(
                     context,
                     context.getString(R.string.no_suitable_app_found_to_open_this_document),
@@ -308,6 +333,7 @@ class FileAdapter(
                     } else {
                         Glide.with(context)
                             .load(file)
+                            .centerCrop()
                             .into(binding.fileIconImageView)
                     }
                 }
@@ -342,6 +368,7 @@ class FileAdapter(
                     } else {
                         Glide.with(context)
                             .load(file)
+                            .centerCrop()
                             .into(binding.fileIconImageView)
                     }
                 }
@@ -351,6 +378,18 @@ class FileAdapter(
                     binding.fileIconImageView.setPadding(25, 25, 25, 25)
                     binding.fileIconImageView.setImageResource(R.drawable.ic_audio)
 
+                }
+
+                FileManager.FileType.NOTE -> {
+                    binding.videoPlay.visibility = View.GONE
+                    binding.fileIconImageView.setPadding(25, 25, 25, 25)
+                    binding.fileIconImageView.setImageResource(R.drawable.ic_sticky_note)
+                }
+
+                FileManager.FileType.PDF -> {
+                    binding.videoPlay.visibility = View.GONE
+                    binding.fileIconImageView.setPadding(25, 25, 25, 25)
+                    binding.fileIconImageView.setImageResource(R.drawable.ic_pdf)
                 }
 
                 else -> {
@@ -416,6 +455,8 @@ class FileAdapter(
                         FileManager.FileType.IMAGE -> ".jpg"
                         FileManager.FileType.VIDEO -> ".mp4"
                         FileManager.FileType.AUDIO -> ".mp3"
+                        FileManager.FileType.NOTE -> ".txt"
+                        FileManager.FileType.PDF -> ".pdf"
                         else -> ".txt"
                     }
 
@@ -445,6 +486,8 @@ class FileAdapter(
                                     context.startActivity(intent)
                                 }
                                 FileManager.FileType.AUDIO -> openAudioFile(decryptedFile)
+                                FileManager.FileType.NOTE -> openNoteFile(decryptedFile)
+                                FileManager.FileType.PDF -> openDocumentFile(decryptedFile)
                                 else -> openDocumentFile(decryptedFile)
                             }
 

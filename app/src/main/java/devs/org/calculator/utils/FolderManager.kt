@@ -36,7 +36,9 @@ class FolderManager {
 
     fun getFoldersInDirectory(directory: File): List<File> {
         return if (directory.exists() && directory.isDirectory) {
-            directory.listFiles()?.filter { it.isDirectory && it.name != ".nomedia" } ?: emptyList()
+            directory.listFiles()?.filter { 
+                it.isDirectory && it.name != ".nomedia" && it.name != FileManager.NOTES_DIR 
+            } ?: emptyList()
         } else {
             emptyList()
         }
@@ -49,4 +51,4 @@ class FolderManager {
             emptyList()
         }
     }
-} 
+}

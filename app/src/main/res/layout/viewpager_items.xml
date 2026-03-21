@@ -5,14 +5,14 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:layout_gravity="center"
-    android:layout_margin="4dp"
-    app:cardCornerRadius="8dp">
+    android:layout_margin="0dp"
+    app:cardCornerRadius="0dp">
 
-    <LinearLayout
+    <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:gravity="center"
-        android:orientation="vertical">
+        android:background="@android:color/black">
+
         <com.jsibbold.zoomage.ZoomageView
             android:id="@+id/imageView"
             android:layout_width="match_parent"
@@ -29,105 +29,127 @@
             />
 
         <VideoView
+            android:id="@+id/videoView"
             android:layout_width="wrap_content"
-            android:layout_height="match_parent"
-            android:visibility="gone"
-            android:layout_gravity="center"
-            android:id="@+id/videoView"/>
-    </LinearLayout>
+            android:layout_height="wrap_content"
+            android:visibility="visible"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
 
-    <com.google.android.material.card.MaterialCardView
-        android:id="@+id/audioBg"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_gravity="center"
-        app:cardCornerRadius="15dp"
-        android:layout_margin="20dp">
-        <LinearLayout
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnFullscreen"
+            style="@style/Widget.Material3.Button.IconButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            app:iconSize="30dp"
+            android:layout_margin="16dp"
+            android:visibility="visible"
+            app:icon="@drawable/ic_fullscreen"
+            android:backgroundTint="#40000000"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintEnd_toEndOf="parent" />
+
+        <com.google.android.material.card.MaterialCardView
+            android:id="@+id/audioBg"
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:padding="8dp"
-            android:orientation="vertical"
-            android:gravity="center">
-            <ImageView
-                android:layout_width="30dp"
-                android:layout_height="30dp"
-                android:layout_margin="5dp"
-                android:src="@drawable/ic_audio"
-                android:padding="3dp"/>
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="audio.mp3"
-                android:layout_margin="5dp"
-                android:textColor="?attr/colorPrimary"
-                android:id="@+id/audioTitle"/>
-            <com.google.android.material.slider.Slider
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_margin="5dp"
-                android:scaleY="0.6"
-                android:id="@+id/audioSeekBar"/>
+            android:layout_height="wrap_content"
+            app:cardCornerRadius="15dp"
+            android:visibility="gone"
+            android:layout_margin="20dp"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent">
             <LinearLayout
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="horizontal"
+                android:layout_height="match_parent"
+                android:padding="8dp"
+                android:orientation="vertical"
                 android:gravity="center">
+                <ImageView
+                    android:layout_width="30dp"
+                    android:layout_height="30dp"
+                    android:layout_margin="5dp"
+                    android:src="@drawable/ic_audio"
+                    android:padding="3dp"/>
 
-                <com.google.android.material.card.MaterialCardView
-                    android:layout_width="40dp"
-                    android:layout_height="40dp">
-                    <LinearLayout
-                        android:layout_width="match_parent"
-                        android:layout_height="match_parent"
-                        android:gravity="center">
-                        <ImageView
-                            android:layout_width="30dp"
-                            android:layout_height="30dp"
-                            android:src="@drawable/previous"
-                            android:padding="3dp"
-                            android:id="@+id/preview"/>
-                    </LinearLayout>
-                </com.google.android.material.card.MaterialCardView>
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="audio.mp3"
+                    android:layout_margin="5dp"
+                    android:textColor="?attr/colorPrimary"
+                    android:id="@+id/audioTitle"/>
+                <com.google.android.material.slider.Slider
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_margin="5dp"
+                    android:scaleY="0.6"
+                    android:id="@+id/audioSeekBar"/>
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:gravity="center">
 
-                <com.google.android.material.card.MaterialCardView
-                    android:layout_width="40dp"
-                    android:layout_margin="8dp"
-                    android:layout_height="40dp">
-                    <LinearLayout
-                        android:layout_width="match_parent"
-                        android:layout_height="match_parent"
-                        android:gravity="center">
-                        <ImageView
-                            android:layout_width="30dp"
-                            android:layout_height="30dp"
-                            android:src="@drawable/play"
-                            android:padding="3dp"
-                            android:id="@+id/playPause"/>
-                    </LinearLayout>
-                </com.google.android.material.card.MaterialCardView>
+                    <com.google.android.material.card.MaterialCardView
+                        android:layout_width="40dp"
+                        android:layout_height="40dp"
+                        app:cardCornerRadius="20dp">
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent"
+                            android:gravity="center">
+                            <ImageView
+                                android:layout_width="30dp"
+                                android:layout_height="30dp"
+                                android:src="@drawable/previous"
+                                android:padding="3dp"
+                                android:id="@+id/preview"/>
+                        </LinearLayout>
+                    </com.google.android.material.card.MaterialCardView>
+
+                    <com.google.android.material.card.MaterialCardView
+                        android:layout_width="40dp"
+                        android:layout_margin="8dp"
+                        android:layout_height="40dp"
+                        app:cardCornerRadius="20dp">
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent"
+                            android:gravity="center">
+                            <ImageView
+                                android:layout_width="30dp"
+                                android:layout_height="30dp"
+                                android:src="@drawable/play"
+                                android:padding="3dp"
+                                android:id="@+id/playPause"/>
+                        </LinearLayout>
+                    </com.google.android.material.card.MaterialCardView>
 
 
-                <com.google.android.material.card.MaterialCardView
-                    android:layout_width="40dp"
-                    android:layout_height="40dp">
-                    <LinearLayout
-                        android:layout_width="match_parent"
-                        android:layout_height="match_parent"
-                        android:gravity="center">
-                        <ImageView
-                            android:layout_width="30dp"
-                            android:layout_height="30dp"
-                            android:padding="3dp"
-                            android:src="@drawable/next"
-                            android:id="@+id/next"/>
-                    </LinearLayout>
-                </com.google.android.material.card.MaterialCardView>
+                    <com.google.android.material.card.MaterialCardView
+                        android:layout_width="40dp"
+                        android:layout_height="40dp"
+                        app:cardCornerRadius="20dp">
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent"
+                            android:gravity="center">
+                            <ImageView
+                                android:layout_width="30dp"
+                                android:layout_height="30dp"
+                                android:padding="3dp"
+                                android:src="@drawable/next"
+                                android:id="@+id/next"/>
+                        </LinearLayout>
+                    </com.google.android.material.card.MaterialCardView>
+
+                </LinearLayout>
 
             </LinearLayout>
+        </com.google.android.material.card.MaterialCardView>
 
-        </LinearLayout>
-    </com.google.android.material.card.MaterialCardView>
+    </androidx.constraintlayout.widget.ConstraintLayout>
 
 </com.google.android.material.card.MaterialCardView>

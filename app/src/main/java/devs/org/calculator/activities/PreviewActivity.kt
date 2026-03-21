@@ -1,11 +1,14 @@
 package devs.org.calculator.activities
 
+import android.content.pm.ActivityInfo
 import android.net.Uri
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
+import android.view.View
 import android.view.WindowManager
 import android.widget.Toast
+import androidx.activity.OnBackPressedCallback
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
@@ -40,6 +43,7 @@ class PreviewActivity : AppCompatActivity() {
     private val hiddenFileRepository: HiddenFileRepository by lazy {
         HiddenFileRepository(AppDatabase.getDatabase(this).hiddenFileDao())
     }
+    private var isFullscreen = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -62,6 +66,19 @@ class PreviewActivity : AppCompatActivity() {
         setupImagePreview()
         setupClickListeners()
         setupPageChangeCallback()
+        setupBackPressed()
+    }
+
+    private fun setupBackPressed() {
+        onBackPressedDispatcher.addCallback(this, object : OnBackPressedCallback(true) {
+            override fun handleOnBackPressed() {
+                if (isFullscreen) {
+                    toggleFullscreen()
+                } else {
+                    finish()
+                }
+            }
+        })
     }
 
     override fun onResume() {
@@ -132,7 +149,9 @@ class PreviewActivity : AppCompatActivity() {
             return
         }
 
-        adapter = ImagePreviewAdapter(this, this)
+        adapter = ImagePreviewAdapter(this, this) {
+            toggleFullscreen()
+        }
         adapter.images = files
         binding.viewPager.adapter = adapter
         if (currentPosition < files.size) {
@@ -156,13 +175,12 @@ class PreviewActivity : AppCompatActivity() {
         if (files.isNotEmpty() && currentPosition < files.size) {
             val fileUri = Uri.fromFile(files[currentPosition])
             val fileName = FileManager.FileName(this).getFileNameFromUri(fileUri) ?: "Unknown"
-            //For Now File Name not Needed, i am keeping it for later use
         }
     }
 
     private fun setupClickListeners() {
         binding.back.setOnClickListener {
-            finish()
+            if (isFullscreen) toggleFullscreen() else finish()
         }
 
         binding.delete.setOnClickListener {
@@ -350,5 +368,29 @@ class PreviewActivity : AppCompatActivity() {
     override fun onSupportNavigateUp(): Boolean {
         finish()
         return true
+    }
+
+    private fun toggleFullscreen() {
+        isFullscreen = !isFullscreen
+        setFullscreen(isFullscreen)
+        if (isFullscreen) {
+            requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_SENSOR_LANDSCAPE
+        } else {
+            requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
+        }
+    }
+
+    fun setFullscreen(isFullscreen: Boolean) {
+        if (isFullscreen) {
+            binding.toolbar.visibility = View.GONE
+            binding.unHide.visibility = View.GONE
+            binding.delete.visibility = View.GONE
+            window.addFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN)
+        } else {
+            binding.toolbar.visibility = View.VISIBLE
+            binding.unHide.visibility = View.VISIBLE
+            binding.delete.visibility = View.VISIBLE
+            window.clearFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN)
+        }
     }
 }

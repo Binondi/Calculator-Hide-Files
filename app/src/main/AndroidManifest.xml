@@ -33,6 +33,12 @@
         android:theme="@style/Theme.Calculator"
         tools:targetApi="31">
         <activity
+            android:name=".activities.EditNotesActivity"
+            android:exported="false" />
+        <activity
+            android:name=".activities.NotesActivity"
+            android:exported="false" />
+        <activity
             android:name=".activities.ViewFolderActivity"
             android:exported="false" />
         <activity
@@ -59,7 +65,7 @@
 
         <provider
             android:name="androidx.core.content.FileProvider"
-            android:authorities="devs.org.calculator.provider"
+            android:authorities="devs.org.calculator.fileprovider"
             android:exported="false"
             android:grantUriPermissions="true">
             <meta-data

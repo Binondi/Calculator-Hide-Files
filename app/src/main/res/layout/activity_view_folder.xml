@@ -96,73 +96,63 @@
 
     </LinearLayout>
 
-    <com.google.android.material.floatingactionbutton.FloatingActionButton
+    <com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton
         android:id="@+id/addImage"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:src="@drawable/add_image"
         android:layout_marginBottom="10dp"
         android:text="@string/add_image"
-        app:tint="@color/white"
         android:visibility="gone"
-        android:backgroundTint="?attr/colorPrimary"
+        app:icon="@drawable/add_image"
         app:layout_constraintBottom_toTopOf="@+id/addVideo"
-        app:layout_constraintEnd_toEndOf="@+id/addVideo"
-        app:layout_constraintStart_toStartOf="@+id/addVideo" />
+        app:layout_constraintEnd_toEndOf="@+id/addVideo" />
 
-    <com.google.android.material.floatingactionbutton.FloatingActionButton
+    <com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton
         android:id="@+id/addVideo"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginBottom="10dp"
-        android:src="@drawable/video_add"
-        android:text="@string/add_image"
+        android:text="@string/add_video"
         android:visibility="gone"
-        app:tint="@color/white"
-        android:backgroundTint="?attr/colorPrimary"
+        app:icon="@drawable/video_add"
         app:layout_constraintBottom_toTopOf="@+id/addAudio"
-        app:layout_constraintEnd_toEndOf="@+id/addAudio"
-        app:layout_constraintHorizontal_bias="1.0"
-        app:layout_constraintStart_toStartOf="@+id/addAudio" />
+        app:layout_constraintEnd_toEndOf="@+id/addAudio" />
 
-    <com.google.android.material.floatingactionbutton.FloatingActionButton
+    <com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton
         android:id="@+id/addAudio"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginBottom="10dp"
-        android:src="@drawable/music_add"
-        android:text="@string/add_image"
+        android:text="@string/add_music"
         android:visibility="gone"
-        app:tint="@color/white"
-        android:backgroundTint="?attr/colorPrimary"
+        app:icon="@drawable/add_music"
         app:layout_constraintBottom_toTopOf="@+id/addDocument"
         app:layout_constraintEnd_toEndOf="@+id/addDocument"
-        app:layout_constraintStart_toStartOf="@+id/addDocument" />
+        app:tint="@color/white" />
 
-    <com.google.android.material.floatingactionbutton.FloatingActionButton
+    <com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton
         android:id="@+id/addDocument"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:src="@drawable/document_add"
-        android:text="@string/add_image"
         android:layout_marginBottom="10dp"
-        app:tint="@color/white"
+        app:icon="@drawable/document_add"
+        android:text="@string/add_document"
         android:visibility="gone"
-        android:backgroundTint="?attr/colorPrimary"
         app:layout_constraintBottom_toTopOf="@+id/fabExpend"
         app:layout_constraintEnd_toEndOf="@+id/fabExpend"
-        app:layout_constraintStart_toStartOf="@+id/fabExpend" />
+        app:tint="@color/white" />
 
     <com.google.android.material.floatingactionbutton.FloatingActionButton
         android:id="@+id/fabExpend"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        app:fabCustomSize="60dp"
         android:layout_marginEnd="16dp"
         android:layout_marginBottom="20dp"
         android:src="@drawable/ic_add"
-        android:backgroundTint="?attr/colorPrimary"
-        android:text="@string/add_image"
-        app:tint="@color/white"
+        app:maxImageSize="24dp"
+        app:useCompatPadding="true"
+        app:shapeAppearanceOverlay="@style/ShapeAppearance.Material3.Corner.Full"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent" />
 
