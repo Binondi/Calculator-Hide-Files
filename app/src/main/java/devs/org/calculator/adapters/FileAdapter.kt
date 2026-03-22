@@ -47,13 +47,11 @@ class FileAdapter(
     private val onFolderLongClick: (Boolean) -> Unit,
 ) : ListAdapter<File, FileAdapter.FilesViewHolder>(FileDiffCallback()) {
 
-
     private var filesOperationCallback: WeakReference<FilesOperationCallback>? = null
     private val selectedItems = mutableSetOf<Int>()
     private var isSelectionMode = false
     private val fileExecutor = Executors.newSingleThreadExecutor()
     private val mainHandler = Handler(Looper.getMainLooper())
-
 
     interface FilesOperationCallback {
         fun onFileDeleted(file: File)
@@ -71,73 +69,196 @@ class FileAdapter(
         HiddenFileRepository(AppDatabase.getDatabase(context).hiddenFileDao())
     }
 
-
-    override fun onCreateViewHolder(
-        parent: ViewGroup,
-        viewType: Int,
-    ): FilesViewHolder {
-        val binding =
-            ListItemFileBinding.inflate(LayoutInflater.from(parent.context), parent, false)
+    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): FilesViewHolder {
+        val binding = ListItemFileBinding.inflate(LayoutInflater.from(parent.context), parent, false)
         return FilesViewHolder(binding)
     }
 
-    override fun onBindViewHolder(
-        holder: FilesViewHolder,
-        position: Int,
-    ) {
+    override fun onBindViewHolder(holder: FilesViewHolder, position: Int) {
         holder.bind(getItem(position))
-
     }
-
 
     inner class FilesViewHolder(private val binding: ListItemFileBinding) :
         RecyclerView.ViewHolder(binding.root) {
+
         @SuppressLint("FileEndsWithExt")
         fun bind(file: File) {
             val position = adapterPosition
+
+            // Show a placeholder immediately so the cell isn't blank while loading
+            showLoadingPlaceholder()
+
             lifecycleOwner.lifecycleScope.launch(Dispatchers.Main) {
                 try {
                     val currentFileData = withContext(Dispatchers.IO) {
                         hiddenFileRepository.getHiddenFileByPath(file.absolutePath)
                     }
-                    
-                    val currentFileType = currentFileData?.fileType ?: FileManager(
-                        context,
-                        lifecycleOwner
-                    ).getFileType(file)
 
+                    val currentFileType = currentFileData?.fileType
+                        ?: FileManager(context, lifecycleOwner).getFileType(file)
 
-                    val isCurrentFileEncrypted = currentFileData?.isEncrypted ?: (file.extension == "enc")
+                    val isCurrentFileEncrypted =
+                        currentFileData?.isEncrypted ?: (file.extension == "enc")
 
                     setupClickListeners(file, currentFileType)
-                    setupDisplay(
-                        file,
-                        currentFileType,
-                        isCurrentFileEncrypted,
-                        currentFileData
-                    )
-                    
-                    binding.fileNameTextView.text = if (isCurrentFileEncrypted) currentFileData?.fileName else file.name
+
+                    // setupDisplay is now a suspend fun — it moves IO work off the main thread
+                    setupDisplay(file, currentFileType, isCurrentFileEncrypted, currentFileData)
+
+                    binding.fileNameTextView.text =
+                        if (isCurrentFileEncrypted) currentFileData?.fileName else file.name
                     binding.fileNameTextView.visibility =
                         if (showFileName) View.VISIBLE else View.GONE
                     binding.shade.visibility = if (showFileName) View.VISIBLE else View.GONE
 
                     if (position != RecyclerView.NO_POSITION) {
-                        val isSelected = selectedItems.contains(position)
-                        updateSelectionUI(isSelected)
+                        updateSelectionUI(selectedItems.contains(position))
                     }
                     binding.encrypted.visibility =
                         if (isCurrentFileEncrypted) View.VISIBLE else View.GONE
+
                 } catch (e: Exception) {
                     Log.e("FileAdapter", "Error in bind: ${e.message}")
                 }
             }
         }
 
+        /** Shows a generic icon immediately while async work is in progress */
+        private fun showLoadingPlaceholder() {
+            binding.videoPlay.visibility = View.GONE
+            binding.fileIconImageView.setPadding(25, 25, 25, 25)
+            binding.fileIconImageView.setImageResource(R.drawable.encrypted)
+        }
+
+        /**
+         * Suspend version of setupDisplay.
+         * Heavy work (decryption) is dispatched to IO; only Glide calls happen on Main.
+         */
+        private suspend fun setupDisplay(
+            file: File,
+            type: FileManager.FileType,
+            isCurrentFileEncrypted: Boolean,
+            metadata: HiddenFileEntity?,
+        ) {
+            when (type) {
+                FileManager.FileType.IMAGE -> {
+                    binding.videoPlay.visibility = View.GONE
+                    binding.fileIconImageView.setPadding(0, 0, 0, 0)
+
+                    if (isCurrentFileEncrypted) {
+                        loadEncryptedThumbnail(metadata, isVideo = false)
+                    } else {
+                        Glide.with(context)
+                            .load(file)
+                            .centerCrop()
+                            .into(binding.fileIconImageView)
+                    }
+                }
+
+                FileManager.FileType.VIDEO -> {
+                    binding.fileIconImageView.setPadding(0, 0, 0, 0)
+                    binding.videoPlay.visibility = View.VISIBLE
+
+                    if (isCurrentFileEncrypted) {
+                        loadEncryptedThumbnail(metadata, isVideo = true)
+                    } else {
+                        Glide.with(context)
+                            .load(file)
+                            .centerCrop()
+                            .into(binding.fileIconImageView)
+                    }
+                }
+
+                FileManager.FileType.AUDIO -> {
+                    binding.videoPlay.visibility = View.GONE
+                    binding.fileIconImageView.setPadding(25, 25, 25, 25)
+                    binding.fileIconImageView.setImageResource(R.drawable.ic_audio)
+                }
+
+                FileManager.FileType.NOTE -> {
+                    binding.videoPlay.visibility = View.GONE
+                    binding.fileIconImageView.setPadding(25, 25, 25, 25)
+                    binding.fileIconImageView.setImageResource(R.drawable.ic_sticky_note)
+                }
+
+                FileManager.FileType.PDF -> {
+                    binding.videoPlay.visibility = View.GONE
+                    binding.fileIconImageView.setPadding(25, 25, 25, 25)
+                    binding.fileIconImageView.setImageResource(R.drawable.ic_pdf)
+                }
+
+                else -> {
+                    binding.videoPlay.visibility = View.GONE
+                    binding.fileIconImageView.setPadding(25, 25, 25, 25)
+                    binding.fileIconImageView.setImageResource(R.drawable.ic_document)
+                }
+            }
+        }
+
+        /**
+         * Decrypts the file on IO, then loads the result into Glide on Main.
+         * Safe to call from a coroutine already on Main.
+         */
+        private suspend fun loadEncryptedThumbnail(
+            metadata: HiddenFileEntity?,
+            isVideo: Boolean,
+        ) {
+            if (metadata == null) {
+                // No DB record — nothing to decrypt, show fallback icon
+                showEncryptedIcon()
+                return
+            }
+
+            // Decrypt off the main thread
+            val uri: Uri? = withContext(Dispatchers.IO) {
+                try {
+                    val decryptedFile = getDecryptedPreviewFile(context, metadata)
+                    if (decryptedFile != null && decryptedFile.exists() && decryptedFile.length() > 0) {
+                        getUriForPreviewFile(context, decryptedFile)
+                    } else {
+                        null
+                    }
+                } catch (e: Exception) {
+                    Log.e("FileAdapter", "Error decrypting preview: ${e.message}")
+                    null
+                }
+            }
+
+            // Back on Main — load into Glide (or show fallback)
+            if (uri != null) {
+                try {
+                    Glide.with(context)
+                        .load(uri)
+                        .centerCrop()
+                        // Videos: skip disk cache so stale frames don't linger
+                        .diskCacheStrategy(
+                            if (isVideo) DiskCacheStrategy.NONE else DiskCacheStrategy.ALL
+                        )
+                        .skipMemoryCache(isVideo)
+                        .error(R.drawable.encrypted)
+                        .into(binding.fileIconImageView)
+                } catch (e: Exception) {
+                    Log.e("FileAdapter", "Glide error for encrypted file: ${e.message}")
+                    showEncryptedIcon()
+                }
+            } else {
+                showEncryptedIcon()
+            }
+        }
+
+        private fun showEncryptedIcon() {
+            binding.fileIconImageView.setPadding(25, 25, 25, 25)
+            binding.fileIconImageView.setImageResource(R.drawable.encrypted)
+        }
+
+        private fun updateSelectionUI(isSelected: Boolean) {
+            binding.selectedLayer.visibility = if (isSelected) View.VISIBLE else View.GONE
+            binding.selected.visibility = if (isSelected) View.VISIBLE else View.GONE
+        }
+
         private fun openFile(file: File, fileType: FileManager.FileType) {
             if (!file.exists()) {
-                Toast.makeText(context,
-                    context.getString(R.string.file_no_longer_exists), Toast.LENGTH_SHORT).show()
+                Toast.makeText(context, context.getString(R.string.file_no_longer_exists), Toast.LENGTH_SHORT).show()
                 return
             }
 
@@ -148,52 +269,45 @@ class FileAdapter(
                 FileManager.FileType.IMAGE, FileManager.FileType.VIDEO -> {
                     lifecycleOwner.lifecycleScope.launch {
                         try {
-                            val hiddenFile = hiddenFileRepository.getHiddenFileByPath(file.absolutePath)
+                            val hiddenFile =
+                                hiddenFileRepository.getHiddenFileByPath(file.absolutePath)
                             if (hiddenFile?.isEncrypted == true || file.extension == FileManager.ENCRYPTED_EXTENSION) {
                                 if (file.extension == FileManager.ENCRYPTED_EXTENSION && hiddenFile == null) {
                                     showDecryptionTypeDialog(file)
                                 } else {
-                                    val tempFile = File(context.cacheDir, "preview_${file.name}")
-
-                                    if (SecurityUtils.decryptFile(context, file, tempFile)) {
-                                        if (tempFile.exists() && tempFile.length() > 0) {
-                                            mainHandler.post {
-                                                val fileTypeString = when (fileType) {
-                                                    FileManager.FileType.IMAGE -> context.getString(R.string.image)
-                                                    FileManager.FileType.VIDEO -> context.getString(R.string.video)
-                                                    else -> "unknown"
-                                                }
-
-                                                val intent = Intent(context, PreviewActivity::class.java).apply {
-                                                    putExtra("type", fileTypeString)
-                                                    putExtra("folder", currentFolder.toString())
-                                                    putExtra("position", adapterPosition)
-                                                    putExtra("isEncrypted", true)
-                                                    putExtra("tempFile", tempFile.absolutePath)
-                                                }
-                                                context.startActivity(intent)
-                                            }
-                                        } else {
-                                            mainHandler.post {
-                                                Toast.makeText(context, "Failed to prepare file for preview", Toast.LENGTH_SHORT).show()
-                                            }
+                                    val tempFile =
+                                        withContext(Dispatchers.IO) {
+                                            val tmp = File(context.cacheDir, "preview_${file.name}")
+                                            if (SecurityUtils.decryptFile(context, file, tmp)) tmp else null
                                         }
+
+                                    if (tempFile != null && tempFile.exists() && tempFile.length() > 0) {
+                                        val fileTypeString = when (fileType) {
+                                            FileManager.FileType.IMAGE -> context.getString(R.string.image)
+                                            FileManager.FileType.VIDEO -> context.getString(R.string.video)
+                                            else -> "unknown"
+                                        }
+                                        val intent = Intent(context, PreviewActivity::class.java).apply {
+                                            putExtra("type", fileTypeString)
+                                            putExtra("folder", currentFolder.toString())
+                                            putExtra("position", adapterPosition)
+                                            putExtra("isEncrypted", true)
+                                            putExtra("tempFile", tempFile.absolutePath)
+                                        }
+                                        context.startActivity(intent)
                                     } else {
-                                        mainHandler.post {
-                                            Toast.makeText(context, "Failed to decrypt file for preview", Toast.LENGTH_SHORT).show()
-                                        }
+                                        Toast.makeText(context, "Failed to decrypt file for preview", Toast.LENGTH_SHORT).show()
                                     }
                                 }
                             } else {
                                 openInPreview(fileType)
                             }
                         } catch (_: Exception) {
-                            mainHandler.post {
-                                Toast.makeText(context, "Error preparing file for preview", Toast.LENGTH_SHORT).show()
-                            }
+                            Toast.makeText(context, "Error preparing file for preview", Toast.LENGTH_SHORT).show()
                         }
                     }
                 }
+
                 FileManager.FileType.DOCUMENT -> openDocumentFile(file)
                 else -> openDocumentFile(file)
             }
@@ -225,7 +339,6 @@ class FileAdapter(
                 FileManager.FileType.VIDEO -> context.getString(R.string.video)
                 else -> "unknown"
             }
-
             val intent = Intent(context, PreviewActivity::class.java).apply {
                 putExtra("type", fileTypeString)
                 putExtra("folder", currentFolder.toString())
@@ -235,14 +348,13 @@ class FileAdapter(
         }
 
         private fun openAudioFile(file: File) {
-            val fileType = FileManager(context,lifecycleOwner).getFileType(file)
+            val fileType = FileManager(context, lifecycleOwner).getFileType(file)
             try {
                 val fileTypeString = when (fileType) {
                     FileManager.FileType.IMAGE -> context.getString(R.string.image)
                     FileManager.FileType.VIDEO -> context.getString(R.string.video)
                     else -> "unknown"
                 }
-
                 val intent = Intent(context, PreviewActivity::class.java).apply {
                     putExtra("type", fileTypeString)
                     putExtra("folder", currentFolder.toString())
@@ -250,11 +362,7 @@ class FileAdapter(
                 }
                 context.startActivity(intent)
             } catch (_: Exception) {
-                Toast.makeText(
-                    context,
-                    context.getString(R.string.no_audio_player_found),
-                    Toast.LENGTH_SHORT
-                ).show()
+                Toast.makeText(context, context.getString(R.string.no_audio_player_found), Toast.LENGTH_SHORT).show()
             }
         }
 
@@ -272,22 +380,15 @@ class FileAdapter(
                     "devs.org.calculator.fileprovider",
                     file
                 )
-
-                // Resolve the real MIME type from the file extension
                 val mimeType = MimeTypeMap.getSingleton()
-                    .getMimeTypeFromExtension(file.extension.lowercase())
-                    ?: "*/*"  // fallback only if truly unknown
+                    .getMimeTypeFromExtension(file.extension.lowercase()) ?: "*/*"
 
                 val intent = Intent(Intent.ACTION_VIEW).apply {
                     setDataAndType(uri, mimeType)
                     putExtra("folder", currentFolder.toString())
                     addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
                 }
-
-                // Use Intent.createChooser to ensure user is asked which app to use
-                val chooser = Intent.createChooser(intent, "Open with")
-                context.startActivity(chooser)
-
+                context.startActivity(Intent.createChooser(intent, "Open with"))
             } catch (e: Exception) {
                 Toast.makeText(
                     context,
@@ -297,135 +398,16 @@ class FileAdapter(
             }
         }
 
-        private fun setupDisplay(
-            file: File,
-            type: FileManager.FileType,
-            isCurrentFileEncrypted: Boolean,
-            metadata: HiddenFileEntity?,
-        ) {
-            when (type) {
-                FileManager.FileType.IMAGE -> {
-                    binding.videoPlay.visibility = View.GONE
-                    binding.fileIconImageView.setPadding(0, 0, 0, 0)
-                    if (isCurrentFileEncrypted) {
-                        try {
-                            val decryptedFile = getDecryptedPreviewFile(context, metadata!!)
-                            if (decryptedFile != null && decryptedFile.exists() && decryptedFile.length() > 0) {
-                                val uri = getUriForPreviewFile(context, decryptedFile)
-                                if (uri != null) {
-                                    Glide.with(context)
-                                        .load(uri)
-                                        .centerCrop()
-                                        .diskCacheStrategy(DiskCacheStrategy.ALL)
-                                        .skipMemoryCache(false)
-                                        .error(R.drawable.encrypted)
-                                        .into(binding.fileIconImageView)
-                                } else {
-                                    showEncryptedIcon()
-                                }
-                            } else {
-                                showEncryptedIcon()
-                            }
-                        } catch (e: Exception) {
-                            Log.e("FileAdapter", "Error displaying encrypted image: ${e.message}")
-                            showEncryptedIcon()
-                        }
-                    } else {
-                        Glide.with(context)
-                            .load(file)
-                            .centerCrop()
-                            .into(binding.fileIconImageView)
-                    }
-                }
-
-                FileManager.FileType.VIDEO -> {
-                    binding.fileIconImageView.setPadding(0, 0, 0, 0)
-                    binding.videoPlay.visibility = View.VISIBLE
-                    if (isCurrentFileEncrypted) {
-                        try {
-                            val decryptedFile = getDecryptedPreviewFile(context, metadata!!)
-                            if (decryptedFile != null && decryptedFile.exists() && decryptedFile.length() > 0) {
-                                val uri = getUriForPreviewFile(context, decryptedFile)
-                                if (uri != null) {
-                                    Glide.with(context)
-                                        .load(uri)
-                                        .centerCrop()
-                                        .diskCacheStrategy(DiskCacheStrategy.NONE)
-                                        .skipMemoryCache(true)
-                                        .error(R.drawable.encrypted)
-                                        .into(binding.fileIconImageView)
-                                    binding.fileIconImageView.setPadding(0, 0, 0, 0)
-                                } else {
-                                    showEncryptedIcon()
-                                }
-                            } else {
-                                showEncryptedIcon()
-                            }
-                        } catch (e: Exception) {
-                            Log.e("FileAdapter", "Error displaying encrypted video: ${e.message}")
-                            showEncryptedIcon()
-                        }
-                    } else {
-                        Glide.with(context)
-                            .load(file)
-                            .centerCrop()
-                            .into(binding.fileIconImageView)
-                    }
-                }
-
-                FileManager.FileType.AUDIO -> {
-                    binding.videoPlay.visibility = View.GONE
-                    binding.fileIconImageView.setPadding(25, 25, 25, 25)
-                    binding.fileIconImageView.setImageResource(R.drawable.ic_audio)
-
-                }
-
-                FileManager.FileType.NOTE -> {
-                    binding.videoPlay.visibility = View.GONE
-                    binding.fileIconImageView.setPadding(25, 25, 25, 25)
-                    binding.fileIconImageView.setImageResource(R.drawable.ic_sticky_note)
-                }
-
-                FileManager.FileType.PDF -> {
-                    binding.videoPlay.visibility = View.GONE
-                    binding.fileIconImageView.setPadding(25, 25, 25, 25)
-                    binding.fileIconImageView.setImageResource(R.drawable.ic_pdf)
-                }
-
-                else -> {
-                    binding.videoPlay.visibility = View.GONE
-                    binding.fileIconImageView.setPadding(25, 25, 25, 25)
-                    binding.fileIconImageView.setImageResource(R.drawable.ic_document)
-                }
-            }
-        }
-
-        private fun showEncryptedIcon() {
-            binding.fileIconImageView.setImageResource(R.drawable.encrypted)
-        }
-
-
-        private fun updateSelectionUI(isSelected: Boolean) {
-            binding.selectedLayer.visibility = if (isSelected) View.VISIBLE else View.GONE
-            binding.selected.visibility = if (isSelected) View.VISIBLE else View.GONE
-        }
-
         private fun setupClickListeners(file: File, fileType: FileManager.FileType) {
             itemView.setOnClickListener {
                 val position = adapterPosition
                 if (position == RecyclerView.NO_POSITION) return@setOnClickListener
-
-                if (isSelectionMode) {
-                    toggleSelection(position)
-                } else {
-                    openFile(file,fileType)
-                }
+                if (isSelectionMode) toggleSelection(position) else openFile(file, fileType)
             }
 
             itemView.setOnLongClickListener {
                 val position = adapterPosition
                 if (position == RecyclerView.NO_POSITION) return@setOnLongClickListener false
-
                 if (!isSelectionMode) {
                     enterSelectionMode()
                     toggleSelection(position)
@@ -434,13 +416,10 @@ class FileAdapter(
             }
         }
 
-
         private fun toggleSelection(position: Int) {
             if (selectedItems.contains(position)) {
                 selectedItems.remove(position)
-                if (selectedItems.isEmpty()) {
-                    exitSelectionMode()
-                }
+                if (selectedItems.isEmpty()) exitSelectionMode()
             } else {
                 selectedItems.add(position)
             }
@@ -461,55 +440,44 @@ class FileAdapter(
                     }
 
                     val decryptedFile = SecurityUtils.changeFileExtension(file, extension)
-                    if (SecurityUtils.decryptFile(context, file, decryptedFile)) {
-                        if (decryptedFile.exists() && decryptedFile.length() > 0) {
-                            hiddenFileRepository.insertHiddenFile(
-                                HiddenFileEntity(
-                                    filePath = decryptedFile.absolutePath,
-                                    fileName = decryptedFile.name,
-                                    encryptedFileName = file.name,
-                                    fileType = fileType,
-                                    originalExtension = extension,
-                                    isEncrypted = false
-                                )
+                    val success = withContext(Dispatchers.IO) {
+                        SecurityUtils.decryptFile(context, file, decryptedFile)
+                    }
+
+                    if (success && decryptedFile.exists() && decryptedFile.length() > 0) {
+                        hiddenFileRepository.insertHiddenFile(
+                            HiddenFileEntity(
+                                filePath = decryptedFile.absolutePath,
+                                fileName = decryptedFile.name,
+                                encryptedFileName = file.name,
+                                fileType = fileType,
+                                originalExtension = extension,
+                                isEncrypted = false
                             )
-
-                            when (fileType) {
-                                FileManager.FileType.IMAGE, FileManager.FileType.VIDEO -> {
-                                    val intent = Intent(context, PreviewActivity::class.java).apply {
-                                        putExtra("type", if (fileType == FileManager.FileType.IMAGE) "image" else "video")
-                                        putExtra("folder", currentFolder.toString())
-                                        putExtra("position", adapterPosition)
-                                        putExtra("isEncrypted", false)
-                                        putExtra("file", decryptedFile.absolutePath)
-                                    }
-                                    context.startActivity(intent)
+                        )
+                        when (fileType) {
+                            FileManager.FileType.IMAGE, FileManager.FileType.VIDEO -> {
+                                val intent = Intent(context, PreviewActivity::class.java).apply {
+                                    putExtra("type", if (fileType == FileManager.FileType.IMAGE) "image" else "video")
+                                    putExtra("folder", currentFolder.toString())
+                                    putExtra("position", adapterPosition)
+                                    putExtra("isEncrypted", false)
+                                    putExtra("file", decryptedFile.absolutePath)
                                 }
-                                FileManager.FileType.AUDIO -> openAudioFile(decryptedFile)
-                                FileManager.FileType.NOTE -> openNoteFile(decryptedFile)
-                                FileManager.FileType.PDF -> openDocumentFile(decryptedFile)
-                                else -> openDocumentFile(decryptedFile)
+                                context.startActivity(intent)
                             }
-
-                            file.delete()
-                        } else {
-                            decryptedFile.delete()
-                            mainHandler.post {
-                                Toast.makeText(context, "Failed to decrypt file", Toast.LENGTH_SHORT).show()
-                            }
+                            FileManager.FileType.AUDIO -> openAudioFile(decryptedFile)
+                            FileManager.FileType.NOTE -> openNoteFile(decryptedFile)
+                            FileManager.FileType.PDF -> openDocumentFile(decryptedFile)
+                            else -> openDocumentFile(decryptedFile)
                         }
+                        file.delete()
                     } else {
-                        if (decryptedFile.exists()) {
-                            decryptedFile.delete()
-                        }
-                        mainHandler.post {
-                            Toast.makeText(context, "Failed to decrypt file", Toast.LENGTH_SHORT).show()
-                        }
+                        decryptedFile.delete()
+                        Toast.makeText(context, "Failed to decrypt file", Toast.LENGTH_SHORT).show()
                     }
                 } catch (_: Exception) {
-                    mainHandler.post {
-                        Toast.makeText(context, "Error decrypting file", Toast.LENGTH_SHORT).show()
-                    }
+                    Toast.makeText(context, "Error decrypting file", Toast.LENGTH_SHORT).show()
                 }
             }
         }
@@ -526,7 +494,6 @@ class FileAdapter(
         }
     }
 
-
     private fun onSelectionCountChanged(count: Int) {
         filesOperationCallback?.get()?.onSelectionCountChanged(count)
     }
@@ -542,9 +509,7 @@ class FileAdapter(
     fun exitSelectionMode() {
         if (isSelectionMode) {
             isSelectionMode = false
-            selectedItems.forEach { position ->
-                notifyItemChanged(position)
-            }
+            selectedItems.forEach { position -> notifyItemChanged(position) }
             selectedItems.clear()
             notifySelectionModeChange()
         }
@@ -557,12 +522,9 @@ class FileAdapter(
 
     fun cleanup() {
         try {
-            if (!fileExecutor.isShutdown) {
-                fileExecutor.shutdown()
-            }
+            if (!fileExecutor.isShutdown) fileExecutor.shutdown()
         } catch (_: Exception) {
         }
-
         filesOperationCallback?.clear()
         filesOperationCallback = null
     }
@@ -581,9 +543,7 @@ class FileAdapter(
             .setTitle(context.getString(R.string.encrypt_files))
             .setMessage(context.getString(R.string.encryption_disclaimer))
             .setPositiveButton(context.getString(R.string.encrypt)) { _, _ ->
-                FileManager(context, lifecycleOwner).performEncryption(
-                    selectedFiles
-                ) {
+                FileManager(context, lifecycleOwner).performEncryption(selectedFiles) {
                     updateItemsAfterEncryption(it)
                 }
             }
@@ -608,31 +568,20 @@ class FileAdapter(
     }
 
     fun updateItemsAfterEncryption(encryptedFiles: Map<File, File>) {
-
         val currentList = FolderManager().getFilesInFolder(currentFolder)
-        val updatedList = currentList.map { file ->
-            encryptedFiles[file] ?: file
-        }.toMutableList()
+        val updatedList = currentList.map { file -> encryptedFiles[file] ?: file }.toMutableList()
         selectedItems.clear()
         exitSelectionMode()
         submitList(updatedList)
-        mainHandler.postDelayed({
-
-            filesOperationCallback?.get()?.onRefreshNeeded()
-        },20)
+        mainHandler.postDelayed({ filesOperationCallback?.get()?.onRefreshNeeded() }, 20)
     }
 
     fun updateItemsAfterDecryption(decryptedFiles: Map<File, File>) {
         val currentList = FolderManager().getFilesInFolder(currentFolder)
-        val updatedList = currentList.map { file ->
-            decryptedFiles[file] ?: file
-        }.toMutableList()
+        val updatedList = currentList.map { file -> decryptedFiles[file] ?: file }.toMutableList()
         selectedItems.clear()
         exitSelectionMode()
         submitList(updatedList)
-        mainHandler.postDelayed({
-
-            filesOperationCallback?.get()?.onRefreshNeeded()
-        },20)
+        mainHandler.postDelayed({ filesOperationCallback?.get()?.onRefreshNeeded() }, 20)
     }
 }

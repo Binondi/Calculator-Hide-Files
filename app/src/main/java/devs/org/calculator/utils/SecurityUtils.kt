@@ -2,6 +2,7 @@ package devs.org.calculator.utils
 
 import android.content.Context
 import android.net.Uri
+import android.provider.Settings
 import java.io.File
 import java.io.FileInputStream
 import java.io.FileOutputStream
@@ -9,58 +10,60 @@ import java.security.SecureRandom
 import javax.crypto.Cipher
 import javax.crypto.CipherInputStream
 import javax.crypto.CipherOutputStream
-import javax.crypto.KeyGenerator
 import javax.crypto.SecretKey
 import javax.crypto.spec.IvParameterSpec
 import javax.crypto.spec.SecretKeySpec
-import android.content.SharedPreferences
 import androidx.core.content.FileProvider
 import devs.org.calculator.database.HiddenFileEntity
-import androidx.core.content.edit
 import android.util.Log
 
 object SecurityUtils {
     private const val ALGORITHM = "AES"
     private const val TRANSFORMATION = "AES/CBC/PKCS5Padding"
-    private const val KEY_SIZE = 256
     val ENCRYPTED_EXTENSION = ".enc"
+    val DEFAULT_KEY = "encryption_key_default"
+
+    /**
+     * Derives a stable 256-bit AES key from the device's ANDROID_ID mixed with
+     * the app package name and DEFAULT_KEY salt.
+     *
+     * Properties:
+     *  - Unique per device (ANDROID_ID is assigned at first boot)
+     *  - Deterministic: same device always produces the same key
+     *  - Survives app reinstalls (ANDROID_ID persists across installs on Android 8+)
+     *  - Resets only on factory reset, which is acceptable
+     */
+    private fun deriveDeviceKey(context: Context): SecretKey {
+        val androidId = Settings.Secure.getString(
+            context.contentResolver,
+            Settings.Secure.ANDROID_ID
+        ) ?: "fallback_id"
+
+        val rawMaterial = "${context.packageName}:$androidId:$DEFAULT_KEY"
+        val digest = java.security.MessageDigest.getInstance("SHA-256")
+        val keyBytes = digest.digest(rawMaterial.toByteArray(Charsets.UTF_8))
+        return SecretKeySpec(keyBytes, ALGORITHM)
+    }
 
     private fun getSecretKey(context: Context): SecretKey {
         val keyStore = context.getSharedPreferences("keystore", Context.MODE_PRIVATE)
         val useCustomKey = keyStore.getBoolean("use_custom_key", false)
-        
+
         if (useCustomKey) {
             val customKey = keyStore.getString("custom_key", null)
             if (customKey != null) {
-                try {
-                    val messageDigest = java.security.MessageDigest.getInstance("SHA-256")
-                    val keyBytes = messageDigest.digest(customKey.toByteArray())
-                    return SecretKeySpec(keyBytes, ALGORITHM)
+                return try {
+                    val digest = java.security.MessageDigest.getInstance("SHA-256")
+                    val keyBytes = digest.digest(customKey.toByteArray(Charsets.UTF_8))
+                    SecretKeySpec(keyBytes, ALGORITHM)
                 } catch (_: Exception) {
+                    deriveDeviceKey(context)
                 }
             }
         }
 
-        val encodedKey = keyStore.getString("secret_key", null)
-        return if (encodedKey != null) {
-            try {
-                val decodedKey = android.util.Base64.decode(encodedKey, android.util.Base64.DEFAULT)
-                SecretKeySpec(decodedKey, ALGORITHM)
-            } catch (_: Exception) {
-                generateAndStoreNewKey(keyStore)
-            }
-        } else {
-            generateAndStoreNewKey(keyStore)
-        }
-    }
-
-    private fun generateAndStoreNewKey(keyStore: SharedPreferences): SecretKey {
-        val keyGenerator = KeyGenerator.getInstance(ALGORITHM)
-        keyGenerator.init(KEY_SIZE, SecureRandom())
-        val key = keyGenerator.generateKey()
-        val encodedKey = android.util.Base64.encodeToString(key.encoded, android.util.Base64.DEFAULT)
-        keyStore.edit { putString("secret_key", encodedKey) }
-        return key
+        // No custom key set — use the stable device-derived key (no storage needed)
+        return deriveDeviceKey(context)
     }
 
     fun encryptFile(context: Context, inputFile: File, outputFile: File): Boolean {
@@ -89,17 +92,15 @@ object SecurityUtils {
             }
 
             FileInputStream(outputFile).use { input ->
-                val iv = ByteArray(16)
-                val bytesRead = input.read(iv)
+                val ivCheck = ByteArray(16)
+                val bytesRead = input.read(ivCheck)
                 if (bytesRead != 16) {
-
                     return false
                 }
             }
 
             true
         } catch (_: Exception) {
-
             if (outputFile.exists()) {
                 outputFile.delete()
             }
@@ -123,23 +124,23 @@ object SecurityUtils {
                 }
             }
 
-            // Clean up old preview files
-            tempDir.listFiles()?.forEach { 
-                if (it.lastModified() < System.currentTimeMillis() - 5 * 60 * 1000) { // 5 minutes
+            // Clean up old preview files older than 5 minutes
+            tempDir.listFiles()?.forEach {
+                if (it.lastModified() < System.currentTimeMillis() - 5 * 60 * 1000) {
                     it.delete()
                 }
             }
 
             val tempFile = File(tempDir, "preview_${System.currentTimeMillis()}_${meta.fileName}")
-            
+
             val success = decryptFile(context, encryptedFile, tempFile)
-            
-            if (success && tempFile.exists() && tempFile.length() > 0) {
-                return tempFile
+
+            return if (success && tempFile.exists() && tempFile.length() > 0) {
+                tempFile
             } else {
                 Log.e("SecurityUtils", "Failed to decrypt preview file: ${meta.filePath}")
                 if (tempFile.exists()) tempFile.delete()
-                return null
+                null
             }
         } catch (e: Exception) {
             Log.e("SecurityUtils", "Error in getDecryptedPreviewFile: ${e.message}")
@@ -155,7 +156,7 @@ object SecurityUtils {
             }
             FileProvider.getUriForFile(
                 context,
-                "${context.packageName}.provider",
+                "${context.packageName}.fileprovider",
                 file
             )
         } catch (e: Exception) {
@@ -176,22 +177,21 @@ object SecurityUtils {
 
             val secretKey = getSecretKey(context)
             val cipher = Cipher.getInstance(TRANSFORMATION)
+
             FileInputStream(inputFile).use { input ->
                 val iv = ByteArray(16)
                 val bytesRead = input.read(iv)
                 if (bytesRead != 16) {
                     return false
                 }
-                
                 cipher.init(Cipher.DECRYPT_MODE, secretKey, IvParameterSpec(iv))
+            }
 
-                FileInputStream(inputFile).use { decInput ->
-                    decInput.skip(16)
-                    
-                    FileOutputStream(outputFile).use { output ->
-                        CipherInputStream(decInput, cipher).use { cipherInput ->
-                            cipherInput.copyTo(output)
-                        }
+            FileInputStream(inputFile).use { decInput ->
+                decInput.skip(16)
+                FileOutputStream(outputFile).use { output ->
+                    CipherInputStream(decInput, cipher).use { cipherInput ->
+                        cipherInput.copyTo(output)
                     }
                 }
             }
@@ -233,9 +233,10 @@ object SecurityUtils {
     fun setCustomKey(context: Context, key: String): Boolean {
         return try {
             val keyStore = context.getSharedPreferences("keystore", Context.MODE_PRIVATE)
-            keyStore.edit {
+            keyStore.edit().apply {
                 putString("custom_key", key)
                 putBoolean("use_custom_key", true)
+                apply()
             }
             true
         } catch (_: Exception) {
@@ -245,9 +246,10 @@ object SecurityUtils {
 
     fun clearCustomKey(context: Context) {
         val keyStore = context.getSharedPreferences("keystore", Context.MODE_PRIVATE)
-        keyStore.edit {
+        keyStore.edit().apply {
             remove("custom_key")
             putBoolean("use_custom_key", false)
+            apply()
         }
     }
 
@@ -255,4 +257,4 @@ object SecurityUtils {
         val keyStore = context.getSharedPreferences("keystore", Context.MODE_PRIVATE)
         return keyStore.getBoolean("use_custom_key", false)
     }
-} 
+}

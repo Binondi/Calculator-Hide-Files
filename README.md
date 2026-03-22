@@ -5,7 +5,7 @@
 # 📂 Calculator Hide File App for Android 📂
 
 <a href="https://github.com/Binondi/Calculator-Hide-Files/releases/latest">
-      <img alt="Latest release" src="https://img.shields.io/badge/Releases-v1.4.4-blue?logo=github&style=for-the-badge">
+      <img alt="Latest release" src="https://img.shields.io/badge/Releases-v1.4.5-blue?logo=github&style=for-the-badge">
 </a>
 
 <a href="https://github.com/Binondi/Calculator-Hide-Files/releases/latest">
