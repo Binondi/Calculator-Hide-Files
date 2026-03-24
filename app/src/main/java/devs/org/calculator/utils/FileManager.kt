@@ -23,6 +23,7 @@ import androidx.core.content.FileProvider
 import androidx.documentfile.provider.DocumentFile
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.lifecycleScope
+import devs.org.calculator.R
 import devs.org.calculator.callbacks.FileProcessCallback
 import devs.org.calculator.database.AppDatabase
 import devs.org.calculator.database.HiddenFileEntity
@@ -56,7 +57,11 @@ class FileManager(private val context: Context, private val lifecycleOwner: Life
         if (!dir.exists()) {
             val created = dir.mkdirs()
             if (!created) {
-                throw RuntimeException("Failed to create hidden directory: ${dir.absolutePath}")
+                throw RuntimeException(
+                    context.getString(
+                        R.string.failed_to_create_hidden_directory,
+                        dir.absolutePath
+                    ))
             }
             val nomediaFile = File(dir, ".nomedia")
             if (!nomediaFile.exists()) {

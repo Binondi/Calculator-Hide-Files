@@ -10,7 +10,6 @@ import android.view.WindowManager
 import android.widget.Toast
 import androidx.activity.OnBackPressedCallback
 import androidx.activity.enableEdgeToEdge
-import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.lifecycle.lifecycleScope
@@ -22,12 +21,11 @@ import devs.org.calculator.database.HiddenFileRepository
 import devs.org.calculator.databinding.ActivityPreviewBinding
 import devs.org.calculator.utils.DialogUtil
 import devs.org.calculator.utils.FileManager
-import devs.org.calculator.utils.PrefsUtil
 import devs.org.calculator.utils.SecurityUtils
 import kotlinx.coroutines.launch
 import java.io.File
 
-class PreviewActivity : AppCompatActivity() {
+class PreviewActivity : BaseActivity() {
 
     private lateinit var binding: ActivityPreviewBinding
     private var currentPosition: Int = 0
@@ -39,7 +37,6 @@ class PreviewActivity : AppCompatActivity() {
     private lateinit var fileManager: FileManager
     private val dialogUtil = DialogUtil(this)
     private val mainHandler = Handler(Looper.getMainLooper())
-    private val prefs: PrefsUtil by lazy { PrefsUtil(this) }
     private val hiddenFileRepository: HiddenFileRepository by lazy {
         HiddenFileRepository(AppDatabase.getDatabase(this).hiddenFileDao())
     }
@@ -81,11 +78,6 @@ class PreviewActivity : AppCompatActivity() {
         })
     }
 
-    override fun onResume() {
-        super.onResume()
-        setupFlagSecure()
-    }
-
     override fun onPause() {
         super.onPause()
         adapter.releaseAllResources()
@@ -94,15 +86,6 @@ class PreviewActivity : AppCompatActivity() {
     override fun onDestroy() {
         super.onDestroy()
         adapter.releaseAllResources()
-    }
-
-    private fun setupFlagSecure() {
-        if (prefs.getBoolean("screenshot_restriction", true)) {
-            window.setFlags(
-                WindowManager.LayoutParams.FLAG_SECURE,
-                WindowManager.LayoutParams.FLAG_SECURE
-            )
-        }
     }
 
     private fun setupFileType() {

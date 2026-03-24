@@ -20,7 +20,7 @@ import java.io.File
 import java.text.SimpleDateFormat
 import java.util.*
 
-class NotesActivity : AppCompatActivity() {
+class NotesActivity : BaseActivity() {
     private lateinit var binding: ActivityNotesBinding
     private lateinit var notesAdapter: NotesAdapter
     private lateinit var notesDir: File
@@ -87,13 +87,13 @@ class NotesActivity : AppCompatActivity() {
 
     private fun showDeleteConfirmDialog(file: File) {
         MaterialAlertDialogBuilder(this)
-            .setTitle("Delete Note")
-            .setMessage("Are you sure you want to delete this secret note?")
-            .setPositiveButton("Delete") { _, _ ->
+            .setTitle(getString(R.string.delete_note))
+            .setMessage(getString(R.string.are_you_sure_you_want_to_delete_this_secret_note))
+            .setPositiveButton(R.string.delete) { _, _ ->
                 file.delete()
                 refreshNotes()
             }
-            .setNegativeButton("Cancel", null)
+            .setNegativeButton(R.string.cancel, null)
             .show()
     }
 
@@ -123,7 +123,7 @@ class NotesActivity : AppCompatActivity() {
         inner class NoteViewHolder(private val binding: ItemNoteBinding) : RecyclerView.ViewHolder(binding.root) {
             fun bind(file: File) {
                 binding.noteTitle.text = file.nameWithoutExtension
-                binding.noteContent.text = try { file.readText() } catch (e: Exception) { "" }
+                binding.noteContent.text = try { file.readText() } catch (_: Exception) { "" }
                 binding.noteDate.text = SimpleDateFormat("MMM dd, yyyy HH:mm", Locale.getDefault()).format(Date(file.lastModified()))
 
                 binding.root.setOnClickListener { onNoteClick(file) }

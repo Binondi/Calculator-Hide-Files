@@ -1,8 +1,9 @@
 package devs.org.calculator.utils
 
+import android.annotation.SuppressLint
 import android.content.Context
 import android.net.Uri
-import android.provider.Settings
+import android.provider.Settings.Secure
 import java.io.File
 import java.io.FileInputStream
 import java.io.FileOutputStream
@@ -23,20 +24,11 @@ object SecurityUtils {
     val ENCRYPTED_EXTENSION = ".enc"
     val DEFAULT_KEY = "encryption_key_default"
 
-    /**
-     * Derives a stable 256-bit AES key from the device's ANDROID_ID mixed with
-     * the app package name and DEFAULT_KEY salt.
-     *
-     * Properties:
-     *  - Unique per device (ANDROID_ID is assigned at first boot)
-     *  - Deterministic: same device always produces the same key
-     *  - Survives app reinstalls (ANDROID_ID persists across installs on Android 8+)
-     *  - Resets only on factory reset, which is acceptable
-     */
+    @SuppressLint("HardwareIds")
     private fun deriveDeviceKey(context: Context): SecretKey {
-        val androidId = Settings.Secure.getString(
+        val androidId = Secure.getString(
             context.contentResolver,
-            Settings.Secure.ANDROID_ID
+            Secure.ANDROID_ID
         ) ?: "fallback_id"
 
         val rawMaterial = "${context.packageName}:$androidId:$DEFAULT_KEY"
@@ -61,8 +53,6 @@ object SecurityUtils {
                 }
             }
         }
-
-        // No custom key set — use the stable device-derived key (no storage needed)
         return deriveDeviceKey(context)
     }
 
@@ -123,8 +113,6 @@ object SecurityUtils {
                     return null
                 }
             }
-
-            // Clean up old preview files older than 5 minutes
             tempDir.listFiles()?.forEach {
                 if (it.lastModified() < System.currentTimeMillis() - 5 * 60 * 1000) {
                     it.delete()

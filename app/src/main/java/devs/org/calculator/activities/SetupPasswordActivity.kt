@@ -6,23 +6,18 @@ import android.view.LayoutInflater
 import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
-import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
-import com.google.android.material.color.DynamicColors
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.textfield.TextInputEditText
-import devs.org.calculator.databinding.ActivitySetupPasswordBinding
-import devs.org.calculator.utils.PrefsUtil
 import devs.org.calculator.R
 import devs.org.calculator.databinding.ActivityChangePasswordBinding
+import devs.org.calculator.databinding.ActivitySetupPasswordBinding
 
-class SetupPasswordActivity : AppCompatActivity() {
+class SetupPasswordActivity : BaseActivity() {
     private lateinit var binding: ActivitySetupPasswordBinding
     private lateinit var binding2: ActivityChangePasswordBinding
-    private lateinit var prefsUtil: PrefsUtil
     private var hasPassword = false
-    private val prefs:PrefsUtil by lazy { PrefsUtil(this) }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -35,8 +30,7 @@ class SetupPasswordActivity : AppCompatActivity() {
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)
             insets
         }
-        prefsUtil = PrefsUtil(this)
-        hasPassword = prefsUtil.hasPassword()
+        hasPassword = prefs.hasPassword()
 
         if (hasPassword){
             setContentView(binding2.root)
@@ -74,15 +68,15 @@ class SetupPasswordActivity : AppCompatActivity() {
                 binding.etPassword.error = getString(R.string.passwords_don_t_match)
                 return@setOnClickListener
             }
-            prefsUtil.savePassword(password)
-            prefsUtil.saveSecurityQA(securityQuestion, securityAnswer)
+            prefs.savePassword(password)
+            prefs.saveSecurityQA(securityQuestion, securityAnswer)
             Toast.makeText(this, getString(R.string.password_set_successfully), Toast.LENGTH_SHORT).show()
             startActivity(Intent(this, MainActivity::class.java))
             finish()
         }
 
         binding.btnResetPassword.setOnClickListener {
-            if (prefsUtil.getSecurityQuestion() != null) showSecurityQuestionDialog(prefsUtil.getSecurityQuestion().toString())
+            if (prefs.getSecurityQuestion() != null) showSecurityQuestionDialog(prefs.getSecurityQuestion().toString())
             else Toast.makeText(this,
                 getString(R.string.security_question_not_set_yet), Toast.LENGTH_SHORT).show()
 
@@ -99,9 +93,9 @@ class SetupPasswordActivity : AppCompatActivity() {
                 return@setOnClickListener
             }
 
-            if (prefsUtil.validatePassword(oldPassword)){
+            if (prefs.validatePassword(oldPassword)){
                 if (oldPassword != newPassword){
-                    prefsUtil.savePassword(newPassword)
+                    prefs.savePassword(newPassword)
                     Toast.makeText(this,
                         getString(R.string.password_reset_successfully), Toast.LENGTH_SHORT).show()
                     startActivity(Intent(this, MainActivity::class.java))
@@ -118,7 +112,7 @@ class SetupPasswordActivity : AppCompatActivity() {
             }
         }
         binding2.btnResetPassword.setOnClickListener{
-            if (prefsUtil.getSecurityQuestion() != null) showSecurityQuestionDialog(prefsUtil.getSecurityQuestion().toString())
+            if (prefs.getSecurityQuestion() != null) showSecurityQuestionDialog(prefs.getSecurityQuestion().toString())
             else Toast.makeText(this, getString(R.string.this_field_can_t_be_empty), Toast.LENGTH_SHORT).show()
         }
     }
@@ -141,8 +135,8 @@ class SetupPasswordActivity : AppCompatActivity() {
                     Toast.makeText(this,
                         getString(R.string.answer_cannot_be_empty), Toast.LENGTH_SHORT).show()
                 } else {
-                    if (prefsUtil.validateSecurityAnswer(userAnswer)){
-                        prefsUtil.resetPassword()
+                    if (prefs.validateSecurityAnswer(userAnswer)){
+                        prefs.resetPassword()
                         Toast.makeText(this,
                             getString(R.string.password_successfully_reset), Toast.LENGTH_SHORT).show()
                         dialog.dismiss()

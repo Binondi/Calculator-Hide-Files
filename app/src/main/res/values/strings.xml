@@ -1,6 +1,5 @@
 <resources>
     <string name="app_name" translatable="false">Calculator</string>
-    <string name="version" translatable="false">Version 1.4.4</string>
     <string name="invalid_message">Invalid Value Entered</string>
     <string name="add_image">Add Image</string>
     <string name="add_audio">Add Audio</string>
@@ -95,11 +94,11 @@
     <string name="select_multiple">Select Multiple</string>
     <string name="settings">Settings</string>
     <string name="binondi_borthakur">Binondi Borthakur</string>
-    <string name="dynamic_theme">Dynamic Theme</string>
+    <string name="dynamic_theme">Dynamic Colors</string>
     <string name="theme_mode">Theme Mode</string>
     <string name="light">Light</string>
     <string name="dark">Dark</string>
-    <string name="system_default">System Default</string>
+    <string name="system_default">System</string>
     <string name="full_app_name">Calculator Hide Files</string>
     <string name="developer_details">Developer Details</string>
     <string name="theme_settings">Theme Settings</string>
@@ -183,4 +182,56 @@
     <string name="edit_note">Edit Note</string>
     <string name="save">Save</string>
     <string name="add_music">Add Music</string>
+    <string name="check_for_updates">Check for Updates</string>
+    <string name="enter_title">Enter Title</string>
+    <string name="enter_something">Enter Something</string>
+    <string name="text_0">0</string>
+    <string name="all_clear">AC</string>
+    <string name="percentage">%</string>
+    <string name="devide">÷</string>
+    <string name="text_7">7</string>
+    <string name="text_8">8</string>
+    <string name="text_9">9</string>
+    <string name="into">×</string>
+    <string name="text_4">4</string>
+    <string name="text_5">5</string>
+    <string name="text_6">6</string>
+    <string name="minus">-</string>
+    <string name="text_1">1</string>
+    <string name="text_2">2</string>
+    <string name="text_3">3</string>
+    <string name="plus">+</string>
+    <string name="text_00">00</string>
+    <string name="text_dot">.</string>
+    <string name="text_equal">=</string>
+    <string name="arrow_back_tool_tip">Back</string>
+    <string name="description_dynamic_colors">Dynamic colors adapts from your wallpaper</string>
+    <string name="select_themes">Select Themes</string>
+    <string name="select_a_theme_for_your_app">Select a Theme For Your App</string>
+    <string name="check">Check</string>
+    <string name="new_version_description">Check if a new version is available</string>
+    <string name="title_cannot_be_empty">Title cannot be empty</string>
+    <string name="a_note_with_this_title_already_exists_in_this_folder">A note with this title already exists in this folder</string>
+    <string name="note_saved">Note saved</string>
+    <string name="failed_to_save_note">Failed to save note</string>
+    <string name="delete_note">Delete Note</string>
+    <string name="are_you_sure_you_want_to_delete_this_secret_note">Are you sure you want to delete this secret note?</string>
+    <string name="version">Version %1$s</string>
+    <string name="hiding_count_files">Hiding %1$d files</string>
+    <string name="please_enter_a_file_extension">Please enter a file extension</string>
+    <string name="invalid_extension_format">Invalid extension format. Example: .pdf, .mp4</string>
+    <string name="decrypted_count_files">Decrypted %1$d file(s)</string>
+    <string name="decrypted_count_files_failed_to_decrypt">Decrypted %1$d file(s), failed to decrypt %2$d</string>
+    <string name="failed_to_decrypt_count_files">Failed to decrypt %1$d file(s)</string>
+    <string name="failed_to_decrypt_file_for_preview">Failed to decrypt file for preview</string>
+    <string name="error_preparing_file_for_preview">Error preparing file for preview</string>
+    <string name="failed_to_get_decrypted_preview_file_for_path">Failed to get decrypted preview file for: %1$s</string>
+    <string name="error_in_bind">Error in bind: %1$s</string>
+    <string name="failed_to_get_uri_for_file">Failed to get URI for file: %1$s</string>
+    <string name="failed_to_get_audio_file_from_uri">Failed to get audio file from URI</string>
+    <string name="error_displaying_file_path">Error displaying file: %1$s</string>
+    <string name="error_cleaning_up_temp_file_path">Error cleaning up temp file: %1$s</string>
+    <string name="update_available">Update Available!</string>
+    <string name="download">Download</string>
+    <string name="failed_to_create_hidden_directory">Failed to create hidden directory: %1$s</string>
 </resources>

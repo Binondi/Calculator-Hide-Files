@@ -91,7 +91,11 @@ class ImagePreviewAdapter(
                             if (tempDecryptedFile != null && tempDecryptedFile!!.exists() && tempDecryptedFile!!.length() > 0) {
                                 displayFile(tempDecryptedFile!!, fileType, true)
                             } else {
-                                Log.e("ImagePreviewAdapter", "Failed to get decrypted preview file for: ${file.absolutePath}")
+                                Log.e("ImagePreviewAdapter",
+                                    context.getString(
+                                        R.string.failed_to_get_decrypted_preview_file_for_path,
+                                        file.absolutePath
+                                    ))
                                 showEncryptedError()
                             }
                         } else {
@@ -102,7 +106,7 @@ class ImagePreviewAdapter(
                     }
                 }
             } catch (e: Exception) {
-                Log.e("ImagePreviewAdapter", "Error in bind: ${e.message}")
+                Log.e("ImagePreviewAdapter", context.getString(R.string.error_in_bind, e.message))
                 displayFile(file, decryptedFileType, false)
             }
         }
@@ -116,7 +120,8 @@ class ImagePreviewAdapter(
                 }
 
                 if (uri == null) {
-                    Log.e("ImagePreviewAdapter", "Failed to get URI for file: ${file.absolutePath}")
+                    Log.e("ImagePreviewAdapter",
+                        context.getString(R.string.failed_to_get_uri_for_file, file.absolutePath))
                     showEncryptedError()
                     return
                 }
@@ -162,7 +167,7 @@ class ImagePreviewAdapter(
                         binding.btnFullscreen.visibility = View.GONE
                         Glide.with(context)
                             .load(uri)
-                            .error(R.drawable.encrypted)
+                            .error(R.drawable.ic_file)
                             .into(binding.imageView)
                     }
                     FileManager.FileType.AUDIO -> {
@@ -172,7 +177,8 @@ class ImagePreviewAdapter(
                             file
                         }
                         if (audioFile == null) {
-                            Log.e("ImagePreviewAdapter", "Failed to get audio file from URI")
+                            Log.e("ImagePreviewAdapter",
+                                context.getString(R.string.failed_to_get_audio_file_from_uri))
                             showEncryptedError()
                             return
                         }
@@ -192,12 +198,13 @@ class ImagePreviewAdapter(
                         binding.btnFullscreen.visibility = View.GONE
                         Glide.with(context)
                             .load(uri)
-                            .error(R.drawable.encrypted)
+                            .error(R.drawable.ic_file)
                             .into(binding.imageView)
                     }
                 }
             } catch (e: Exception) {
-                Log.e("ImagePreviewAdapter", "Error displaying file: ${e.message}")
+                Log.e("ImagePreviewAdapter",
+                    context.getString(R.string.error_displaying_file_path, e.message))
                 showEncryptedError()
             }
         }
@@ -230,7 +237,8 @@ class ImagePreviewAdapter(
                     try {
                         it.delete()
                     } catch (e: Exception) {
-                        Log.e("ImagePreviewAdapter", "Error cleaning up temp file: ${e.message}")
+                        Log.e("ImagePreviewAdapter",
+                            context.getString(R.string.error_cleaning_up_temp_file_path, e.message))
                     }
                 }
                 tempDecryptedFile = null

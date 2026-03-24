@@ -84,8 +84,6 @@ class FileAdapter(
         @SuppressLint("FileEndsWithExt")
         fun bind(file: File) {
             val position = adapterPosition
-
-            // Show a placeholder immediately so the cell isn't blank while loading
             showLoadingPlaceholder()
 
             lifecycleOwner.lifecycleScope.launch(Dispatchers.Main) {
@@ -101,8 +99,6 @@ class FileAdapter(
                         currentFileData?.isEncrypted ?: (file.extension == "enc")
 
                     setupClickListeners(file, currentFileType)
-
-                    // setupDisplay is now a suspend fun — it moves IO work off the main thread
                     setupDisplay(file, currentFileType, isCurrentFileEncrypted, currentFileData)
 
                     binding.fileNameTextView.text =
@@ -122,18 +118,11 @@ class FileAdapter(
                 }
             }
         }
-
-        /** Shows a generic icon immediately while async work is in progress */
         private fun showLoadingPlaceholder() {
             binding.videoPlay.visibility = View.GONE
             binding.fileIconImageView.setPadding(25, 25, 25, 25)
             binding.fileIconImageView.setImageResource(R.drawable.encrypted)
         }
-
-        /**
-         * Suspend version of setupDisplay.
-         * Heavy work (decryption) is dispatched to IO; only Glide calls happen on Main.
-         */
         private suspend fun setupDisplay(
             file: File,
             type: FileManager.FileType,
@@ -194,22 +183,15 @@ class FileAdapter(
                 }
             }
         }
-
-        /**
-         * Decrypts the file on IO, then loads the result into Glide on Main.
-         * Safe to call from a coroutine already on Main.
-         */
         private suspend fun loadEncryptedThumbnail(
             metadata: HiddenFileEntity?,
             isVideo: Boolean,
         ) {
             if (metadata == null) {
-                // No DB record — nothing to decrypt, show fallback icon
                 showEncryptedIcon()
                 return
             }
 
-            // Decrypt off the main thread
             val uri: Uri? = withContext(Dispatchers.IO) {
                 try {
                     val decryptedFile = getDecryptedPreviewFile(context, metadata)
@@ -224,18 +206,16 @@ class FileAdapter(
                 }
             }
 
-            // Back on Main — load into Glide (or show fallback)
             if (uri != null) {
                 try {
                     Glide.with(context)
                         .load(uri)
                         .centerCrop()
-                        // Videos: skip disk cache so stale frames don't linger
                         .diskCacheStrategy(
                             if (isVideo) DiskCacheStrategy.NONE else DiskCacheStrategy.ALL
                         )
                         .skipMemoryCache(isVideo)
-                        .error(R.drawable.encrypted)
+                        .error(R.drawable.ic_file)
                         .into(binding.fileIconImageView)
                 } catch (e: Exception) {
                     Log.e("FileAdapter", "Glide error for encrypted file: ${e.message}")
@@ -296,14 +276,16 @@ class FileAdapter(
                                         }
                                         context.startActivity(intent)
                                     } else {
-                                        Toast.makeText(context, "Failed to decrypt file for preview", Toast.LENGTH_SHORT).show()
+                                        Toast.makeText(context,
+                                            context.getString(R.string.failed_to_decrypt_file_for_preview), Toast.LENGTH_SHORT).show()
                                     }
                                 }
                             } else {
                                 openInPreview(fileType)
                             }
                         } catch (_: Exception) {
-                            Toast.makeText(context, "Error preparing file for preview", Toast.LENGTH_SHORT).show()
+                            Toast.makeText(context,
+                                context.getString(R.string.error_preparing_file_for_preview), Toast.LENGTH_SHORT).show()
                         }
                     }
                 }
@@ -316,8 +298,8 @@ class FileAdapter(
         private fun showDecryptionTypeDialog(file: File) {
             val options = arrayOf("Image", "Video", "Audio", "Note", "PDF")
             MaterialAlertDialogBuilder(context)
-                .setTitle("Select File Type")
-                .setMessage("Please select the type of file to decrypt")
+                .setTitle(R.string.select_file_type)
+                .setMessage(R.string.please_select_the_type_of_file_to_decrypt)
                 .setItems(options) { _, which ->
                     val selectedType = when (which) {
                         0 -> FileManager.FileType.IMAGE
@@ -329,7 +311,7 @@ class FileAdapter(
                     }
                     performDecryptionWithType(file, selectedType)
                 }
-                .setNegativeButton("Cancel", null)
+                .setNegativeButton(R.string.cancel, null)
                 .show()
         }
 
@@ -390,6 +372,7 @@ class FileAdapter(
                 }
                 context.startActivity(Intent.createChooser(intent, "Open with"))
             } catch (e: Exception) {
+                e.printStackTrace()
                 Toast.makeText(
                     context,
                     context.getString(R.string.no_suitable_app_found_to_open_this_document),

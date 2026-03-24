@@ -3,10 +3,10 @@ package devs.org.calculator.activities
 import android.os.Bundle
 import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
-import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.lifecycle.lifecycleScope
+import devs.org.calculator.R
 import devs.org.calculator.database.AppDatabase
 import devs.org.calculator.database.HiddenFileRepository
 import devs.org.calculator.databinding.ActivityEditNotesBinding
@@ -16,7 +16,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.io.File
 
-class EditNotesActivity : AppCompatActivity() {
+class EditNotesActivity : BaseActivity() {
     private lateinit var binding: ActivityEditNotesBinding
     private var noteFile: File? = null
     private lateinit var notesDir: File
@@ -37,14 +37,12 @@ class EditNotesActivity : AppCompatActivity() {
         }
 
         val fileManager = FileManager(this, this)
-        // Set default notes directory
         notesDir = File(fileManager.getHiddenDirectory(), FileManager.NOTES_DIR)
         if (!notesDir.exists()) notesDir.mkdirs()
 
         val filePath = intent.getStringExtra("note_path")
         if (filePath != null) {
             noteFile = File(filePath)
-            // If editing an existing file, use its parent directory so it stays in the same folder
             noteFile?.parentFile?.let {
                 notesDir = it
             }
@@ -58,7 +56,7 @@ class EditNotesActivity : AppCompatActivity() {
     private fun loadNote() {
         noteFile?.let {
             val title = it.nameWithoutExtension
-            val content = try { it.readText() } catch (e: Exception) { "" }
+            val content = try { it.readText() } catch (_: Exception) { "" }
             binding.noteTitle.setText(title)
             binding.noteContent.setText(content)
         }
@@ -69,7 +67,7 @@ class EditNotesActivity : AppCompatActivity() {
         val content = binding.noteContent.text.toString()
 
         if (title.isEmpty()) {
-            Toast.makeText(this, "Title cannot be empty", Toast.LENGTH_SHORT).show()
+            Toast.makeText(this, getString(R.string.title_cannot_be_empty), Toast.LENGTH_SHORT).show()
             return
         }
 
@@ -81,13 +79,14 @@ class EditNotesActivity : AppCompatActivity() {
 
                 if (isRename && newFile.exists()) {
                     withContext(Dispatchers.Main) {
-                        Toast.makeText(this@EditNotesActivity, "A note with this title already exists in this folder", Toast.LENGTH_SHORT).show()
+                        Toast.makeText(this@EditNotesActivity,
+                            getString(R.string.a_note_with_this_title_already_exists_in_this_folder),
+                            Toast.LENGTH_SHORT).show()
                     }
                     return@launch
                 }
 
                 withContext(Dispatchers.IO) {
-                    // Update database if renaming
                     if (isRename) {
                         val hiddenFile = hiddenFileRepository.getHiddenFileByPath(oldPath!!)
                         if (hiddenFile != null) {
@@ -98,22 +97,21 @@ class EditNotesActivity : AppCompatActivity() {
                                 isEncrypted = hiddenFile.isEncrypted
                             )
                         }
-                        // Delete old physical file
                         File(oldPath).delete()
                     }
-                    
-                    // Write new/updated content
                     newFile.writeText(content)
                 }
 
                 withContext(Dispatchers.Main) {
-                    Toast.makeText(this@EditNotesActivity, "Note saved", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(this@EditNotesActivity,
+                        getString(R.string.note_saved), Toast.LENGTH_SHORT).show()
                     finish()
                 }
             } catch (e: Exception) {
                 e.printStackTrace()
                 withContext(Dispatchers.Main) {
-                    Toast.makeText(this@EditNotesActivity, "Failed to save note", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(this@EditNotesActivity,
+                        getString(R.string.failed_to_save_note), Toast.LENGTH_SHORT).show()
                 }
             }
         }

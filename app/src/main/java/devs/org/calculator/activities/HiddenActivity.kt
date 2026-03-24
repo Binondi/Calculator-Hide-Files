@@ -7,12 +7,10 @@ import android.os.Handler
 import android.os.Looper
 import android.view.LayoutInflater
 import android.view.View
-import android.view.WindowManager
 import android.widget.EditText
 import android.widget.Toast
 import androidx.activity.OnBackPressedCallback
 import androidx.activity.enableEdgeToEdge
-import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.recyclerview.widget.GridLayoutManager
@@ -28,7 +26,7 @@ import devs.org.calculator.utils.FolderManager
 import devs.org.calculator.utils.PrefsUtil
 import java.io.File
 
-class HiddenActivity : AppCompatActivity() {
+class HiddenActivity : BaseActivity() {
 
     private lateinit var binding: ActivityHiddenBinding
     private lateinit var fileManager: FileManager
@@ -38,11 +36,11 @@ class HiddenActivity : AppCompatActivity() {
     private var folderAdapter: FolderAdapter? = null
     private var listFolderAdapter: ListFolderAdapter? = null
     private val hiddenDir = File(Environment.getExternalStorageDirectory(), HIDDEN_DIR)
-    private val prefs:PrefsUtil by lazy { PrefsUtil(this) }
 
     private val mainHandler = Handler(Looper.getMainLooper())
 
     override fun onCreate(savedInstanceState: Bundle?) {
+
         super.onCreate(savedInstanceState)
         binding = ActivityHiddenBinding.inflate(layoutInflater)
         setContentView(binding.root)
@@ -57,6 +55,7 @@ class HiddenActivity : AppCompatActivity() {
             insets
         }
 
+
         setupInitialUIState()
         setupClickListeners()
         setupBackPressedHandler()
@@ -65,6 +64,7 @@ class HiddenActivity : AppCompatActivity() {
 
         refreshCurrentView()
     }
+
 
     private fun setupInitialUIState() {
 
@@ -190,20 +190,6 @@ class HiddenActivity : AppCompatActivity() {
                 dialog.cancel()
             }
             .show()
-    }
-
-    override fun onResume() {
-        super.onResume()
-        setupFlagSecure()
-    }
-
-    private fun setupFlagSecure() {
-        if (prefs.getBoolean("screenshot_restriction", true)) {
-            window.setFlags(
-                WindowManager.LayoutParams.FLAG_SECURE,
-                WindowManager.LayoutParams.FLAG_SECURE
-            )
-        }
     }
 
 
@@ -367,9 +353,7 @@ class HiddenActivity : AppCompatActivity() {
 
         folderAdapter?.clearSelection()
         listFolderAdapter?.clearSelection()
-
         exitFolderSelectionMode()
-
         refreshCurrentView()
     }
 
@@ -388,11 +372,8 @@ class HiddenActivity : AppCompatActivity() {
 
     private fun navigateBackToFolders() {
         currentFolder = null
-
         refreshCurrentView()
-
         binding.folderName.text = getString(R.string.hidden_space)
-
         showFolderViewIcons()
     }
 
@@ -411,7 +392,6 @@ class HiddenActivity : AppCompatActivity() {
         binding.addFolder.visibility = View.VISIBLE
         binding.edit.visibility = View.GONE
         if (currentFolder == null) {
-
             binding.addFolder.visibility = View.VISIBLE
         }
     }

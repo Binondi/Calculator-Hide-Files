@@ -2,6 +2,7 @@ package devs.org.calculator.utils
 
 import android.content.Context
 import android.view.LayoutInflater
+import android.view.View
 import android.widget.EditText
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import devs.org.calculator.R
@@ -10,13 +11,15 @@ class DialogUtil(private val context: Context) {
 
     fun showMaterialDialog(
         title: String,
-        message: String,
+        message: String = "",
         positiveButtonText: String,
         neutralButtonText: String,
-        callback: DialogCallback
+        callback: DialogCallback,
+        view: View = View(context),
     ) {
         MaterialAlertDialogBuilder(context)
             .setTitle(title)
+            .setView(view)
             .setMessage(message)
             .setPositiveButton(positiveButtonText) { _, _ -> callback.onPositiveButtonClicked() }
             .setNegativeButton(neutralButtonText) { _, _ -> callback.onNegativeButtonClicked() }

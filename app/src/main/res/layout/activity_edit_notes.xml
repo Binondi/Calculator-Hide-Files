@@ -65,7 +65,7 @@
             <com.google.android.material.textfield.TextInputEditText
                 android:id="@+id/noteTitle"
                 android:layout_width="match_parent"
-                android:hint="Enter Title"
+                android:hint="@string/enter_title"
                 android:background="@android:color/transparent"
                 android:padding="8dp"
                 android:textSize="26sp"
@@ -80,7 +80,7 @@
                 android:gravity="top"
                 android:padding="8dp"
                 android:textSize="16sp"
-                android:hint="Enter Something"
+                android:hint="@string/enter_something"
                 android:background="@android:color/transparent"
                 android:inputType="textMultiLine"
                 android:minLines="15" />

@@ -1,6 +1,7 @@
 package devs.org.calculator.activities
 
 import android.annotation.SuppressLint
+import android.app.AlertDialog
 import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
@@ -11,17 +12,24 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.animation.Animation
 import android.view.animation.AnimationUtils
+import android.widget.CheckBox
+import android.widget.CompoundButton
+import android.widget.LinearLayout
 import android.widget.Toast
+import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.appcompat.app.AppCompatActivity
+import androidx.core.view.ViewCompat
+import androidx.core.view.WindowInsetsCompat
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
+import com.google.android.material.textfield.TextInputEditText
 import devs.org.calculator.R
+import devs.org.calculator.adapters.FileAdapter
 import devs.org.calculator.adapters.FolderSelectionAdapter
 import devs.org.calculator.callbacks.FileProcessCallback
 import devs.org.calculator.database.HiddenFileEntity
@@ -32,24 +40,11 @@ import devs.org.calculator.utils.FileManager
 import devs.org.calculator.utils.FileManager.Companion.ENCRYPTED_EXTENSION
 import devs.org.calculator.utils.FileManager.Companion.HIDDEN_DIR
 import devs.org.calculator.utils.FolderManager
-import devs.org.calculator.utils.PrefsUtil
 import devs.org.calculator.utils.SecurityUtils
 import kotlinx.coroutines.launch
 import java.io.File
-import android.widget.CheckBox
-import android.widget.CompoundButton
-import android.app.AlertDialog
-import android.view.WindowManager
-import android.widget.EditText
-import android.widget.LinearLayout
-import androidx.activity.enableEdgeToEdge
-import androidx.core.view.ViewCompat
-import androidx.core.view.WindowInsetsCompat
-import com.google.android.material.textfield.TextInputEditText
-import devs.org.calculator.adapters.FileAdapter
-import devs.org.calculator.databinding.DialogFileTypeSelectionBinding
 
-class ViewFolderActivity : AppCompatActivity() {
+class ViewFolderActivity : BaseActivity() {
 
     private var isFabOpen = false
     private lateinit var fabOpen: Animation
@@ -68,8 +63,6 @@ class ViewFolderActivity : AppCompatActivity() {
 
     private var dialogShowTime: Long = 0
     private val MINIMUM_DIALOG_DURATION = 1200L
-    private val prefs:PrefsUtil by lazy { PrefsUtil(this) }
-
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -139,7 +132,7 @@ class ViewFolderActivity : AppCompatActivity() {
             .setView(dialogView.root)
             .setCancelable(false)
             .create()
-        dialogView.title.text = "Hiding $count files"
+        dialogView.title.text = getString(R.string.hiding_count_files, count)
         customDialog?.show()
         dialogShowTime = System.currentTimeMillis()
     }
@@ -255,16 +248,6 @@ class ViewFolderActivity : AppCompatActivity() {
     override fun onResume() {
         super.onResume()
         refreshCurrentFolder()
-        setupFlagSecure()
-    }
-
-    private fun setupFlagSecure() {
-        if (prefs.getBoolean("screenshot_restriction", true)) {
-            window.setFlags(
-                WindowManager.LayoutParams.FLAG_SECURE,
-                WindowManager.LayoutParams.FLAG_SECURE
-            )
-        }
     }
 
     fun openFolder(folder: File) {
@@ -450,17 +433,13 @@ class ViewFolderActivity : AppCompatActivity() {
 
         val checkboxes = listOf(imageCheckbox, videoCheckbox, audioCheckbox, otherCheckbox)
 
-        // General listener for all checkboxes
         val mutualExclusiveListener = CompoundButton.OnCheckedChangeListener { button, isChecked ->
             if (isChecked) {
-                // Uncheck all other checkboxes
                 checkboxes.filter { it != button }.forEach { it.isChecked = false }
             }
-            // Show otherLayer only if "Other" is checked
             otherLayer.visibility = if (otherCheckbox.isChecked) View.VISIBLE else View.GONE
         }
 
-        // Attach listener to all checkboxes
         checkboxes.forEach { it.setOnCheckedChangeListener(mutualExclusiveListener) }
 
         val dialog = MaterialAlertDialogBuilder(this)
@@ -473,13 +452,9 @@ class ViewFolderActivity : AppCompatActivity() {
 
         dialog.setOnShowListener {
             val positiveButton = dialog.getButton(AlertDialog.BUTTON_POSITIVE)
-
-            // Enable positive button only if any checkbox is checked
             val updatePositiveButton = {
                 positiveButton.isEnabled = checkboxes.any { it.isChecked }
             }
-
-            // Re-attach listeners to update positive button state
             checkboxes.forEach {
                 it.setOnCheckedChangeListener { button, isChecked ->
                     mutualExclusiveListener.onCheckedChanged(button, isChecked)
@@ -491,24 +466,20 @@ class ViewFolderActivity : AppCompatActivity() {
         }
 
         dialog.setOnDismissListener {
-            // Clean up listeners
             checkboxes.forEach { it.setOnCheckedChangeListener(null) }
         }
 
         dialog.show()
         dialog.getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener {
-            // If "Other" is checked, validate the extension
             if (otherCheckbox.isChecked) {
                 val extension = edtExtension.text.toString().trim()
-                // Check if empty
                 if (extension.isEmpty()) {
-                    edtExtension.error = "Please enter a file extension"
+                    edtExtension.error = getString(R.string.please_enter_a_file_extension)
                     return@setOnClickListener
                 }
-                // Check format (must start with a dot and have at least one character after it)
-                val regex = Regex("""\.\w+""")  // Matches .pdf, .mp4, .docx etc.
+                val regex = Regex("""\.\w+""")
                 if (!regex.matches(extension)) {
-                    edtExtension.error = "Invalid extension format. Example: .pdf, .mp4"
+                    edtExtension.error = getString(R.string.invalid_extension_format)
                     return@setOnClickListener
                 }
             }
@@ -628,13 +599,20 @@ class ViewFolderActivity : AppCompatActivity() {
             mainHandler.post {
                 when {
                     successCount > 0 && failCount == 0 -> {
-                        Toast.makeText(this@ViewFolderActivity, "Decrypted $successCount file(s)", Toast.LENGTH_SHORT).show()
+                        Toast.makeText(this@ViewFolderActivity,
+                            getString(R.string.decrypted_count_files, successCount), Toast.LENGTH_SHORT).show()
                     }
                     successCount > 0 && failCount > 0 -> {
-                        Toast.makeText(this@ViewFolderActivity, "Decrypted $successCount file(s), failed to decrypt $failCount", Toast.LENGTH_LONG).show()
+                        Toast.makeText(this@ViewFolderActivity,
+                            getString(
+                                R.string.decrypted_count_files_failed_to_decrypt,
+                                successCount,
+                                failCount
+                            ), Toast.LENGTH_LONG).show()
                     }
                     failCount > 0 -> {
-                        Toast.makeText(this@ViewFolderActivity, "Failed to decrypt $failCount file(s)", Toast.LENGTH_SHORT).show()
+                        Toast.makeText(this@ViewFolderActivity,
+                            getString(R.string.failed_to_decrypt_count_files, failCount), Toast.LENGTH_SHORT).show()
                     }
                 }
                 if (successCount > 0) {
@@ -781,8 +759,6 @@ class ViewFolderActivity : AppCompatActivity() {
             binding.addVideo.startAnimation(fabOpen)
             binding.addAudio.startAnimation(fabOpen)
             binding.addDocument.startAnimation(fabOpen)
-            
-            // Smoothly rotate the FAB using ViewPropertyAnimator
             binding.fabExpend.animate()
                 .rotation(45f)
                 .setDuration(200)
@@ -798,8 +774,6 @@ class ViewFolderActivity : AppCompatActivity() {
             binding.addVideo.startAnimation(fabClose)
             binding.addAudio.startAnimation(fabClose)
             binding.addDocument.startAnimation(fabClose)
-            
-            // Smoothly rotate back
             binding.fabExpend.animate()
                 .rotation(0f)
                 .setDuration(200)

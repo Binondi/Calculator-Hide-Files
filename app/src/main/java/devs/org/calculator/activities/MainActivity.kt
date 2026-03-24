@@ -8,29 +8,26 @@ import android.os.Build
 import android.os.Bundle
 import android.os.Environment
 import android.util.Log
+import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.annotation.RequiresApi
-import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
-import com.google.android.material.button.MaterialButton
+import androidx.core.content.edit
+import androidx.core.view.ViewCompat
+import androidx.core.view.WindowInsetsCompat
 import devs.org.calculator.R
 import devs.org.calculator.callbacks.DialogActionsCallback
 import devs.org.calculator.databinding.ActivityMainBinding
 import devs.org.calculator.utils.DialogUtil
 import devs.org.calculator.utils.FileManager
 import devs.org.calculator.utils.PrefsUtil
+import devs.org.calculator.utils.StoragePermissionUtil
 import net.objecthunter.exp4j.ExpressionBuilder
 import java.util.regex.Pattern
-import androidx.core.content.edit
-import androidx.core.view.ViewCompat
-import androidx.core.view.WindowInsetsCompat
-import com.google.android.material.dialog.MaterialAlertDialogBuilder
-import devs.org.calculator.utils.StoragePermissionUtil
 
-class MainActivity : AppCompatActivity(), DialogActionsCallback, DialogUtil.DialogCallback {
+class MainActivity : BaseActivity(), DialogActionsCallback, DialogUtil.DialogCallback {
     private lateinit var binding: ActivityMainBinding
     private var currentExpression = "0"
     private var lastWasOperator = false
@@ -60,8 +57,6 @@ class MainActivity : AppCompatActivity(), DialogActionsCallback, DialogUtil.Dial
         ) { permissions ->
             storagePermissionUtil.handlePermissionResult(permissions)
         }
-
-        // Initialize StoragePermissionUtil
         storagePermissionUtil = StoragePermissionUtil(this)
 
         launcher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
@@ -75,7 +70,6 @@ class MainActivity : AppCompatActivity(), DialogActionsCallback, DialogUtil.Dial
         val hasPermission = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
             Environment.isExternalStorageManager()
         } else {
-            // Fallback for Android 10 and below
             ContextCompat.checkSelfPermission(
                 this,
                 android.Manifest.permission.WRITE_EXTERNAL_STORAGE
@@ -115,9 +109,6 @@ class MainActivity : AppCompatActivity(), DialogActionsCallback, DialogUtil.Dial
                 })
         }
 
-
-
-
         setupNumberButton(binding.btn0, "0")
         setupNumberButton(binding.btn00, "00")
         setupNumberButton(binding.btn1, "1")
@@ -141,7 +132,6 @@ class MainActivity : AppCompatActivity(), DialogActionsCallback, DialogUtil.Dial
         binding.cut.setOnClickListener { cutNumbers() }
     }
 
-
     private fun handleActivityResult(result: androidx.activity.result.ActivityResult) {
         if (result.resultCode == RESULT_OK) {
             result.data?.data?.let { uri ->
@@ -155,7 +145,7 @@ class MainActivity : AppCompatActivity(), DialogActionsCallback, DialogUtil.Dial
         }
     }
 
-    private fun setupNumberButton(button: MaterialButton, number: String) {
+    private fun setupNumberButton(button: TextView, number: String) {
         button.setOnClickListener {
             if (currentExpression == "0") {
                 currentExpression = number
@@ -168,7 +158,7 @@ class MainActivity : AppCompatActivity(), DialogActionsCallback, DialogUtil.Dial
         }
     }
 
-    private fun setupOperatorButton(button: MaterialButton, operator: String) {
+    private fun setupOperatorButton(button: TextView, operator: String) {
         button.setOnClickListener {
             if (lastWasOperator) {
                 currentExpression = currentExpression.substring(0, currentExpression.length - 1) +
@@ -227,7 +217,7 @@ class MainActivity : AppCompatActivity(), DialogActionsCallback, DialogUtil.Dial
             val start = matcher.start()
             if (start == 0 || !isOperator(processedExpression[start-1].toString())) {
                 val percentageValue = number!!.toDouble() / 100
-                processedExpression = processedExpression.replace(fullMatch!!.toString(), percentageValue.toString())
+                processedExpression = processedExpression.replace(fullMatch!!, percentageValue.toString())
             }
         }
         val opMatcher = operatorPercentPattern.matcher(processedExpression)
