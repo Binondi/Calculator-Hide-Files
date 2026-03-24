@@ -2,7 +2,7 @@
 
 <div align="center">
 
-# 📂 Calculator Hide File App for Android 📂
+# Calculator Hide File App for Android
 
 <a href="https://github.com/Binondi/Calculator-Hide-Files/releases/latest">
       <img alt="Latest release" src="https://img.shields.io/badge/Releases-v1.4.5-blue?logo=github&style=for-the-badge">
@@ -31,13 +31,13 @@
 
 </div>
 
-## 😍 Why Choose This App?  
-The **Calculator Hide File App** is an **open-source** application, allowing you to inspect the code yourself. This ensures **complete transparency** and guarantees that your **privacy remains uncompromised**. 🔒✅  
+## Why Choose This App?  
+The **Calculator Hide File App** is an **open-source** application, allowing you to inspect the code yourself. This ensures **complete transparency** and guarantees that your **privacy remains uncompromised**.  
 
 
 ---
 
-## 🔥 About Calculator Hide File App
+## About Calculator Hide File App
 
 The **Calculator Hide File App** is an innovative **Android file-hiding app** that disguises itself as a **fully functional calculator**. It helps you **securely store** private files and protect them with a **hidden passcode**.
 
@@ -48,17 +48,17 @@ The **Calculator Hide File App** is an innovative **Android file-hiding app** th
 > - **Encrypt** files with your **custom key** to secure your hidden files.
 ---
 
-## 🚀 Features
+## Features
 
-✅ **Dual Functionality** – A working **calculator** & a **file vault** in one app.  
-✅ **Secret Passcode** – Unlock hidden files by entering a secret code.  
-✅ **Secure File Manager** – Hide/Unhide files easily.  
-✅ **Fast & Lightweight** – Smooth performance on all Android devices.  
-✅ **No Root Required** – Works without rooting your phone.  
-✅ **Security** – Encrypt & Decrypt files.
+- **Dual Functionality** - A working **calculator** & a **file vault** in one app.  
+- **Secret Passcode** - Unlock hidden files by entering a secret code.  
+- **Secure File Manager** - Hide/Unhide files easily.  
+- **Fast & Lightweight** - Smooth performance on all Android devices.  
+- **No Root Required** - Works without rooting your phone.  
+- **Security** - Encrypt & Decrypt files.
 ---
 
-## 🖼️ Screenshots
+## Screenshots
 
 <div align="center">
   <img src="media/Screenshot_1.jpg" alt="Calculator Hide File App - Home Screen" width="32%">
@@ -80,7 +80,7 @@ The **Calculator Hide File App** is an innovative **Android file-hiding app** th
 
 ---
 
-## 🔑 How It Works
+## How It Works
 
 1. **Use as a Regular Calculator**  
    - Perform standard arithmetic operations like a normal calculator.  
@@ -97,7 +97,7 @@ The **Calculator Hide File App** is an innovative **Android file-hiding app** th
 
 ---
 
-## 📥 Download & Installation
+## Download & Installation
 
 ### 🔗 **[Download the Latest Version Here](https://github.com/Binondi/Calculator-Hide-Files/releases/latest)**
 
@@ -115,7 +115,7 @@ git clone https://github.com/Binondi/Calculator-Hide-Files.git
 
 ---
 
-## 🛠️ Technologies Used
+## Technologies Used
 
 - **Programming Language**: Kotlin
 - **UI Framework**: XML
@@ -123,17 +123,17 @@ git clone https://github.com/Binondi/Calculator-Hide-Files.git
 
 ---
 
-## 🎯 Why Use Calculator Hide File App?
+## Why Use Calculator Hide File App?
 
-- **No One Can Detect Your Files** – Works like a real calculator.  
-- **100% Secure** – Your private files stay hidden, even if someone opens the app.  
-- **Completely Free & Open Source** – Modify or contribute to the project.  
+- **No One Can Detect Your Files** - Works like a real calculator.  
+- **100% Secure** - Your private files stay hidden, even if someone opens the app.  
+- **Completely Free & Open Source** - Modify or contribute to the project.  
 
 ---
 
 ## ❤️ Support the Project
 
-If you find this app useful, please consider supporting the development. 🙏  
+If you find this app useful, please consider supporting the development.
 
 [![Sponsor on GitHub](https://img.shields.io/badge/sponsor-30363D?style=for-the-badge&logo=GitHub-Sponsors&logoColor=#EA4AAA)](https://github.com/sponsors/Binondi)
 [![Donate via PayPal](https://img.shields.io/badge/PayPal-00457C?style=for-the-badge&logo=paypal&logoColor=white)](https://paypal.me/BinondiBorthakur56)
@@ -166,20 +166,20 @@ We welcome contributions! To contribute:
 
 ---
 
-## 📜 License
+## License
 
 This project is licensed under the **Apache License 2.0**.  
 See the full license [here](LICENSE).  
 
 ---
 
-## 📧 Contact
+## Contact
 
 For any questions or feedback:  
-📩 **Email**: binondiborthakur56@gmail.com  
-🐙 **GitHub**: [Binondi](https://github.com/Binondi)  
+**Email**: binondiborthakur56@gmail.com  
+**GitHub**: [Binondi](https://github.com/Binondi)  
 
 ---
 
-### 🎉 Thank You for Using Calculator Hide File App! 🎉  
-🚀 **Keep your files secure and hidden!** 🚀
+### ❤️ Thank You for Using Calculator Hide File App! ❤️
+**Keep your files secure and hidden!**
