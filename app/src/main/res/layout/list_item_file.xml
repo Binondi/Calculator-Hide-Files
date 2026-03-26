@@ -37,6 +37,16 @@
                         android:layout_gravity="center"
                         android:scaleType="centerCrop"/>
 
+                    <com.google.android.material.progressindicator.CircularProgressIndicator
+                        android:id="@+id/loadingProgress"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center"
+                        android:indeterminate="true"
+                        android:visibility="gone"
+                        app:indicatorSize="24dp"
+                        app:trackThickness="3dp" />
+
                     <View
                         android:id="@+id/shade"
                         android:layout_width="match_parent"

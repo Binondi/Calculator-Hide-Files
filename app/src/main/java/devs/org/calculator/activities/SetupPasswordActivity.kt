@@ -1,8 +1,11 @@
 package devs.org.calculator.activities
 
+import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import android.view.LayoutInflater
+import android.view.inputmethod.InputMethodManager
+import android.widget.ArrayAdapter
 import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
@@ -24,21 +27,58 @@ class SetupPasswordActivity : BaseActivity() {
         binding = ActivitySetupPasswordBinding.inflate(layoutInflater)
         binding2 = ActivityChangePasswordBinding.inflate(layoutInflater)
         setContentView(binding.root)
-        enableEdgeToEdge()
-        ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main)) { v, insets ->
-            val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
-            v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)
-            insets
-        }
         hasPassword = prefs.hasPassword()
-
         if (hasPassword){
             setContentView(binding2.root)
         }else{
             setContentView(binding.root)
         }
+        enableEdgeToEdge()
+        setViewPadding()
+        setupSecurityQuestions()
         clickListeners()
 
+    }
+
+    private fun setupSecurityQuestions() {
+        val questions = arrayOf(
+            getString(R.string.what_is_your_pet_name),
+            getString(R.string.what_is_your_birth_city),
+            getString(R.string.what_is_your_favorite_book),
+            getString(R.string.what_is_your_mother_maiden_name),
+            getString(R.string.what_is_your_favorite_color),
+            getString(R.string.custom_question)
+        )
+        val adapter = ArrayAdapter(this, android.R.layout.simple_dropdown_item_1line, questions)
+        binding.etSecurityQuestion.setAdapter(adapter)
+
+        // Initially prevent keyboard
+        binding.etSecurityQuestion.inputType = android.text.InputType.TYPE_NULL
+
+        binding.etSecurityQuestion.setOnItemClickListener { _, _, position, _ ->
+            if (questions[position] == getString(R.string.custom_question)) {
+                binding.etSecurityQuestion.inputType = android.text.InputType.TYPE_CLASS_TEXT
+                binding.etSecurityQuestion.setText("")
+                binding.etSecurityQuestion.requestFocus()
+                
+                // Show keyboard for custom question
+                val imm = getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
+                imm.showSoftInput(binding.etSecurityQuestion, InputMethodManager.SHOW_IMPLICIT)
+            } else {
+                binding.etSecurityQuestion.inputType = android.text.InputType.TYPE_NULL
+                // Hide keyboard if it was open
+                val imm = getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
+                imm.hideSoftInputFromWindow(binding.etSecurityQuestion.windowToken, 0)
+            }
+        }
+    }
+
+    private fun setViewPadding() {
+        ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main)) { v, insets ->
+            val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
+            v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)
+            insets
+        }
     }
 
     private fun clickListeners(){

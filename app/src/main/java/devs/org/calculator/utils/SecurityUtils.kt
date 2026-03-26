@@ -21,6 +21,7 @@ import android.util.Log
 object SecurityUtils {
     private const val ALGORITHM = "AES"
     private const val TRANSFORMATION = "AES/CBC/PKCS5Padding"
+    private const val BUFFER_SIZE = 64 * 1024 // 64KB buffer for large files
     val ENCRYPTED_EXTENSION = ".enc"
     val DEFAULT_KEY = "encryption_key_default"
 
@@ -72,7 +73,12 @@ object SecurityUtils {
                 FileOutputStream(outputFile).use { output ->
                     output.write(iv)
                     CipherOutputStream(output, cipher).use { cipherOutput ->
-                        input.copyTo(cipherOutput)
+                        val buffer = ByteArray(BUFFER_SIZE)
+                        var bytesRead: Int
+                        while (input.read(buffer).also { bytesRead = it } != -1) {
+                            cipherOutput.write(buffer, 0, bytesRead)
+                        }
+                        cipherOutput.flush()
                     }
                 }
             }
@@ -80,17 +86,9 @@ object SecurityUtils {
             if (!outputFile.exists() || outputFile.length() == 0L) {
                 return false
             }
-
-            FileInputStream(outputFile).use { input ->
-                val ivCheck = ByteArray(16)
-                val bytesRead = input.read(ivCheck)
-                if (bytesRead != 16) {
-                    return false
-                }
-            }
-
             true
-        } catch (_: Exception) {
+        } catch (e: Exception) {
+            Log.e("SecurityUtils", "Encryption failed: ${e.message}")
             if (outputFile.exists()) {
                 outputFile.delete()
             }
@@ -106,28 +104,26 @@ object SecurityUtils {
                 return null
             }
 
-            val tempDir = File(context.cacheDir, "preview_temp")
-            if (!tempDir.exists()) {
-                if (!tempDir.mkdirs()) {
-                    Log.e("SecurityUtils", "Failed to create temp directory")
-                    return null
-                }
+            val previewDir = File(context.filesDir, "previews")
+            if (!previewDir.exists()) {
+                previewDir.mkdirs()
             }
-            tempDir.listFiles()?.forEach {
-                if (it.lastModified() < System.currentTimeMillis() - 5 * 60 * 1000) {
-                    it.delete()
-                }
+            
+            // Generate a consistent name based on the encrypted file path to cache it
+            val fileNameHash = meta.filePath.hashCode().toString()
+            val cachedPreview = File(previewDir, "pre_${fileNameHash}_${meta.fileName}")
+            
+            if (cachedPreview.exists() && cachedPreview.length() > 0) {
+                return cachedPreview
             }
 
-            val tempFile = File(tempDir, "preview_${System.currentTimeMillis()}_${meta.fileName}")
+            val success = decryptFile(context, encryptedFile, cachedPreview)
 
-            val success = decryptFile(context, encryptedFile, tempFile)
-
-            return if (success && tempFile.exists() && tempFile.length() > 0) {
-                tempFile
+            return if (success && cachedPreview.exists() && cachedPreview.length() > 0) {
+                cachedPreview
             } else {
                 Log.e("SecurityUtils", "Failed to decrypt preview file: ${meta.filePath}")
-                if (tempFile.exists()) tempFile.delete()
+                if (cachedPreview.exists()) cachedPreview.delete()
                 null
             }
         } catch (e: Exception) {
@@ -144,7 +140,7 @@ object SecurityUtils {
             }
             FileProvider.getUriForFile(
                 context,
-                "${context.packageName}.fileprovider",
+                "devs.org.calculator.fileprovider",
                 file
             )
         } catch (e: Exception) {
@@ -155,11 +151,7 @@ object SecurityUtils {
 
     fun decryptFile(context: Context, inputFile: File, outputFile: File): Boolean {
         return try {
-            if (!inputFile.exists()) {
-                return false
-            }
-
-            if (inputFile.length() == 0L) {
+            if (!inputFile.exists() || inputFile.length() < 16) {
                 return false
             }
 
@@ -173,13 +165,15 @@ object SecurityUtils {
                     return false
                 }
                 cipher.init(Cipher.DECRYPT_MODE, secretKey, IvParameterSpec(iv))
-            }
 
-            FileInputStream(inputFile).use { decInput ->
-                decInput.skip(16)
                 FileOutputStream(outputFile).use { output ->
-                    CipherInputStream(decInput, cipher).use { cipherInput ->
-                        cipherInput.copyTo(output)
+                    CipherInputStream(input, cipher).use { cipherInput ->
+                        val buffer = ByteArray(BUFFER_SIZE)
+                        var bytesReadInner: Int
+                        while (cipherInput.read(buffer).also { bytesReadInner = it } != -1) {
+                            output.write(buffer, 0, bytesReadInner)
+                        }
+                        output.flush()
                     }
                 }
             }
@@ -189,7 +183,8 @@ object SecurityUtils {
             }
 
             true
-        } catch (_: Exception) {
+        } catch (e: Exception) {
+            Log.e("SecurityUtils", "Decryption failed: ${e.message}")
             if (outputFile.exists()) {
                 outputFile.delete()
             }

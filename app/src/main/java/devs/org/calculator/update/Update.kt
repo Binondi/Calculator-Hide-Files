@@ -7,7 +7,6 @@ import android.text.method.LinkMovementMethod
 import android.util.Log
 import android.widget.TextView
 import androidx.core.net.toUri
-import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import devs.org.calculator.R
 import devs.org.calculator.utils.DialogUtil
 import io.noties.markwon.AbstractMarkwonPlugin
@@ -124,9 +123,9 @@ object Update {
 
         DialogUtil(context).showMaterialDialog(
             title = context.getString(R.string.update_available),
-            view = textView,
+            message = "",
             positiveButtonText = context.getString(R.string.download),
-            neutralButtonText = context.getString(R.string.later),
+            negativeButtonText = context.getString(R.string.later),
             callback = object : DialogUtil.DialogCallback {
                 override fun onPositiveButtonClicked() {
                     openGitHubRelease(context, release.url)
@@ -136,7 +135,8 @@ object Update {
 
                 override fun onNaturalButtonClicked() {}
 
-            }
+            },
+            view = textView
         )
 
     }
@@ -155,7 +155,7 @@ object Update {
                 return@fetchLatestRelease
             }
 
-            val currentVersion = "1.4.3"
+            val currentVersion = getVersionName(context)
 
             if (isUpdateAvailable(currentVersion, release.version)) {
                 onResult(true)

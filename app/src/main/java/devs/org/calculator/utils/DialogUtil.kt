@@ -13,17 +13,21 @@ class DialogUtil(private val context: Context) {
         title: String,
         message: String = "",
         positiveButtonText: String,
-        neutralButtonText: String,
+        negativeButtonText: String,
         callback: DialogCallback,
-        view: View = View(context),
+        view: View? = null
     ) {
-        MaterialAlertDialogBuilder(context)
+        val builder = MaterialAlertDialogBuilder(context)
             .setTitle(title)
-            .setView(view)
             .setMessage(message)
             .setPositiveButton(positiveButtonText) { _, _ -> callback.onPositiveButtonClicked() }
-            .setNegativeButton(neutralButtonText) { _, _ -> callback.onNegativeButtonClicked() }
-            .show()
+            .setNegativeButton(negativeButtonText) { _, _ -> callback.onNegativeButtonClicked() }
+        
+        if (view != null) {
+            builder.setView(view)
+        }
+        
+        builder.show()
     }
 
     fun createInputDialog(

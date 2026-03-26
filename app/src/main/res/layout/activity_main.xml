@@ -32,19 +32,24 @@
         app:layout_constraintBottom_toTopOf="@id/pagerGuideline"
         app:layout_constraintTop_toTopOf="parent"/>
 
-    <TextView
+    <com.google.android.material.appbar.MaterialToolbar
+        android:id="@+id/materialToolbar"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <devs.org.calculator.customViews.CustomInputKeyBoard
         android:id="@+id/display"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:autoSizeMaxTextSize="90sp"
-        android:autoSizeMinTextSize="16sp"
-        android:autoSizeStepGranularity="2sp"
-        android:autoSizeTextType="uniform"
-        android:padding="10dp"
-        android:text="@string/text_0"
+        android:background="@android:color/transparent"
         android:gravity="end|bottom"
-        android:textColor="?attr/colorPrimary"
-        android:textSize="90sp"
+        android:padding="10dp"
+        android:textColor="@color/textColor"
+        android:textSize="80sp"
+        android:maxHeight="@dimen/_150sdp"
         app:layout_constraintBottom_toTopOf="@+id/total"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent"
@@ -55,14 +60,15 @@
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:autoSizeMaxTextSize="40sp"
-        android:autoSizeMinTextSize="12sp"
+        android:autoSizeMinTextSize="28sp"
         android:autoSizeStepGranularity="2sp"
         android:autoSizeTextType="uniform"
         android:gravity="end|bottom"
         android:paddingRight="10dp"
         android:paddingBottom="10dp"
         android:text=""
-        android:textColor="?attr/colorPrimary"
+        android:maxLines="2"
+        android:textColor="@color/textColorDescription"
         android:textSize="40sp"
         app:layout_constraintBottom_toBottomOf="@+id/displayContainer"
         app:layout_constraintEnd_toEndOf="parent"
@@ -130,7 +136,7 @@
 
         <TextView
             android:id="@+id/btnDivide"
-            style="@style/Button.Operator"
+            style="@style/Button.OperatorBigSize"
             android:layout_width="0dp"
             android:layout_height="0dp"
             android:layout_margin="2dp"
@@ -143,7 +149,7 @@
 
         <androidx.appcompat.widget.AppCompatImageButton
             android:id="@+id/cut"
-            style="@style/Button.Equals"
+            style="@style/Button.Backspace"
             android:layout_width="0dp"
             android:layout_height="0dp"
             android:layout_margin="2dp"
@@ -193,7 +199,7 @@
 
         <TextView
             android:id="@+id/btnMultiply"
-            style="@style/Button.Operator"
+            style="@style/Button.OperatorBigSize"
             android:layout_width="0dp"
             android:layout_height="0dp"
             android:layout_margin="2dp"
@@ -242,7 +248,7 @@
 
         <TextView
             android:id="@+id/btnMinus"
-            style="@style/Button.Operator"
+            style="@style/Button.OperatorMinus"
             android:layout_width="0dp"
             android:layout_height="0dp"
             android:layout_margin="2dp"
@@ -291,7 +297,7 @@
 
         <TextView
             android:id="@+id/btnPlus"
-            style="@style/Button.Operator"
+            style="@style/Button.OperatorBigSize"
             android:layout_width="0dp"
             android:layout_height="0dp"
             android:layout_margin="2dp"

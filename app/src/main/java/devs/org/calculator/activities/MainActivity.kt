@@ -24,12 +24,13 @@ import devs.org.calculator.utils.DialogUtil
 import devs.org.calculator.utils.FileManager
 import devs.org.calculator.utils.PrefsUtil
 import devs.org.calculator.utils.StoragePermissionUtil
+import devs.org.calculator.utils.formatResult
 import net.objecthunter.exp4j.ExpressionBuilder
 import java.util.regex.Pattern
 
 class MainActivity : BaseActivity(), DialogActionsCallback, DialogUtil.DialogCallback {
     private lateinit var binding: ActivityMainBinding
-    private var currentExpression = "0"
+    private var currentExpression = ""
     private var lastWasOperator = false
     private var hasDecimal = false
     private var lastWasPercent = false
@@ -51,7 +52,10 @@ class MainActivity : BaseActivity(), DialogActionsCallback, DialogUtil.DialogCal
             v.setPadding(systemBars.left, 0, systemBars.right, systemBars.bottom)
             insets
         }
-
+        binding.display.post {
+            binding.display.requestFocus()
+            binding.display.setSelection(binding.display.text?.length ?: 0)
+        }
         permissionLauncher = registerForActivityResult(
             ActivityResultContracts.RequestMultiplePermissions()
         ) { permissions ->
@@ -63,7 +67,7 @@ class MainActivity : BaseActivity(), DialogActionsCallback, DialogUtil.DialogCal
             handleActivityResult(result)
         }
         if (sp.getBoolean("isFirst", true)){
-            binding.display.text = getString(R.string.enter_123456)
+            binding.display.append(getString(R.string.enter_123456))
         }
 
 
@@ -147,11 +151,7 @@ class MainActivity : BaseActivity(), DialogActionsCallback, DialogUtil.DialogCal
 
     private fun setupNumberButton(button: TextView, number: String) {
         button.setOnClickListener {
-            if (currentExpression == "0") {
-                currentExpression = number
-            } else {
-                currentExpression += number
-            }
+            currentExpression += number
             lastWasOperator = false
             lastWasPercent = false
             updateDisplay()
@@ -160,17 +160,16 @@ class MainActivity : BaseActivity(), DialogActionsCallback, DialogUtil.DialogCal
 
     private fun setupOperatorButton(button: TextView, operator: String) {
         button.setOnClickListener {
+            val internalOperator = if (operator == "×") "*" else operator
+
+            if (operator == "×" || operator == "/") {
+                if (currentExpression == "0" || currentExpression.isEmpty()) return@setOnClickListener
+            }
+
             if (lastWasOperator) {
-                currentExpression = currentExpression.substring(0, currentExpression.length - 1) +
-                        when (operator) {
-                            "×" -> "*"
-                            else -> operator
-                        }
+                currentExpression = currentExpression.dropLast(1) + internalOperator
             } else if (!lastWasPercent) {
-                currentExpression += when (operator) {
-                    "×" -> "*"
-                    else -> operator
-                }
+                currentExpression += internalOperator
                 lastWasOperator = true
                 lastWasPercent = false
                 hasDecimal = false
@@ -179,12 +178,21 @@ class MainActivity : BaseActivity(), DialogActionsCallback, DialogUtil.DialogCal
         }
     }
 
+    private fun addPercentage() {
+        if (!lastWasOperator && !lastWasPercent && currentExpression != "0" && currentExpression.isNotEmpty()) {
+            currentExpression += "%"
+            lastWasPercent = true
+            updateDisplay()
+        }
+    }
+
     private fun clearDisplay() {
-        currentExpression = "0"
+        currentExpression = ""
         binding.total.text = ""
         lastWasOperator = false
         lastWasPercent = false
         hasDecimal = false
+        binding.display.resetTextSize()
         updateDisplay()
     }
 
@@ -196,13 +204,6 @@ class MainActivity : BaseActivity(), DialogActionsCallback, DialogUtil.DialogCal
         }
     }
 
-    private fun addPercentage() {
-        if (!lastWasOperator && !lastWasPercent) {
-            currentExpression += "%"
-            lastWasPercent = true
-            updateDisplay()
-        }
-    }
 
     private fun preprocessExpression(expression: String): String {
         val percentagePattern = Pattern.compile("(\\d+\\.?\\d*)%")
@@ -338,11 +339,7 @@ class MainActivity : BaseActivity(), DialogActionsCallback, DialogUtil.DialogCal
             val expression = ExpressionBuilder(processedExpression).build()
             val result = expression.evaluate()
 
-            currentExpression = if (result.toLong().toDouble() == result) {
-                result.toLong().toString()
-            } else {
-                String.format("%.2f", result)
-            }
+            currentExpression = formatResult(result)
 
             lastWasOperator = false
             lastWasPercent = false
@@ -357,19 +354,15 @@ class MainActivity : BaseActivity(), DialogActionsCallback, DialogUtil.DialogCal
 
     @SuppressLint("DefaultLocale")
     private fun updateDisplay() {
-        binding.display.text = currentExpression.replace("*", "×")
+        binding.display.setText(currentExpression.replace("*", "×"))
+        binding.display.setSelection(binding.display.text?.length ?: 0)
 
-        if (currentExpression == "0") {
+        if (currentExpression == "0" || currentExpression.isEmpty()) {
             binding.total.text = ""
             return
         }
 
         try {
-            if (currentExpression.isEmpty()) {
-                binding.total.text = ""
-                return
-            }
-
             var processedExpression = currentExpression.replace("×", "*")
 
             if (isOperator(processedExpression.last().toString())) {
@@ -383,14 +376,13 @@ class MainActivity : BaseActivity(), DialogActionsCallback, DialogUtil.DialogCal
             val expression = ExpressionBuilder(processedExpression).build()
             val result = expression.evaluate()
 
-            val formattedResult = if (result.toLong().toDouble() == result) {
-                result.toLong().toString()
-            } else {
-                String.format("%.2f", result)
-            }
-            if (sp.getBoolean("isFirst", true) && (currentExpression == "123456" || binding.display.text.toString() == "123456")){
+            val formattedResult = formatResult(result)
+
+            if (sp.getBoolean("isFirst", true) && currentExpression == "123456") {
                 binding.total.text = getString(R.string.now_enter_button)
-            }else binding.total.text = formattedResult
+            } else {
+                binding.total.text = formattedResult
+            }
         } catch (_: Exception) {
             binding.total.text = ""
         }
@@ -399,7 +391,7 @@ class MainActivity : BaseActivity(), DialogActionsCallback, DialogUtil.DialogCal
     private fun cutNumbers() {
         if (currentExpression.isNotEmpty()){
             if (currentExpression.length == 1){
-                currentExpression = "0"
+                currentExpression = ""
             } else {
                 val lastChar = currentExpression.last()
                 currentExpression = currentExpression.substring(0, currentExpression.length - 1)
@@ -413,7 +405,7 @@ class MainActivity : BaseActivity(), DialogActionsCallback, DialogUtil.DialogCal
                 }
             }
         } else {
-            currentExpression = "0"
+            currentExpression = ""
         }
         updateDisplay()
     }

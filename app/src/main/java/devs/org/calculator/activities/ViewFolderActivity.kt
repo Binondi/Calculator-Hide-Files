@@ -34,6 +34,7 @@ import devs.org.calculator.adapters.FolderSelectionAdapter
 import devs.org.calculator.callbacks.FileProcessCallback
 import devs.org.calculator.database.HiddenFileEntity
 import devs.org.calculator.databinding.ActivityViewFolderBinding
+import devs.org.calculator.databinding.EncryptionProgressDialogBinding
 import devs.org.calculator.databinding.ProccessingDialogBinding
 import devs.org.calculator.utils.DialogUtil
 import devs.org.calculator.utils.FileManager
@@ -41,7 +42,9 @@ import devs.org.calculator.utils.FileManager.Companion.ENCRYPTED_EXTENSION
 import devs.org.calculator.utils.FileManager.Companion.HIDDEN_DIR
 import devs.org.calculator.utils.FolderManager
 import devs.org.calculator.utils.SecurityUtils
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import java.io.File
 
 class ViewFolderActivity : BaseActivity() {
@@ -492,12 +495,13 @@ class ViewFolderActivity : BaseActivity() {
                 else -> return@setOnClickListener
             }
 
-            lifecycleScope.launch {
-                performDecryptionWithType(
-                    selectedFiles,
-                    selectedType,
-                    if (otherCheckbox.isChecked) edtExtension.text.toString().trim() else ".pdf"
-                )
+            fileManager.performDecryption(
+                selectedFiles,
+                forcedType = selectedType,
+                forcedExtension = if (otherCheckbox.isChecked) edtExtension.text.toString().trim() else null
+            ) {
+                refreshCurrentFolder()
+                fileAdapter?.exitSelectionMode()
             }
             dialog.dismiss()
         }
@@ -505,123 +509,6 @@ class ViewFolderActivity : BaseActivity() {
     }
 
 
-
-    private fun performDecryptionWithType(selectedFiles: List<File>, fileType: FileManager.FileType, fileExtension: String = ".pdf") {
-        lifecycleScope.launch {
-            var successCount = 0
-            var failCount = 0
-            val decryptedFiles = mutableMapOf<File, File>()
-
-            for (file in selectedFiles) {
-                try {
-                    val hiddenFile = fileAdapter?.hiddenFileRepository?.getHiddenFileByPath(file.absolutePath)
-
-                    if (hiddenFile?.isEncrypted == true) {
-                        val originalExtension = hiddenFile.originalExtension
-                        val decryptedFile = SecurityUtils.changeFileExtension(file, originalExtension)
-
-                        if (SecurityUtils.decryptFile(this@ViewFolderActivity, file, decryptedFile)) {
-                            if (decryptedFile.exists() && decryptedFile.length() > 0) {
-                                hiddenFile.let {
-                                    fileAdapter?.hiddenFileRepository?.updateEncryptionStatus(
-                                        filePath = file.absolutePath,
-                                        newFilePath = decryptedFile.absolutePath,
-                                        encryptedFileName = decryptedFile.name,
-                                        isEncrypted = false
-                                    )
-                                }
-                                if (file.delete()) {
-                                    decryptedFiles[file] = decryptedFile
-                                    successCount++
-                                } else {
-                                    decryptedFile.delete()
-                                    failCount++
-                                }
-                            } else {
-                                decryptedFile.delete()
-                                failCount++
-                            }
-                        } else {
-                            if (decryptedFile.exists()) {
-                                decryptedFile.delete()
-                            }
-                            failCount++
-                        }
-                    } else if (file.name.endsWith(ENCRYPTED_EXTENSION) && hiddenFile == null) {
-                        val extension = when (fileType) {
-                            FileManager.FileType.IMAGE -> ".jpg"
-                            FileManager.FileType.VIDEO -> ".mp4"
-                            FileManager.FileType.AUDIO -> ".mp3"
-                            FileManager.FileType.DOCUMENT -> fileExtension
-                            else -> ".txt"
-                        }
-                        
-                        val decryptedFile = SecurityUtils.changeFileExtension(file, extension)
-
-                        if (SecurityUtils.decryptFile(this@ViewFolderActivity, file, decryptedFile)) {
-                            if (decryptedFile.exists() && decryptedFile.length() > 0) {
-                                fileAdapter?.hiddenFileRepository?.insertHiddenFile(
-                                    HiddenFileEntity(
-                                        filePath = decryptedFile.absolutePath,
-                                        fileName = decryptedFile.name,
-                                        encryptedFileName = file.name,
-                                        fileType = fileType,
-                                        originalExtension = extension,
-                                        isEncrypted = false
-                                    )
-                                )
-                                if (file.delete()) {
-                                    decryptedFiles[file] = decryptedFile
-                                    successCount++
-                                } else {
-                                    decryptedFile.delete()
-                                    failCount++
-                                }
-                            } else {
-                                decryptedFile.delete()
-                                failCount++
-                            }
-                        } else {
-                            if (decryptedFile.exists()) {
-                                decryptedFile.delete()
-                            }
-                            failCount++
-                        }
-                    } else {
-                        failCount++
-                    }
-                } catch (e: Exception) {
-                    failCount++
-                    e.printStackTrace()
-                }
-            }
-
-            mainHandler.post {
-                when {
-                    successCount > 0 && failCount == 0 -> {
-                        Toast.makeText(this@ViewFolderActivity,
-                            getString(R.string.decrypted_count_files, successCount), Toast.LENGTH_SHORT).show()
-                    }
-                    successCount > 0 && failCount > 0 -> {
-                        Toast.makeText(this@ViewFolderActivity,
-                            getString(
-                                R.string.decrypted_count_files_failed_to_decrypt,
-                                successCount,
-                                failCount
-                            ), Toast.LENGTH_LONG).show()
-                    }
-                    failCount > 0 -> {
-                        Toast.makeText(this@ViewFolderActivity,
-                            getString(R.string.failed_to_decrypt_count_files, failCount), Toast.LENGTH_SHORT).show()
-                    }
-                }
-                if (successCount > 0) {
-                    refreshCurrentFolder()
-                    fileAdapter?.exitSelectionMode()
-                }
-            }
-        }
-    }
 
     private fun moveToAnotherFolder(selectedFiles: List<File>) {
         showFolderSelectionDialog { destinationFolder ->
@@ -816,26 +703,50 @@ class ViewFolderActivity : BaseActivity() {
         lifecycleScope.launch {
             var allUnhidden = true
             val unhiddenFiles = mutableListOf<File>()
-            selectedFiles.forEach { file ->
-                try {
-                    val hiddenFile = fileAdapter?.hiddenFileRepository?.getHiddenFileByPath(file.absolutePath)
+            
+            // Filter encrypted and plain files
+            val encryptedFiles = selectedFiles.filter { file ->
+                val hiddenFile = fileAdapter?.hiddenFileRepository?.getHiddenFileByPath(file.absolutePath)
+                hiddenFile?.isEncrypted == true
+            }
+            
+            val plainFiles = selectedFiles.filter { it !in encryptedFiles }
 
-                    if (hiddenFile?.isEncrypted == true) {
-                        val originalExtension = hiddenFile.originalExtension
-                        val decryptedFile = SecurityUtils.changeFileExtension(file, originalExtension)
-                        
-                        if (SecurityUtils.decryptFile(this@ViewFolderActivity, file, decryptedFile)) {
-                            if (decryptedFile.exists() && decryptedFile.length() > 0) {
-                                val fileUri = FileManager.FileManager().getContentUriImage(this@ViewFolderActivity, decryptedFile)
-                                if (fileUri != null) {
-                                    val result = fileManager.copyFileToNormalDir(fileUri)
-                                    if (result != null) {
-                                        hiddenFile.let {
-                                            fileAdapter?.hiddenFileRepository?.deleteHiddenFile(it)
+            // Switch to Main thread to show dialog immediately
+            withContext(Dispatchers.Main) {
+                if (encryptedFiles.isNotEmpty()) {
+                    showEncryptionDialog(R.string.decrypting_files)
+                } else if (plainFiles.isNotEmpty()) {
+                    showProcessingDialog(plainFiles.size)
+                }
+            }
+
+            // Perform heavy work on IO thread
+            withContext(Dispatchers.IO) {
+                selectedFiles.forEach { file ->
+                    try {
+                        val hiddenFile = fileAdapter?.hiddenFileRepository?.getHiddenFileByPath(file.absolutePath)
+
+                        if (hiddenFile?.isEncrypted == true) {
+                            val originalExtension = hiddenFile.originalExtension
+                            val decryptedFile = SecurityUtils.changeFileExtension(file, originalExtension)
+                            
+                            if (SecurityUtils.decryptFile(this@ViewFolderActivity, file, decryptedFile)) {
+                                if (decryptedFile.exists() && decryptedFile.length() > 0) {
+                                    val fileUri = FileManager.FileManager().getContentUriImage(this@ViewFolderActivity, decryptedFile)
+                                    if (fileUri != null) {
+                                        val result = fileManager.copyFileToNormalDir(fileUri)
+                                        if (result != null) {
+                                            hiddenFile.let {
+                                                fileAdapter?.hiddenFileRepository?.deleteHiddenFile(it)
+                                            }
+                                            file.delete()
+                                            decryptedFile.delete()
+                                            unhiddenFiles.add(file)
+                                        } else {
+                                            decryptedFile.delete()
+                                            allUnhidden = false
                                         }
-                                        file.delete()
-                                        decryptedFile.delete()
-                                        unhiddenFiles.add(file)
                                     } else {
                                         decryptedFile.delete()
                                         allUnhidden = false
@@ -845,39 +756,38 @@ class ViewFolderActivity : BaseActivity() {
                                     allUnhidden = false
                                 }
                             } else {
-                                decryptedFile.delete()
+                                if (decryptedFile.exists()) {
+                                    decryptedFile.delete()
+                                }
                                 allUnhidden = false
                             }
                         } else {
-                            if (decryptedFile.exists()) {
-                                decryptedFile.delete()
-                            }
-                            allUnhidden = false
-                        }
-                    } else {
-                        val fileUri = FileManager.FileManager().getContentUriImage(this@ViewFolderActivity, file)
-                        if (fileUri != null) {
-                            val result = fileManager.copyFileToNormalDir(fileUri)
-                            if (result != null) {
-                                hiddenFile?.let {
-                                    fileAdapter?.hiddenFileRepository?.deleteHiddenFile(it)
+                            val fileUri = FileManager.FileManager().getContentUriImage(this@ViewFolderActivity, file)
+                            if (fileUri != null) {
+                                val result = fileManager.copyFileToNormalDir(fileUri)
+                                if (result != null) {
+                                    hiddenFile?.let {
+                                        fileAdapter?.hiddenFileRepository?.deleteHiddenFile(it)
+                                    }
+                                    file.delete()
+                                    unhiddenFiles.add(file)
+                                } else {
+                                    allUnhidden = false
                                 }
-                                file.delete()
-                                unhiddenFiles.add(file)
                             } else {
                                 allUnhidden = false
                             }
-                        } else {
-                            allUnhidden = false
                         }
+                    } catch (e: Exception) {
+                        allUnhidden = false
+                        e.printStackTrace()
                     }
-                } catch (e: Exception) {
-                    allUnhidden = false
-                    e.printStackTrace()
                 }
             }
 
-            mainHandler.post {
+            // Back to Main thread for UI updates
+            withContext(Dispatchers.Main) {
+                dismissProcessingDialog()
                 val message = if (allUnhidden) {
                     getString(R.string.files_unhidden_successfully)
                 } else {
@@ -888,6 +798,45 @@ class ViewFolderActivity : BaseActivity() {
                 refreshCurrentFolder()
                 fileAdapter?.exitSelectionMode()
             }
+        }
+    }
+
+    @SuppressLint("SetTextI18n")
+    private fun showProcessingDialog(count: Int) {
+        val dialogView = ProccessingDialogBinding.inflate(layoutInflater)
+        customDialog = MaterialAlertDialogBuilder(this)
+            .setView(dialogView.root)
+            .setCancelable(false)
+            .create()
+        dialogView.title.text = "Unhiding $count files"
+        customDialog?.show()
+        dialogShowTime = System.currentTimeMillis()
+    }
+    
+    private fun showEncryptionDialog(titleResId: Int) {
+        val binding = EncryptionProgressDialogBinding.inflate(LayoutInflater.from(this))
+        binding.title.text = getString(titleResId)
+        customDialog = MaterialAlertDialogBuilder(this)
+            .setView(binding.root)
+            .setCancelable(false)
+            .create()
+        customDialog?.show()
+        dialogShowTime = System.currentTimeMillis()
+    }
+
+    private fun dismissProcessingDialog() {
+        val currentTime = System.currentTimeMillis()
+        val elapsedTime = currentTime - dialogShowTime
+
+        if (elapsedTime < MINIMUM_DIALOG_DURATION) {
+            val remainingTime = MINIMUM_DIALOG_DURATION - elapsedTime
+            mainHandler.postDelayed({
+                customDialog?.dismiss()
+                customDialog = null
+            }, remainingTime)
+        } else {
+            customDialog?.dismiss()
+            customDialog = null
         }
     }
 

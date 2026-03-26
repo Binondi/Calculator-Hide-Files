@@ -2,6 +2,7 @@
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
     <color name="textColor">#000000</color>
+    <color name="textColorDescription">#424242</color>
 
     <color name="primary">#226A4D</color>
     <color name="buttonGray">#212121</color>

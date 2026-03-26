@@ -33,6 +33,24 @@
         <item name="android:autoSizeTextType">uniform</item>
         <item name="android:background">@drawable/background_button_operator</item>
     </style>
+    <style name="Button.OperatorBigSize">
+        <item name="android:textSize">56sp</item>
+        <item name="android:autoSizeMaxTextSize">56sp</item>
+        <item name="android:gravity">center</item>
+        <item name="android:autoSizeMinTextSize">1sp</item>
+        <item name="android:autoSizeStepGranularity">1sp</item>
+        <item name="android:autoSizeTextType">uniform</item>
+        <item name="android:background">@drawable/background_button_operator</item>
+    </style>
+    <style name="Button.OperatorMinus">
+        <item name="android:textSize">76sp</item>
+        <item name="android:autoSizeMaxTextSize">76sp</item>
+        <item name="android:gravity">center</item>
+        <item name="android:autoSizeMinTextSize">1sp</item>
+        <item name="android:autoSizeStepGranularity">1sp</item>
+        <item name="android:autoSizeTextType">uniform</item>
+        <item name="android:background">@drawable/background_button_operator</item>
+    </style>
     <style name="Button.Equals">
         <item name="android:textSize">54sp</item>
         <item name="android:autoSizeMaxTextSize">54sp</item>
@@ -41,6 +59,9 @@
         <item name="android:autoSizeTextType">uniform</item>
         <item name="android:background">@drawable/background_button_equals</item>
         <item name="android:text">=</item>
+    </style>
+    <style name="Button.Backspace">
+        <item name="android:background">@drawable/background_button_equals</item>
     </style>
 
 

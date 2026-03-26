@@ -124,6 +124,13 @@
     <string name="app_details">App Details</string>
     <string name="setup_password">Setup Password</string>
     <string name="security_question_for_password_reset">Security Question (For Password Reset)</string>
+    <string name="select_security_question">Select Security Question</string>
+    <string name="custom_question">Custom Question</string>
+    <string name="what_is_your_pet_name">What is your pet name?</string>
+    <string name="what_is_your_birth_city">What is your birth city?</string>
+    <string name="what_is_your_favorite_book">What is your favorite book?</string>
+    <string name="what_is_your_mother_maiden_name">What is your mother\'s name?</string>
+    <string name="what_is_your_favorite_color">What is your favorite color?</string>
     <string name="security_answer">Security Answer</string>
     <string name="save_password">Save Password</string>
     <string name="there_is_no_folders_available_create_one_by_clicking_on_the_add_folder_button_showing_in_the_bottom">There is no Folders Available, create one by clicking on the \'Add Folder\' Button showing in the bottom.</string>
@@ -234,4 +241,6 @@
     <string name="update_available">Update Available!</string>
     <string name="download">Download</string>
     <string name="failed_to_create_hidden_directory">Failed to create hidden directory: %1$s</string>
+    <string name="encrypting_files">Encrypting Files</string>
+    <string name="decrypting_files">Decrypting Files</string>
 </resources>

@@ -84,8 +84,7 @@ class FileAdapter(
         @SuppressLint("FileEndsWithExt")
         fun bind(file: File) {
             val position = adapterPosition
-            showLoadingPlaceholder()
-
+            
             lifecycleOwner.lifecycleScope.launch(Dispatchers.Main) {
                 try {
                     val currentFileData = withContext(Dispatchers.IO) {
@@ -118,11 +117,7 @@ class FileAdapter(
                 }
             }
         }
-        private fun showLoadingPlaceholder() {
-            binding.videoPlay.visibility = View.GONE
-            binding.fileIconImageView.setPadding(25, 25, 25, 25)
-            binding.fileIconImageView.setImageResource(R.drawable.encrypted)
-        }
+        
         private suspend fun setupDisplay(
             file: File,
             type: FileManager.FileType,
@@ -130,27 +125,14 @@ class FileAdapter(
             metadata: HiddenFileEntity?,
         ) {
             when (type) {
-                FileManager.FileType.IMAGE -> {
-                    binding.videoPlay.visibility = View.GONE
+                FileManager.FileType.IMAGE, FileManager.FileType.VIDEO -> {
+                    binding.videoPlay.visibility = if (type == FileManager.FileType.VIDEO) View.VISIBLE else View.GONE
                     binding.fileIconImageView.setPadding(0, 0, 0, 0)
 
                     if (isCurrentFileEncrypted) {
-                        loadEncryptedThumbnail(metadata, isVideo = false)
+                        loadEncryptedThumbnail(metadata, isVideo = (type == FileManager.FileType.VIDEO))
                     } else {
-                        Glide.with(context)
-                            .load(file)
-                            .centerCrop()
-                            .into(binding.fileIconImageView)
-                    }
-                }
-
-                FileManager.FileType.VIDEO -> {
-                    binding.fileIconImageView.setPadding(0, 0, 0, 0)
-                    binding.videoPlay.visibility = View.VISIBLE
-
-                    if (isCurrentFileEncrypted) {
-                        loadEncryptedThumbnail(metadata, isVideo = true)
-                    } else {
+                        binding.loadingProgress.visibility = View.GONE
                         Glide.with(context)
                             .load(file)
                             .centerCrop()
@@ -159,30 +141,35 @@ class FileAdapter(
                 }
 
                 FileManager.FileType.AUDIO -> {
+                    binding.loadingProgress.visibility = View.GONE
                     binding.videoPlay.visibility = View.GONE
                     binding.fileIconImageView.setPadding(25, 25, 25, 25)
                     binding.fileIconImageView.setImageResource(R.drawable.ic_audio)
                 }
 
                 FileManager.FileType.NOTE -> {
+                    binding.loadingProgress.visibility = View.GONE
                     binding.videoPlay.visibility = View.GONE
                     binding.fileIconImageView.setPadding(25, 25, 25, 25)
                     binding.fileIconImageView.setImageResource(R.drawable.ic_sticky_note)
                 }
 
                 FileManager.FileType.PDF -> {
+                    binding.loadingProgress.visibility = View.GONE
                     binding.videoPlay.visibility = View.GONE
                     binding.fileIconImageView.setPadding(25, 25, 25, 25)
                     binding.fileIconImageView.setImageResource(R.drawable.ic_pdf)
                 }
 
                 else -> {
+                    binding.loadingProgress.visibility = View.GONE
                     binding.videoPlay.visibility = View.GONE
                     binding.fileIconImageView.setPadding(25, 25, 25, 25)
                     binding.fileIconImageView.setImageResource(R.drawable.ic_document)
                 }
             }
         }
+        
         private suspend fun loadEncryptedThumbnail(
             metadata: HiddenFileEntity?,
             isVideo: Boolean,
@@ -191,6 +178,10 @@ class FileAdapter(
                 showEncryptedIcon()
                 return
             }
+
+            // Show loading indicator while decrypting preview
+            binding.loadingProgress.visibility = View.VISIBLE
+            binding.fileIconImageView.setImageDrawable(null)
 
             val uri: Uri? = withContext(Dispatchers.IO) {
                 try {
@@ -206,16 +197,15 @@ class FileAdapter(
                 }
             }
 
+            binding.loadingProgress.visibility = View.GONE
+
             if (uri != null) {
                 try {
                     Glide.with(context)
                         .load(uri)
                         .centerCrop()
-                        .diskCacheStrategy(
-                            if (isVideo) DiskCacheStrategy.NONE else DiskCacheStrategy.ALL
-                        )
-                        .skipMemoryCache(isVideo)
-                        .error(R.drawable.ic_file)
+                        .diskCacheStrategy(DiskCacheStrategy.ALL)
+                        .error(R.drawable.encrypted)
                         .into(binding.fileIconImageView)
                 } catch (e: Exception) {
                     Log.e("FileAdapter", "Glide error for encrypted file: ${e.message}")
@@ -227,6 +217,7 @@ class FileAdapter(
         }
 
         private fun showEncryptedIcon() {
+            binding.loadingProgress.visibility = View.GONE
             binding.fileIconImageView.setPadding(25, 25, 25, 25)
             binding.fileIconImageView.setImageResource(R.drawable.encrypted)
         }
@@ -255,18 +246,18 @@ class FileAdapter(
                                 if (file.extension == FileManager.ENCRYPTED_EXTENSION && hiddenFile == null) {
                                     showDecryptionTypeDialog(file)
                                 } else {
-                                    val tempFile =
-                                        withContext(Dispatchers.IO) {
+                                    // Use the cached preview if available
+                                    val tempFile = withContext(Dispatchers.IO) {
+                                        if (hiddenFile != null) {
+                                            SecurityUtils.getDecryptedPreviewFile(context, hiddenFile)
+                                        } else {
                                             val tmp = File(context.cacheDir, "preview_${file.name}")
                                             if (SecurityUtils.decryptFile(context, file, tmp)) tmp else null
                                         }
+                                    }
 
                                     if (tempFile != null && tempFile.exists() && tempFile.length() > 0) {
-                                        val fileTypeString = when (fileType) {
-                                            FileManager.FileType.IMAGE -> context.getString(R.string.image)
-                                            FileManager.FileType.VIDEO -> context.getString(R.string.video)
-                                            else -> "unknown"
-                                        }
+                                        val fileTypeString = if (fileType == FileManager.FileType.IMAGE) context.getString(R.string.image) else context.getString(R.string.video)
                                         val intent = Intent(context, PreviewActivity::class.java).apply {
                                             putExtra("type", fileTypeString)
                                             putExtra("folder", currentFolder.toString())
