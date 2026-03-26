@@ -84,10 +84,6 @@ class MainActivity : AppCompatActivity(), DialogActionsCallback, DialogUtil.Dial
         launcher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
             handleActivityResult(result)
         }
-        if (prefs.getBoolean("isFirst", true)){
-            binding.display.setText(getString(R.string.enter_123456))
-        }
-
 
         val hasPermission = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
             Environment.isExternalStorageManager()
@@ -445,6 +441,11 @@ class MainActivity : AppCompatActivity(), DialogActionsCallback, DialogUtil.Dial
         binding.display.setSelection(binding.display.text?.length ?: 0)
 
         if (currentExpression.isEmpty()) {
+            if (prefs.getBoolean("isFirst", true)) {
+                binding.display.setText(getString(R.string.enter_123456))
+            } else {
+                binding.display.setText("")
+            }
             binding.total.text = ""
             return
         }

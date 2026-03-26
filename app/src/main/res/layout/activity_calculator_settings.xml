@@ -332,7 +332,7 @@
                     android:contentDescription="@string/title_precision"
                     android:stepSize="1"
                     android:valueFrom="2"
-                    android:valueTo="16"
+                    android:valueTo="10"
                     app:layout_constraintBottom_toBottomOf="parent"
                     app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintStart_toEndOf="@id/precisionImage"

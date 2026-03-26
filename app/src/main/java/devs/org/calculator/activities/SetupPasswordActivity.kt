@@ -33,6 +33,7 @@ class SetupPasswordActivity : BaseActivity() {
         }else{
             setContentView(binding.root)
         }
+        binding.etSecurityQuestion.isFocusable = true
         enableEdgeToEdge()
         setViewPadding()
         setupSecurityQuestions()
@@ -51,23 +52,32 @@ class SetupPasswordActivity : BaseActivity() {
         )
         val adapter = ArrayAdapter(this, android.R.layout.simple_dropdown_item_1line, questions)
         binding.etSecurityQuestion.setAdapter(adapter)
-
-        // Initially prevent keyboard
         binding.etSecurityQuestion.inputType = android.text.InputType.TYPE_NULL
+
+        binding.etSecurityQuestion.isFocusable = false
+        binding.etSecurityQuestion.isFocusableInTouchMode = false
+        binding.etSecurityQuestion.isCursorVisible = false
+        binding.etSecurityQuestion.keyListener = null
 
         binding.etSecurityQuestion.setOnItemClickListener { _, _, position, _ ->
             if (questions[position] == getString(R.string.custom_question)) {
-                binding.etSecurityQuestion.inputType = android.text.InputType.TYPE_CLASS_TEXT
                 binding.etSecurityQuestion.setText("")
+                binding.etSecurityQuestion.isFocusable = true
+                binding.etSecurityQuestion.isFocusableInTouchMode = true
+                binding.etSecurityQuestion.isCursorVisible = true
+                binding.etSecurityQuestion.keyListener = android.text.method.TextKeyListener.getInstance()
+
                 binding.etSecurityQuestion.requestFocus()
-                
-                // Show keyboard for custom question
-                val imm = getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
+
+                val imm = getSystemService(INPUT_METHOD_SERVICE) as InputMethodManager
                 imm.showSoftInput(binding.etSecurityQuestion, InputMethodManager.SHOW_IMPLICIT)
             } else {
-                binding.etSecurityQuestion.inputType = android.text.InputType.TYPE_NULL
-                // Hide keyboard if it was open
-                val imm = getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
+                binding.etSecurityQuestion.isFocusable = false
+                binding.etSecurityQuestion.isFocusableInTouchMode = false
+                binding.etSecurityQuestion.isCursorVisible = false
+                binding.etSecurityQuestion.keyListener = null
+
+                val imm = getSystemService(INPUT_METHOD_SERVICE) as InputMethodManager
                 imm.hideSoftInputFromWindow(binding.etSecurityQuestion.windowToken, 0)
             }
         }
@@ -115,12 +125,6 @@ class SetupPasswordActivity : BaseActivity() {
             finish()
         }
 
-        binding.btnResetPassword.setOnClickListener {
-            if (prefs.getSecurityQuestion() != null) showSecurityQuestionDialog(prefs.getSecurityQuestion().toString())
-            else Toast.makeText(this,
-                getString(R.string.security_question_not_set_yet), Toast.LENGTH_SHORT).show()
-
-        }
         binding2.btnChangePassword.setOnClickListener{
             val oldPassword = binding2.etOldPassword.text.toString()
             val newPassword = binding2.etNewPassword.text.toString()
@@ -155,6 +159,12 @@ class SetupPasswordActivity : BaseActivity() {
             if (prefs.getSecurityQuestion() != null) showSecurityQuestionDialog(prefs.getSecurityQuestion().toString())
             else Toast.makeText(this, getString(R.string.this_field_can_t_be_empty), Toast.LENGTH_SHORT).show()
         }
+        binding.toolbar.setNavigationOnClickListener {
+            finish()
+        }
+        binding2.toolbar.setNavigationOnClickListener {
+            finish()
+        }
     }
 
     private fun showSecurityQuestionDialog(securityQuestion: String) {
@@ -180,6 +190,7 @@ class SetupPasswordActivity : BaseActivity() {
                         Toast.makeText(this,
                             getString(R.string.password_successfully_reset), Toast.LENGTH_SHORT).show()
                         dialog.dismiss()
+                        finish()
                     }else {
                         Toast.makeText(this, getString(R.string.invalid_answer), Toast.LENGTH_SHORT).show()
                     }
