@@ -7,6 +7,8 @@ import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.os.Environment
+import android.os.Handler
+import android.os.Looper
 import android.util.Log
 import android.view.HapticFeedbackConstants
 import android.view.SoundEffectConstants
@@ -16,7 +18,6 @@ import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
 import androidx.core.content.edit
 import androidx.core.view.ViewCompat
@@ -33,7 +34,7 @@ import devs.org.calculator.utils.formatWithCommas
 import net.objecthunter.exp4j.ExpressionBuilder
 import java.util.regex.Pattern
 
-class MainActivity : AppCompatActivity(), DialogActionsCallback, DialogUtil.DialogCallback {
+class MainActivity : BaseCalculatorActivity(), DialogActionsCallback, DialogUtil.DialogCallback {
     private lateinit var binding: ActivityMainBinding
     private var currentExpression = ""
     private var lastWasOperator = false
@@ -45,8 +46,7 @@ class MainActivity : AppCompatActivity(), DialogActionsCallback, DialogUtil.Dial
     private val fileManager = FileManager(this, this)
     private lateinit var storagePermissionUtil: StoragePermissionUtil
     private lateinit var permissionLauncher: ActivityResultLauncher<Array<String>>
-    private val deleteHandler = android.os.Handler(android.os.Looper.getMainLooper())
-    private val prefs by lazy { PrefsUtil(this) }
+    private val deleteHandler = Handler(Looper.getMainLooper())
     private var isDeleting = false
     private val deleteRunnable = object : Runnable {
         override fun run() {

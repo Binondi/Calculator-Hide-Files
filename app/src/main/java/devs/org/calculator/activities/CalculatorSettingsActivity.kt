@@ -12,7 +12,6 @@ import android.view.SoundEffectConstants
 import android.view.View
 import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
-import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.core.net.toUri
 import androidx.core.view.ViewCompat
@@ -21,16 +20,14 @@ import com.google.android.material.snackbar.Snackbar
 import devs.org.calculator.R
 import devs.org.calculator.databinding.ActivityCalculatorSettingsBinding
 import devs.org.calculator.update.Update.checkForAppUpdate
-import devs.org.calculator.utils.PrefsUtil
 import devs.org.calculator.utils.formatResult
 
-class CalculatorSettingsActivity : AppCompatActivity() {
+class CalculatorSettingsActivity : BaseCalculatorActivity() {
 
     private lateinit var binding: ActivityCalculatorSettingsBinding
     private var DEV_GITHUB_URL = ""
     private var GITHUB_URL = ""
-    private var DEFAULT_PRECISION = 12345.6789123456789123456789
-    private val prefs : PrefsUtil by lazy { PrefsUtil(this) }
+    private var DEFAULT_PRECISION = 12345.6789123456789123
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
