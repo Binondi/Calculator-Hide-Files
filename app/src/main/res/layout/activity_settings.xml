@@ -41,269 +41,6 @@
             android:orientation="vertical"
             android:paddingBottom="32dp">
 
-            <!-- App Details Section -->
-            <TextView
-                style="@style/sectionText"
-                android:text="@string/app_details" />
-
-            <androidx.constraintlayout.widget.ConstraintLayout
-                style="@style/optionLayout"
-                android:layout_marginTop="8dp">
-
-                <com.google.android.material.card.MaterialCardView
-                    android:id="@+id/appLogoCard"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginStart="20dp"
-                    app:cardCornerRadius="12dp"
-                    app:cardElevation="0dp"
-                    app:layout_constraintBottom_toBottomOf="parent"
-                    app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintTop_toTopOf="parent"
-                    app:strokeWidth="0dp">
-
-                    <ImageView
-                        android:id="@+id/appLogo"
-                        android:layout_width="48dp"
-                        android:layout_height="48dp"
-                        android:src="@mipmap/ic_launcher" />
-                </com.google.android.material.card.MaterialCardView>
-
-                <TextView
-                    android:id="@+id/appNameText"
-                    style="@style/optionTitleText"
-                    android:text="@string/full_app_name"
-                    app:layout_constraintEnd_toStartOf="@id/githubButton"
-                    app:layout_constraintStart_toEndOf="@id/appLogoCard"
-                    app:layout_constraintTop_toTopOf="parent" />
-
-                <TextView
-                    android:id="@+id/version"
-                    style="@style/optionDescriptionText"
-                    android:text="@string/version"
-                    app:layout_constraintBottom_toBottomOf="parent"
-                    app:layout_constraintEnd_toStartOf="@id/githubButton"
-                    app:layout_constraintStart_toEndOf="@id/appLogoCard"
-                    app:layout_constraintTop_toBottomOf="@id/appNameText" />
-
-                <com.google.android.material.button.MaterialButton
-                    android:id="@+id/githubButton"
-                    style="@style/Widget.Material3.Button.IconButton"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginEnd="16dp"
-                    app:icon="@drawable/ic_github"
-                    app:layout_constraintBottom_toBottomOf="parent"
-                    app:layout_constraintEnd_toEndOf="parent"
-                    app:layout_constraintTop_toTopOf="parent" />
-            </androidx.constraintlayout.widget.ConstraintLayout>
-
-            <androidx.constraintlayout.widget.ConstraintLayout
-                android:id="@+id/checkUpdateLayout"
-                style="@style/optionLayout"
-                android:layout_marginTop="4dp">
-
-                <androidx.appcompat.widget.AppCompatImageView
-                    android:id="@+id/updateImage"
-                    style="@style/optionImage"
-                    app:layout_constraintBottom_toBottomOf="parent"
-                    app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintTop_toTopOf="parent"
-                    app:srcCompat="@drawable/ic_history" />
-
-                <TextView
-                    android:id="@+id/updateTitleText"
-                    style="@style/optionTitleText"
-                    android:text="@string/check_for_updates"
-                    app:layout_constraintEnd_toStartOf="@+id/updateActionFrame"
-                    app:layout_constraintStart_toEndOf="@id/updateImage"
-                    app:layout_constraintTop_toTopOf="parent" />
-
-                <TextView
-                    android:id="@+id/textView3"
-                    style="@style/optionDescriptionText"
-                    android:text="@string/new_version_description"
-                    app:layout_constraintBottom_toBottomOf="parent"
-                    app:layout_constraintStart_toEndOf="@id/updateImage"
-                    app:layout_constraintTop_toBottomOf="@id/updateTitleText" />
-
-                <FrameLayout
-                    android:id="@+id/updateActionFrame"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginEnd="16dp"
-                    app:layout_constraintBottom_toBottomOf="parent"
-                    app:layout_constraintEnd_toEndOf="parent"
-                    app:layout_constraintStart_toEndOf="@+id/textView3"
-                    app:layout_constraintTop_toTopOf="parent">
-
-                    <com.google.android.material.button.MaterialButton
-                        android:id="@+id/checkUpdate"
-                        android:textSize="14sp"
-                        style="@style/Widget.Material3.Button.TextButton"
-                        android:layout_width="wrap_content"
-                        android:layout_height="@dimen/_35sdp"
-                        android:text="@string/check" />
-
-                    <ProgressBar
-                        android:id="@+id/versionChackingProgress"
-                        android:layout_width="28dp"
-                        android:layout_height="28dp"
-                        android:layout_gravity="center"
-                        android:indeterminate="true"
-                        android:indeterminateTint="?attr/colorPrimary"
-                        android:visibility="gone" />
-                </FrameLayout>
-            </androidx.constraintlayout.widget.ConstraintLayout>
-
-            <!-- Developer Details Section -->
-            <TextView
-                style="@style/sectionText"
-                android:text="@string/developer_details" />
-
-            <androidx.constraintlayout.widget.ConstraintLayout
-                android:id="@+id/devGithubButton"
-                style="@style/optionLayout"
-                android:layout_marginTop="8dp">
-
-                <androidx.appcompat.widget.AppCompatImageView
-                    android:id="@+id/githubImage"
-                    style="@style/optionImage"
-                    app:layout_constraintBottom_toBottomOf="parent"
-                    app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintTop_toTopOf="parent"
-                    app:srcCompat="@drawable/ic_github" />
-
-                <TextView
-                    android:id="@+id/devNameText"
-                    style="@style/optionTitleText"
-                    android:text="@string/binondi_borthakur"
-                    app:layout_constraintEnd_toEndOf="parent"
-                    app:layout_constraintStart_toEndOf="@id/githubImage"
-                    app:layout_constraintTop_toTopOf="parent" />
-
-                <TextView
-                    style="@style/optionDescriptionText"
-                    android:text="Android Developer"
-                    app:layout_constraintBottom_toBottomOf="parent"
-                    app:layout_constraintEnd_toEndOf="parent"
-                    app:layout_constraintStart_toEndOf="@id/githubImage"
-                    app:layout_constraintTop_toBottomOf="@id/devNameText" />
-            </androidx.constraintlayout.widget.ConstraintLayout>
-
-            <!-- Theme Settings Section -->
-            <TextView
-                style="@style/sectionText"
-                android:text="@string/theme_settings" />
-
-            <androidx.constraintlayout.widget.ConstraintLayout
-                android:id="@+id/dynamicColorsLayout"
-                style="@style/optionLayout"
-                android:layout_marginTop="8dp">
-
-                <androidx.appcompat.widget.AppCompatImageView
-                    android:id="@+id/dynamicColorsImage"
-                    style="@style/optionImage"
-                    app:layout_constraintBottom_toBottomOf="parent"
-                    app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintTop_toTopOf="parent"
-                    app:srcCompat="@drawable/baseline_colorize" />
-
-                <TextView
-                    android:id="@+id/dynamicColorsTitleText"
-                    style="@style/optionTitleText"
-                    android:text="@string/dynamic_theme"
-                    app:layout_constraintEnd_toStartOf="@id/dynamicColorsSwitch"
-                    app:layout_constraintStart_toEndOf="@id/dynamicColorsImage"
-                    app:layout_constraintTop_toTopOf="parent" />
-
-                <TextView
-                    android:id="@+id/dynamicColorsText"
-                    style="@style/optionDescriptionText"
-                    android:text="@string/description_dynamic_colors"
-                    app:layout_constraintBottom_toBottomOf="parent"
-                    app:layout_constraintEnd_toStartOf="@id/dynamicColorsSwitch"
-                    app:layout_constraintStart_toEndOf="@id/dynamicColorsImage"
-                    app:layout_constraintTop_toBottomOf="@id/dynamicColorsTitleText" />
-
-                <com.google.android.material.materialswitch.MaterialSwitch
-                    android:id="@+id/dynamicColorsSwitch"
-                    style="@style/optionSwitch"
-                    app:layout_constraintBottom_toBottomOf="parent"
-                    app:layout_constraintEnd_toEndOf="parent"
-                    app:layout_constraintTop_toTopOf="parent" />
-            </androidx.constraintlayout.widget.ConstraintLayout>
-
-            <androidx.constraintlayout.widget.ConstraintLayout
-                android:id="@+id/chooseThemeLayout"
-                style="@style/optionLayout"
-                android:layout_marginTop="4dp">
-
-                <androidx.appcompat.widget.AppCompatImageView
-                    android:id="@+id/chooseThemeImage"
-                    style="@style/optionImage"
-                    android:layout_marginTop="12dp"
-                    app:layout_constraintBottom_toTopOf="@id/chooseThemeHorizontalScroll"
-                    app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintTop_toTopOf="parent"
-                    app:srcCompat="@drawable/baseline_light_mode" />
-
-                <TextView
-                    android:id="@+id/chooseThemeTitleText"
-                    style="@style/optionTitleText"
-                    android:text="@string/select_themes"
-                    app:layout_constraintEnd_toEndOf="parent"
-                    app:layout_constraintStart_toEndOf="@id/chooseThemeImage"
-                    app:layout_constraintTop_toTopOf="parent" />
-
-                <TextView
-                    android:id="@+id/chooseThemeText"
-                    style="@style/optionDescriptionText"
-                    android:text="@string/select_a_theme_for_your_app"
-                    app:layout_constraintEnd_toEndOf="parent"
-                    app:layout_constraintStart_toEndOf="@id/chooseThemeImage"
-                    app:layout_constraintTop_toBottomOf="@id/chooseThemeTitleText" />
-
-                <HorizontalScrollView
-                    android:id="@+id/chooseThemeHorizontalScroll"
-                    style="@style/optionHorizontalScroll"
-                    app:layout_constraintBottom_toBottomOf="parent"
-                    app:layout_constraintEnd_toEndOf="parent"
-                    app:layout_constraintStart_toEndOf="@id/chooseThemeImage"
-                    app:layout_constraintTop_toBottomOf="@id/chooseThemeText">
-
-                    <com.google.android.material.button.MaterialButtonToggleGroup
-                        android:id="@+id/chooseThemeButtonToggleGroup"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        app:selectionRequired="true"
-                        app:singleSelection="true">
-
-                        <Button
-                            android:id="@+id/chooseThemeAutoButton"
-                            style="@style/Widget.Material3.Button.OutlinedButton"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="@string/system_default" />
-
-                        <Button
-                            android:id="@+id/chooseThemeLightButton"
-                            style="@style/Widget.Material3.Button.OutlinedButton"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="@string/light" />
-
-                        <Button
-                            android:id="@+id/chooseThemeDarkButton"
-                            style="@style/Widget.Material3.Button.OutlinedButton"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="@string/dark" />
-                    </com.google.android.material.button.MaterialButtonToggleGroup>
-                </HorizontalScrollView>
-            </androidx.constraintlayout.widget.ConstraintLayout>
-
-            <!-- Security Settings Section -->
             <TextView
                 style="@style/sectionText"
                 android:text="@string/security_settings" />
@@ -330,7 +67,7 @@
 
                 <TextView
                     style="@style/optionDescriptionText"
-                    android:text="Prevents capturing screen in protected areas"
+                    android:text="@string/prevents_capturing_screen_inside_the_app"
                     app:layout_constraintBottom_toBottomOf="parent"
                     app:layout_constraintEnd_toStartOf="@id/screenshotRestrictionSwitch"
                     app:layout_constraintStart_toEndOf="@id/screenshotImage"
@@ -354,7 +91,7 @@
                     app:layout_constraintBottom_toBottomOf="parent"
                     app:layout_constraintStart_toStartOf="parent"
                     app:layout_constraintTop_toTopOf="parent"
-                    app:srcCompat="@drawable/encrypted" />
+                    app:srcCompat="@drawable/ic_encrypted" />
 
                 <TextView
                     android:id="@+id/encryptionTitleText"
@@ -366,7 +103,7 @@
 
                 <TextView
                     style="@style/optionDescriptionText"
-                    android:text="Secure files using AES encryption"
+                    android:text="@string/secure_files_using_aes_encryption"
                     app:layout_constraintBottom_toBottomOf="parent"
                     app:layout_constraintEnd_toStartOf="@id/encryptionSwitch"
                     app:layout_constraintStart_toEndOf="@id/encryptionImage"
@@ -403,7 +140,7 @@
 
                 <TextView
                     style="@style/optionDescriptionText"
-                    android:text="Use your own key for extra security"
+                    android:text="@string/use_your_own_key_for_extra_security"
                     app:layout_constraintBottom_toBottomOf="parent"
                     app:layout_constraintEnd_toStartOf="@id/customKeyStatus"
                     app:layout_constraintStart_toEndOf="@id/customKeyImage"
@@ -419,7 +156,35 @@
                     app:layout_constraintTop_toTopOf="parent" />
             </androidx.constraintlayout.widget.ConstraintLayout>
 
-            <!-- App Settings Section -->
+            <androidx.constraintlayout.widget.ConstraintLayout
+                android:id="@+id/changePassLayout"
+                style="@style/optionLayout"
+                android:layout_marginTop="4dp">
+
+                <androidx.appcompat.widget.AppCompatImageView
+                    android:id="@+id/changePassImage"
+                    style="@style/optionImage"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toTopOf="parent"
+                    app:srcCompat="@drawable/ic_key" />
+
+                <TextView
+                    android:id="@+id/changePassTitleText"
+                    style="@style/optionTitleText"
+                    android:text="@string/change_password"
+                    app:layout_constraintStart_toEndOf="@id/changePassImage"
+                    app:layout_constraintTop_toTopOf="parent" />
+
+                <TextView
+                    style="@style/optionDescriptionText"
+                    android:text="@string/click_here_to_change_your_hidden_vault_password"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintStart_toEndOf="@id/changePassImage"
+                    app:layout_constraintTop_toBottomOf="@id/changePassTitleText" />
+
+            </androidx.constraintlayout.widget.ConstraintLayout>
+
             <TextView
                 style="@style/sectionText"
                 android:text="@string/app_settings" />
@@ -434,7 +199,7 @@
                     app:layout_constraintBottom_toBottomOf="parent"
                     app:layout_constraintStart_toStartOf="parent"
                     app:layout_constraintTop_toTopOf="parent"
-                    app:srcCompat="@drawable/ic_document" />
+                    app:srcCompat="@drawable/document_add" />
 
                 <TextView
                     android:id="@+id/showFileNameTitleText"
@@ -446,7 +211,7 @@
 
                 <TextView
                     style="@style/optionDescriptionText"
-                    android:text="Show original names of hidden files"
+                    android:text="@string/show_original_names_of_hidden_files"
                     app:layout_constraintBottom_toBottomOf="parent"
                     app:layout_constraintEnd_toStartOf="@id/showFileNames"
                     app:layout_constraintStart_toEndOf="@id/showFileNameImage"

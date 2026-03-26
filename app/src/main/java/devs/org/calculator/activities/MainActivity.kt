@@ -8,11 +8,15 @@ import android.os.Build
 import android.os.Bundle
 import android.os.Environment
 import android.util.Log
+import android.view.HapticFeedbackConstants
+import android.view.SoundEffectConstants
+import android.view.View
 import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
 import androidx.core.content.edit
 import androidx.core.view.ViewCompat
@@ -25,10 +29,11 @@ import devs.org.calculator.utils.FileManager
 import devs.org.calculator.utils.PrefsUtil
 import devs.org.calculator.utils.StoragePermissionUtil
 import devs.org.calculator.utils.formatResult
+import devs.org.calculator.utils.formatWithCommas
 import net.objecthunter.exp4j.ExpressionBuilder
 import java.util.regex.Pattern
 
-class MainActivity : BaseActivity(), DialogActionsCallback, DialogUtil.DialogCallback {
+class MainActivity : AppCompatActivity(), DialogActionsCallback, DialogUtil.DialogCallback {
     private lateinit var binding: ActivityMainBinding
     private var currentExpression = ""
     private var lastWasOperator = false
@@ -38,10 +43,23 @@ class MainActivity : BaseActivity(), DialogActionsCallback, DialogUtil.DialogCal
     private lateinit var baseDocumentTreeUri: Uri
     private val dialogUtil = DialogUtil(this)
     private val fileManager = FileManager(this, this)
-    private val sp by lazy { getSharedPreferences("app", MODE_PRIVATE) }
     private lateinit var storagePermissionUtil: StoragePermissionUtil
     private lateinit var permissionLauncher: ActivityResultLauncher<Array<String>>
+    private val deleteHandler = android.os.Handler(android.os.Looper.getMainLooper())
+    private val prefs by lazy { PrefsUtil(this) }
+    private var isDeleting = false
+    private val deleteRunnable = object : Runnable {
+        override fun run() {
+            if (isDeleting && currentExpression.isNotEmpty()) {
+                cutNumbers()
+                deleteHandler.postDelayed(this, 80)
+            }
+        }
+    }
+    private var soundEnabled = true
+    private var vibrationEnabled = true
 
+    @SuppressLint("ClickableViewAccessibility")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityMainBinding.inflate(layoutInflater)
@@ -49,7 +67,7 @@ class MainActivity : BaseActivity(), DialogActionsCallback, DialogUtil.DialogCal
         enableEdgeToEdge()
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main)) { v, insets ->
             val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
-            v.setPadding(systemBars.left, 0, systemBars.right, systemBars.bottom)
+            v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)
             insets
         }
         binding.display.post {
@@ -66,7 +84,7 @@ class MainActivity : BaseActivity(), DialogActionsCallback, DialogUtil.DialogCal
         launcher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
             handleActivityResult(result)
         }
-        if (sp.getBoolean("isFirst", true)){
+        if (prefs.getBoolean("isFirst", true)){
             binding.display.append(getString(R.string.enter_123456))
         }
 
@@ -129,11 +147,78 @@ class MainActivity : BaseActivity(), DialogActionsCallback, DialogUtil.DialogCal
         setupOperatorButton(binding.btnMultiply, "×")
         setupOperatorButton(binding.btnDivide, "/")
 
-        binding.btnClear.setOnClickListener { clearDisplay() }
-        binding.btnDot.setOnClickListener { addDecimal() }
-        binding.btnEquals.setOnClickListener { calculateResult() }
-        binding.btnPercent.setOnClickListener { addPercentage() }
-        binding.cut.setOnClickListener { cutNumbers() }
+        binding.btnClear.setOnClickListener { 
+            applyHaptics(it)
+            clearDisplay() 
+        }
+        binding.btnDot.setOnClickListener { 
+            applyHaptics(it)
+            addDecimal() 
+        }
+        binding.btnEquals.setOnClickListener { 
+            applyHaptics(it)
+            calculateResult() 
+        }
+        binding.btnPercent.setOnClickListener { 
+            applyHaptics(it)
+            addPercentage() 
+        }
+        binding.cut.setOnClickListener { 
+            applyHaptics(it)
+            cutNumbers() 
+        }
+        binding.cut.setOnLongClickListener {
+            applyHaptics(it)
+            startRapidDelete()
+            true
+        }
+        binding.cut.setOnTouchListener { _, event ->
+            if (event.action == android.view.MotionEvent.ACTION_UP ||
+                event.action == android.view.MotionEvent.ACTION_CANCEL) {
+                stopRapidDelete()
+            }
+            false
+        }
+        binding.toolbar.setOnMenuItemClickListener { menuItem ->
+            when(menuItem.itemId) {
+                R.id.settings -> {
+                    startActivity(Intent(this, CalculatorSettingsActivity::class.java))
+                    true
+                }
+                else -> false
+            }
+        }
+    }
+
+    private fun applyHaptics(view: View) {
+        if (soundEnabled) {
+            view.playSoundEffect(SoundEffectConstants.CLICK)
+        }
+        if (vibrationEnabled) {
+            view.performHapticFeedback(HapticFeedbackConstants.KEYBOARD_TAP)
+        }
+    }
+
+    private fun startRapidDelete() {
+        isDeleting = true
+        deleteHandler.postDelayed(deleteRunnable, 80)
+    }
+
+    private fun stopRapidDelete() {
+        isDeleting = false
+        deleteHandler.removeCallbacks(deleteRunnable)
+    }
+
+    override fun onResume() {
+        super.onResume()
+        soundEnabled = prefs.getBoolean("sound_haptic", true)
+        vibrationEnabled = prefs.getBoolean("vibration_haptic", true)
+        updateDisplay()
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        stopRapidDelete()
     }
 
     private fun handleActivityResult(result: androidx.activity.result.ActivityResult) {
@@ -151,6 +236,7 @@ class MainActivity : BaseActivity(), DialogActionsCallback, DialogUtil.DialogCal
 
     private fun setupNumberButton(button: TextView, number: String) {
         button.setOnClickListener {
+            applyHaptics(it)
             currentExpression += number
             lastWasOperator = false
             lastWasPercent = false
@@ -160,6 +246,7 @@ class MainActivity : BaseActivity(), DialogActionsCallback, DialogUtil.DialogCal
 
     private fun setupOperatorButton(button: TextView, operator: String) {
         button.setOnClickListener {
+            applyHaptics(it)
             val internalOperator = if (operator == "×") "*" else operator
 
             if (operator == "×" || operator == "/") {
@@ -312,34 +399,34 @@ class MainActivity : BaseActivity(), DialogActionsCallback, DialogUtil.DialogCal
 
     @SuppressLint("DefaultLocale")
     private fun calculateResult() {
-        if (currentExpression == "123456") {
+        val rawExpression = currentExpression.replace(",", "")
+        if (rawExpression == "123456") {
+            prefs.setBoolean("isFirst", false)
             val intent = Intent(this, SetupPasswordActivity::class.java)
-            sp.edit { putBoolean("isFirst", false) }
-            intent.putExtra("password", currentExpression)
+            intent.putExtra("password", rawExpression)
             startActivity(intent)
             clearDisplay()
             return
         }
 
-        if (PrefsUtil(this).validatePassword(currentExpression)) {
+        if (PrefsUtil(this).validatePassword(rawExpression)) {
             val intent = Intent(this, HiddenActivity::class.java)
-            intent.putExtra("password", currentExpression)
+            intent.putExtra("password", rawExpression)
             startActivity(intent)
             clearDisplay()
             return
         }
 
         try {
-            var processedExpression = currentExpression.replace("×", "*")
+            var processedExpression = rawExpression.replace("×", "*")
 
             if (processedExpression.contains("%")) {
                 processedExpression = preprocessExpression(processedExpression)
             }
 
-            val expression = ExpressionBuilder(processedExpression).build()
-            val result = expression.evaluate()
-
-            currentExpression = formatResult(result)
+            val result = ExpressionBuilder(processedExpression).build().evaluate()
+            val precision = prefs.getInt("precision", 10)
+            currentExpression = formatResult(result, precision)
 
             lastWasOperator = false
             lastWasPercent = false
@@ -352,12 +439,12 @@ class MainActivity : BaseActivity(), DialogActionsCallback, DialogUtil.DialogCal
         }
     }
 
-    @SuppressLint("DefaultLocale")
     private fun updateDisplay() {
-        binding.display.setText(currentExpression.replace("*", "×"))
+        val displayText = currentExpression.replace("*", "×")
+        binding.display.setText(formatWithCommas(displayText))
         binding.display.setSelection(binding.display.text?.length ?: 0)
 
-        if (currentExpression == "0" || currentExpression.isEmpty()) {
+        if (currentExpression.isEmpty()) {
             binding.total.text = ""
             return
         }
@@ -366,22 +453,25 @@ class MainActivity : BaseActivity(), DialogActionsCallback, DialogUtil.DialogCal
             var processedExpression = currentExpression.replace("×", "*")
 
             if (isOperator(processedExpression.last().toString())) {
-                processedExpression = processedExpression.substring(0, processedExpression.length - 1)
+                processedExpression = processedExpression.dropLast(1)
+            }
+
+            if (processedExpression.isEmpty()) {
+                binding.total.text = ""
+                return
             }
 
             if (processedExpression.contains("%")) {
                 processedExpression = preprocessExpression(processedExpression)
             }
 
-            val expression = ExpressionBuilder(processedExpression).build()
-            val result = expression.evaluate()
+            val result = ExpressionBuilder(processedExpression).build().evaluate()
+            val formattedResult = formatWithCommas(formatResult(result, prefs.getInt("precision", 10)))
 
-            val formattedResult = formatResult(result)
-
-            if (sp.getBoolean("isFirst", true) && currentExpression == "123456") {
-                binding.total.text = getString(R.string.now_enter_button)
+            binding.total.text = if (prefs.getBoolean("isFirst", true) && currentExpression == "123456") {
+                getString(R.string.now_enter_button)
             } else {
-                binding.total.text = formattedResult
+                formattedResult
             }
         } catch (_: Exception) {
             binding.total.text = ""
@@ -389,25 +479,59 @@ class MainActivity : BaseActivity(), DialogActionsCallback, DialogUtil.DialogCal
     }
 
     private fun cutNumbers() {
-        if (currentExpression.isNotEmpty()){
-            if (currentExpression.length == 1){
-                currentExpression = ""
-            } else {
-                val lastChar = currentExpression.last()
-                currentExpression = currentExpression.substring(0, currentExpression.length - 1)
+        if (currentExpression.isEmpty()) return
 
-                if (lastChar == '%') {
-                    lastWasPercent = false
-                } else if (isOperator(lastChar.toString())) {
-                    lastWasOperator = false
-                } else if (lastChar == '.') {
-                    hasDecimal = false
-                }
-            }
-        } else {
-            currentExpression = ""
+        val displayText = binding.display.text?.toString() ?: ""
+        val cursorPos = binding.display.getCursorPosition()
+
+        if (cursorPos <= 0) {
+            updateDisplay()
+            return
         }
+
+        val cleanDisplayText = displayText.replace(",", "")
+        val cleanCursorPos = displayText.substring(0, cursorPos).replace(",", "").length
+
+        if (cleanCursorPos <= 0 || cleanCursorPos > cleanDisplayText.length) {
+            updateDisplay()
+            return
+        }
+
+        val charToDelete = cleanDisplayText[cleanCursorPos - 1]
+
+        currentExpression = cleanDisplayText.substring(0, cleanCursorPos - 1) +
+                cleanDisplayText.substring(cleanCursorPos)
+
+        when {
+            charToDelete == '%' -> lastWasPercent = false
+            isOperator(charToDelete.toString()) -> lastWasOperator = false
+            charToDelete == '.' -> hasDecimal = false
+        }
+
+        if (currentExpression.isEmpty()) {
+            lastWasOperator = false
+            lastWasPercent = false
+            hasDecimal = false
+        }
+
+        val newCursorPos = cleanCursorPos - 1
+
         updateDisplay()
+
+        binding.display.post {
+            val newDisplayText = binding.display.text?.toString() ?: ""
+            val adjustedPos = getAdjustedCursorPos(newDisplayText, newCursorPos)
+            binding.display.setSelection(adjustedPos.coerceIn(0, newDisplayText.length))
+        }
+    }
+
+    private fun getAdjustedCursorPos(displayText: String, cleanPos: Int): Int {
+        var cleanCount = 0
+        for (i in displayText.indices) {
+            if (displayText[i] != ',') cleanCount++
+            if (cleanCount == cleanPos) return i + 1
+        }
+        return displayText.length
     }
 
     override fun onPositiveButtonClicked() {

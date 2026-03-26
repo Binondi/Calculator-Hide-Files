@@ -100,7 +100,7 @@
     <string name="dark">Dark</string>
     <string name="system_default">System</string>
     <string name="full_app_name">Calculator Hide Files</string>
-    <string name="developer_details">Developer Details</string>
+    <string name="developer_details">Developer</string>
     <string name="theme_settings">Theme Settings</string>
     <string name="files_deleted_successfully">Files deleted successfully</string>
     <string name="some_files_could_not_be_deleted">Some files could not be deleted</string>
@@ -119,7 +119,12 @@
     <string name="preview_file">Preview File</string>
     <string name="show_file_names">Show File Names</string>
     <string name="app_settings">App Settings</string>
-    <string name="restrict_screenshots_in_hidden_section">Restrict Screenshots in Hidden Section</string>
+    <string name="restrict_screenshots_in_hidden_section">Restrict Screenshots</string>
+    <string name="description_vibrations">Haptic feedback when clicking keyboard buttons</string>
+    <string name="preview_format_text" translatable="false">123456.789123456789123456789123</string>
+    <string name="title_precision">Precision</string>
+    <string name="description_precision">Number of decimal places</string>
+    <string name="description_sound_effects">Sound effects when clicking keyboard buttons</string>
     <string name="security_settings">Security Settings</string>
     <string name="app_details">App Details</string>
     <string name="setup_password">Setup Password</string>
@@ -163,7 +168,7 @@
     <string name="decrypt_files">Decrypt Files</string>
     <string name="encrypt">Encrypt</string>
     <string name="decrypt">Decrypt</string>
-    <string name="encryption_disclaimer">Warning: This will encrypt the selected files. Please use a custom encryption key from Settings, you can only decrypt the encrypted files with the same key so if you use default key and uninstall the app without decrypting the file you cannot decrypt the file later!. Do you want to continue?</string>
+    <string name="encryption_disclaimer">Warning: This will encrypt the selected files. Please use a custom encryption key from Settings, you can only decrypt the encrypted files with the same key so if you use default key and move the file to a different device without decrypting the file you cannot decrypt the file later!. Do you want to continue?</string>
     <string name="decryption_disclaimer">Warning: This will decrypt the selected files. The encrypted files will be deleted after successful decryption. Make sure to do this. Do you want to continue?</string>
     <string name="custom_encryption_key_cleared">Custom encryption key cleared</string>
     <string name="failed_to_set_custom_key">Failed to set custom key</string>
@@ -203,7 +208,7 @@
     <string name="text_4">4</string>
     <string name="text_5">5</string>
     <string name="text_6">6</string>
-    <string name="minus">-</string>
+    <string name="minus">—</string>
     <string name="text_1">1</string>
     <string name="text_2">2</string>
     <string name="text_3">3</string>
@@ -243,4 +248,17 @@
     <string name="failed_to_create_hidden_directory">Failed to create hidden directory: %1$s</string>
     <string name="encrypting_files">Encrypting Files</string>
     <string name="decrypting_files">Decrypting Files</string>
+    <string name="about_app">About App</string>
+    <string name="view_source_code">View Source Code</string>
+    <string name="view_the_source_code_of_the_app">View the source code of the app</string>
+    <string name="show_original_names_of_hidden_files">Show original names of hidden files</string>
+    <string name="click_here_to_change_your_hidden_vault_password">Click here to change your hidden vault password</string>
+    <string name="use_your_own_key_for_extra_security">Use your own key for extra security</string>
+    <string name="secure_files_using_aes_encryption">Secure files using AES encryption</string>
+    <string name="prevents_capturing_screen_inside_the_app">Prevents capturing screen inside the app</string>
+    <string name="calculator_settings">Calculator Settings</string>
+    <string name="other">Other</string>
+    <string name="vibrations">Vibrations</string>
+    <string name="formating">Formating</string>
+    <string name="sounds">Sounds</string>
 </resources>

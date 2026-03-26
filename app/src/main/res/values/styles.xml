@@ -240,4 +240,11 @@
         <item name="android:layout_marginEnd">16dp</item>
         <item name="android:layout_marginBottom">12dp</item>
     </style>
+
+    <style name="Toolbar" parent="Widget.Material3.Toolbar">
+        <item name="android:layout_width">wrap_content</item>
+        <item name="android:layout_height">wrap_content</item>
+
+        <item name="menu">@menu/toolbar_menu</item>
+    </style>
 </resources>

@@ -1,0 +1,489 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.coordinatorlayout.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/main"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="?attr/colorSurface"
+    tools:context=".activities.CalculatorSettingsActivity">
+
+    <com.google.android.material.appbar.AppBarLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@android:color/transparent">
+
+        <com.google.android.material.appbar.CollapsingToolbarLayout
+            style="?attr/collapsingToolbarLayoutLargeStyle"
+            android:layout_width="match_parent"
+            android:layout_height="?attr/collapsingToolbarLayoutLargeSize"
+            app:contentScrim="?attr/colorSurface"
+            app:layout_scrollFlags="scroll|exitUntilCollapsed"
+            app:titleCollapseMode="scale">
+
+            <com.google.android.material.appbar.MaterialToolbar
+                android:id="@+id/topAppBar"
+                style="@style/appBar_settings"
+                app:title="@string/settings" />
+
+        </com.google.android.material.appbar.CollapsingToolbarLayout>
+
+    </com.google.android.material.appbar.AppBarLayout>
+
+    <androidx.core.widget.NestedScrollView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        app:layout_behavior="@string/appbar_scrolling_view_behavior">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:paddingBottom="32dp">
+
+            <TextView
+                style="@style/sectionText"
+                android:text="@string/app_details" />
+
+            <androidx.constraintlayout.widget.ConstraintLayout
+                style="@style/optionLayout"
+                android:layout_marginTop="8dp">
+
+                <androidx.appcompat.widget.AppCompatImageView
+                    android:id="@+id/appLogo"
+                    android:layout_width="26dp"
+                    android:layout_height="26dp"
+                    android:scaleType="centerCrop"
+                    android:layout_marginStart="20dp"
+                    android:tint="?attr/colorOnSurface"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toTopOf="parent"
+                    android:src="@drawable/ic_launcher_foreground" />
+
+                <TextView
+                    android:id="@+id/appNameText"
+                    style="@style/optionTitleText"
+                    android:text="@string/full_app_name"
+                    app:layout_constraintEnd_toStartOf="@id/githubButton"
+                    app:layout_constraintStart_toEndOf="@+id/appLogo"
+                    app:layout_constraintTop_toTopOf="parent" />
+
+                <TextView
+                    android:id="@+id/version"
+                    style="@style/optionDescriptionText"
+                    android:text="@string/version"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintEnd_toStartOf="@id/githubButton"
+                    app:layout_constraintStart_toEndOf="@+id/appLogo"
+                    app:layout_constraintTop_toBottomOf="@id/appNameText" />
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/githubButton"
+                    style="@style/Widget.Material3.Button.IconButton"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginEnd="16dp"
+                    app:icon="@drawable/ic_github"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintTop_toTopOf="parent" />
+            </androidx.constraintlayout.widget.ConstraintLayout>
+
+            <androidx.constraintlayout.widget.ConstraintLayout
+                android:id="@+id/checkUpdateLayout"
+                style="@style/optionLayout"
+                android:layout_marginTop="4dp">
+
+                <androidx.appcompat.widget.AppCompatImageView
+                    android:id="@+id/updateImage"
+                    style="@style/optionImage"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toTopOf="parent"
+                    app:srcCompat="@drawable/ic_history" />
+
+                <TextView
+                    android:id="@+id/updateTitleText"
+                    style="@style/optionTitleText"
+                    android:text="@string/check_for_updates"
+                    app:layout_constraintEnd_toStartOf="@+id/updateActionFrame"
+                    app:layout_constraintStart_toEndOf="@id/updateImage"
+                    app:layout_constraintTop_toTopOf="parent" />
+
+                <TextView
+                    android:id="@+id/textView3"
+                    style="@style/optionDescriptionText"
+                    android:text="@string/new_version_description"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintStart_toEndOf="@id/updateImage"
+                    app:layout_constraintTop_toBottomOf="@id/updateTitleText" />
+
+                <FrameLayout
+                    android:id="@+id/updateActionFrame"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginEnd="16dp"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintTop_toTopOf="parent">
+
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/checkUpdate"
+                        style="@style/Widget.Material3.Button.TextButton"
+                        android:layout_width="wrap_content"
+                        android:layout_height="@dimen/_35sdp"
+                        android:text="@string/check"
+                        android:gravity="end|center_vertical"
+                        android:textSize="12sp" />
+
+                    <ProgressBar
+                        android:id="@+id/versionChackingProgress"
+                        android:layout_width="28dp"
+                        android:layout_height="28dp"
+                        android:layout_gravity="center"
+                        android:indeterminate="true"
+                        android:indeterminateTint="?attr/colorPrimary"
+                        android:visibility="gone" />
+                </FrameLayout>
+            </androidx.constraintlayout.widget.ConstraintLayout>
+
+            <TextView
+                style="@style/sectionText"
+                android:text="@string/theme_settings" />
+
+            <androidx.constraintlayout.widget.ConstraintLayout
+                android:id="@+id/dynamicColorsLayout"
+                style="@style/optionLayout"
+                android:layout_marginTop="8dp">
+
+                <androidx.appcompat.widget.AppCompatImageView
+                    android:id="@+id/dynamicColorsImage"
+                    style="@style/optionImage"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toTopOf="parent"
+                    app:srcCompat="@drawable/baseline_colorize" />
+
+                <TextView
+                    android:id="@+id/dynamicColorsTitleText"
+                    style="@style/optionTitleText"
+                    android:text="@string/dynamic_theme"
+                    app:layout_constraintEnd_toStartOf="@id/dynamicColorsSwitch"
+                    app:layout_constraintStart_toEndOf="@id/dynamicColorsImage"
+                    app:layout_constraintTop_toTopOf="parent" />
+
+                <TextView
+                    android:id="@+id/dynamicColorsText"
+                    style="@style/optionDescriptionText"
+                    android:text="@string/description_dynamic_colors"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintEnd_toStartOf="@id/dynamicColorsSwitch"
+                    app:layout_constraintStart_toEndOf="@id/dynamicColorsImage"
+                    app:layout_constraintTop_toBottomOf="@id/dynamicColorsTitleText" />
+
+                <com.google.android.material.materialswitch.MaterialSwitch
+                    android:id="@+id/dynamicColorsSwitch"
+                    style="@style/optionSwitch"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintTop_toTopOf="parent" />
+            </androidx.constraintlayout.widget.ConstraintLayout>
+
+            <androidx.constraintlayout.widget.ConstraintLayout
+                android:id="@+id/chooseThemeLayout"
+                style="@style/optionLayout"
+                android:layout_marginTop="4dp">
+
+                <androidx.appcompat.widget.AppCompatImageView
+                    android:id="@+id/chooseThemeImage"
+                    style="@style/optionImage"
+                    android:layout_marginTop="12dp"
+                    app:layout_constraintBottom_toTopOf="@id/chooseThemeHorizontalScroll"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toTopOf="parent"
+                    app:srcCompat="@drawable/baseline_light_mode" />
+
+                <TextView
+                    android:id="@+id/chooseThemeTitleText"
+                    style="@style/optionTitleText"
+                    android:text="@string/select_themes"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toEndOf="@id/chooseThemeImage"
+                    app:layout_constraintTop_toTopOf="parent" />
+
+                <TextView
+                    android:id="@+id/chooseThemeText"
+                    style="@style/optionDescriptionText"
+                    android:text="@string/select_a_theme_for_your_app"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toEndOf="@id/chooseThemeImage"
+                    app:layout_constraintTop_toBottomOf="@id/chooseThemeTitleText" />
+
+                <HorizontalScrollView
+                    android:id="@+id/chooseThemeHorizontalScroll"
+                    style="@style/optionHorizontalScroll"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toEndOf="@id/chooseThemeImage"
+                    app:layout_constraintTop_toBottomOf="@id/chooseThemeText">
+
+                    <com.google.android.material.button.MaterialButtonToggleGroup
+                        android:id="@+id/chooseThemeButtonToggleGroup"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        app:selectionRequired="true"
+                        app:singleSelection="true">
+
+                        <Button
+                            android:id="@+id/chooseThemeAutoButton"
+                            style="@style/Widget.Material3.Button.OutlinedButton"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="@string/system_default" />
+
+                        <Button
+                            android:id="@+id/chooseThemeLightButton"
+                            style="@style/Widget.Material3.Button.OutlinedButton"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="@string/light" />
+
+                        <Button
+                            android:id="@+id/chooseThemeDarkButton"
+                            style="@style/Widget.Material3.Button.OutlinedButton"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="@string/dark" />
+                    </com.google.android.material.button.MaterialButtonToggleGroup>
+                </HorizontalScrollView>
+            </androidx.constraintlayout.widget.ConstraintLayout>
+
+            <TextView
+                android:id="@+id/formattingSelectionText"
+                style="@style/sectionText"
+                android:text="@string/formating" />
+
+            <LinearLayout
+                android:id="@+id/previewFormatLayout"
+                android:orientation="horizontal"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
+                android:layout_marginStart="24dp"
+                android:layout_marginEnd="24dp"
+                android:background="@drawable/background_preview_number"
+                android:gravity="center"
+                android:clickable="true">
+
+                <TextView
+                    android:id="@+id/previewFormatText"
+                    android:layout_width="match_parent"
+                    android:layout_height="64dp"
+                    android:layout_marginTop="16dp"
+                    android:layout_marginBottom="16dp"
+                    android:layout_marginStart="16dp"
+                    android:layout_marginEnd="16dp"
+                    android:autoSizeMaxTextSize="52sp"
+                    android:autoSizeMinTextSize="10sp"
+                    android:autoSizeStepGranularity="1sp"
+                    android:autoSizeTextType="uniform"
+                    android:gravity="center"
+                    android:maxLines="1"
+                    android:text="@string/preview_format_text"
+                    android:textColor="?attr/colorOnSurface"
+                    android:textSize="52sp" />
+            </LinearLayout>
+
+            <androidx.constraintlayout.widget.ConstraintLayout
+                android:id="@+id/precisionLayout"
+                style="@style/optionLayout"
+                android:layout_marginTop="16dp">
+
+
+                <androidx.appcompat.widget.AppCompatImageView
+                    android:id="@+id/precisionImage"
+                    style="@style/optionImage"
+                    android:layout_marginTop="12dp"
+                    app:layout_constraintBottom_toBottomOf="@id/precisionText"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toTopOf="parent"
+                    app:srcCompat="@drawable/baseline_architecture" />
+
+                <TextView
+                    android:id="@+id/precisionTitleText"
+                    style="@style/optionTitleText"
+                    android:text="@string/title_precision"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toEndOf="@id/precisionImage"
+                    app:layout_constraintTop_toTopOf="parent" />
+
+                <TextView
+                    android:id="@+id/precisionText"
+                    style="@style/optionDescriptionText"
+                    android:text="@string/description_precision"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toEndOf="@id/precisionImage"
+                    app:layout_constraintTop_toBottomOf="@id/precisionTitleText" />
+
+                <com.google.android.material.slider.Slider
+                    android:id="@+id/precisionSlider"
+                    style="@style/optionSlider"
+                    android:contentDescription="@string/title_precision"
+                    android:stepSize="1"
+                    android:valueFrom="2"
+                    android:valueTo="16"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toEndOf="@id/precisionImage"
+                    app:layout_constraintTop_toBottomOf="@id/precisionText" />
+
+            </androidx.constraintlayout.widget.ConstraintLayout>
+
+            <TextView
+                style="@style/sectionText"
+                android:text="@string/other" />
+
+            <androidx.constraintlayout.widget.ConstraintLayout
+                android:id="@+id/vibrationStatusLayout"
+                style="@style/optionLayout"
+                android:layout_marginTop="4dp">
+
+                <androidx.appcompat.widget.AppCompatImageView
+                    android:id="@+id/vibrationImage"
+                    style="@style/optionImage"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toTopOf="parent"
+                    app:srcCompat="@drawable/ic_mobile_vibrate" />
+
+                <TextView
+                    android:id="@+id/vibrationTitleText"
+                    style="@style/optionTitleText"
+                    android:text="@string/vibrations"
+                    app:layout_constraintEnd_toStartOf="@id/vibrationStatus"
+                    app:layout_constraintStart_toEndOf="@id/vibrationImage"
+                    app:layout_constraintTop_toTopOf="parent" />
+
+                <TextView
+                    style="@style/optionDescriptionText"
+                    android:text="@string/description_vibrations"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintEnd_toStartOf="@id/vibrationStatus"
+                    app:layout_constraintStart_toEndOf="@id/vibrationImage"
+                    app:layout_constraintTop_toBottomOf="@id/vibrationTitleText" />
+
+                <com.google.android.material.materialswitch.MaterialSwitch
+                    android:id="@+id/vibrationStatus"
+                    style="@style/optionSwitch"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintTop_toTopOf="parent" />
+            </androidx.constraintlayout.widget.ConstraintLayout>
+
+            <androidx.constraintlayout.widget.ConstraintLayout
+                android:id="@+id/soundStatusLayout"
+                style="@style/optionLayout"
+                android:layout_marginTop="4dp">
+
+                <androidx.appcompat.widget.AppCompatImageView
+                    android:id="@+id/soundImage"
+                    style="@style/optionImage"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toTopOf="parent"
+                    app:srcCompat="@drawable/baseline_volume" />
+
+                <TextView
+                    android:id="@+id/soundTitleText"
+                    style="@style/optionTitleText"
+                    android:text="@string/sounds"
+                    app:layout_constraintEnd_toStartOf="@id/soundStatus"
+                    app:layout_constraintStart_toEndOf="@id/soundImage"
+                    app:layout_constraintTop_toTopOf="parent" />
+
+                <TextView
+                    style="@style/optionDescriptionText"
+                    android:text="@string/description_sound_effects"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintEnd_toStartOf="@id/soundStatus"
+                    app:layout_constraintStart_toEndOf="@id/soundImage"
+                    app:layout_constraintTop_toBottomOf="@id/soundTitleText" />
+
+                <com.google.android.material.materialswitch.MaterialSwitch
+                    android:id="@+id/soundStatus"
+                    style="@style/optionSwitch"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintTop_toTopOf="parent" />
+            </androidx.constraintlayout.widget.ConstraintLayout>
+
+            <TextView
+                style="@style/sectionText"
+                android:text="@string/about_app" />
+
+            <androidx.constraintlayout.widget.ConstraintLayout
+                android:id="@+id/devGithubButton"
+                style="@style/optionLayout"
+                android:layout_marginTop="8dp">
+
+                <androidx.appcompat.widget.AppCompatImageView
+                    android:id="@+id/githubImage"
+                    style="@style/optionImage"
+                    android:padding="2dp"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toTopOf="parent"
+                    app:srcCompat="@drawable/ic_github" />
+
+                <TextView
+                    android:id="@+id/devNameText"
+                    style="@style/optionTitleText"
+                    android:text="@string/developer_details"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toEndOf="@id/githubImage"
+                    app:layout_constraintTop_toTopOf="parent" />
+
+                <TextView
+                    style="@style/optionDescriptionText"
+                    android:text="@string/binondi_borthakur"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toEndOf="@id/githubImage"
+                    app:layout_constraintTop_toBottomOf="@id/devNameText" />
+            </androidx.constraintlayout.widget.ConstraintLayout>
+
+            <androidx.constraintlayout.widget.ConstraintLayout
+                android:id="@+id/sourceCodeLayout"
+                style="@style/optionLayout"
+                android:layout_marginTop="4dp">
+
+                <androidx.appcompat.widget.AppCompatImageView
+                    android:id="@+id/sourceCodeImage"
+                    style="@style/optionImage"
+                    android:padding="2dp"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toTopOf="parent"
+                    app:srcCompat="@drawable/ic_github" />
+
+                <TextView
+                    android:id="@+id/sourceCodeTitleText"
+                    style="@style/optionTitleText"
+                    android:text="@string/view_source_code"
+                    app:layout_constraintStart_toEndOf="@id/sourceCodeImage"
+                    app:layout_constraintTop_toTopOf="parent" />
+
+                <TextView
+                    style="@style/optionDescriptionText"
+                    android:text="@string/view_the_source_code_of_the_app"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintStart_toEndOf="@id/sourceCodeImage"
+                    app:layout_constraintTop_toBottomOf="@id/sourceCodeTitleText" />
+
+            </androidx.constraintlayout.widget.ConstraintLayout>
+
+        </LinearLayout>
+    </androidx.core.widget.NestedScrollView>
+
+</androidx.coordinatorlayout.widget.CoordinatorLayout>
