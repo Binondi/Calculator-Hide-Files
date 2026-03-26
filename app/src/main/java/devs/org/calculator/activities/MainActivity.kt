@@ -85,7 +85,7 @@ class MainActivity : AppCompatActivity(), DialogActionsCallback, DialogUtil.Dial
             handleActivityResult(result)
         }
         if (prefs.getBoolean("isFirst", true)){
-            binding.display.append(getString(R.string.enter_123456))
+            binding.display.setText(getString(R.string.enter_123456))
         }
 
 

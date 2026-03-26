@@ -69,7 +69,7 @@ class CalculatorSettingsActivity : AppCompatActivity() {
         binding.dynamicColorsSwitch.isChecked = prefs.getBoolean("dynamic_theme", true)
         binding.vibrationStatus.isChecked = prefs.getBoolean("vibration_haptic", true)
         binding.soundStatus.isChecked = prefs.getBoolean("sound_haptic", true)
-        val precision = prefs.getInt("precision", 10)
+        val precision = prefs.getInt("precision", 3)
         binding.precisionSlider.value = precision.toFloat()
         binding.previewFormatText.text = formatResult(DEFAULT_PRECISION,precision)
 
