@@ -79,6 +79,12 @@ The **Calculator Hide File App** is an innovative **Android file-hiding app** th
     <img src="media/Screenshot_9.jpg" alt="Calculator Hide File App - Hidden Files Manager" width="32%">
 </div>
 
+<div align="center">
+    <img src="media/Screenshot_10.jpg" alt="Calculator Hide File App - Hidden Files Manager" width="32%">
+    <img src="media/Screenshot_11.jpg" alt="Calculator Hide File App - Hidden Files Manager" width="32%">
+    <img src="media/Screenshot_12.jpg" alt="Calculator Hide File App - Hidden Files Manager" width="32%">
+</div>
+
 ---
 
 ## How It Works
