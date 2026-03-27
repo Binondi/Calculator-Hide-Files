@@ -399,6 +399,8 @@ class MainActivity : BaseCalculatorActivity(), DialogActionsCallback, DialogUtil
         val rawExpression = currentExpression.replace(",", "")
         if (rawExpression == "123456") {
             prefs.setBoolean("isFirst", false)
+            val app = application as CalculatorApp
+            app.isVaultSessionActive = true
             val intent = Intent(this, SetupPasswordActivity::class.java)
             intent.putExtra("password", rawExpression)
             startActivity(intent)
@@ -424,7 +426,7 @@ class MainActivity : BaseCalculatorActivity(), DialogActionsCallback, DialogUtil
             }
 
             val result = ExpressionBuilder(processedExpression).build().evaluate()
-            val precision = prefs.getInt("precision", 10)
+            val precision = prefs.getInt("precision", 3)
             currentExpression = formatResult(result, precision)
 
             lastWasOperator = false
@@ -470,7 +472,7 @@ class MainActivity : BaseCalculatorActivity(), DialogActionsCallback, DialogUtil
             }
 
             val result = ExpressionBuilder(processedExpression).build().evaluate()
-            val formattedResult = formatWithCommas(formatResult(result, prefs.getInt("precision", 10)))
+            val formattedResult = formatWithCommas(formatResult(result, prefs.getInt("precision", 3)))
 
             binding.total.text = if (prefs.getBoolean("isFirst", true) && currentExpression == "123456") {
                 getString(R.string.now_enter_button)
