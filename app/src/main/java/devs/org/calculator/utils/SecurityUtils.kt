@@ -21,7 +21,7 @@ import android.util.Log
 object SecurityUtils {
     private const val ALGORITHM = "AES"
     private const val TRANSFORMATION = "AES/CBC/PKCS5Padding"
-    private const val BUFFER_SIZE = 64 * 1024 // 64KB buffer for large files
+    private const val BUFFER_SIZE = 64 * 1024
     val ENCRYPTED_EXTENSION = ".enc"
     val DEFAULT_KEY = "encryption_key_default"
 
@@ -108,8 +108,7 @@ object SecurityUtils {
             if (!previewDir.exists()) {
                 previewDir.mkdirs()
             }
-            
-            // Generate a consistent name based on the encrypted file path to cache it
+
             val fileNameHash = meta.filePath.hashCode().toString()
             val cachedPreview = File(previewDir, "pre_${fileNameHash}_${meta.fileName}")
             

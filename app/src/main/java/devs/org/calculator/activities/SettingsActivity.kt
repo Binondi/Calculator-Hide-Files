@@ -50,6 +50,7 @@ class SettingsActivity : BaseActivity() {
         binding.screenshotRestrictionSwitch.isChecked = prefs.getBoolean("screenshot_restriction", true)
         binding.showFileNames.isChecked = prefs.getBoolean("showFileName", true)
         binding.encryptionSwitch.isChecked = prefs.getBoolean("encryption", false)
+        binding.gotomain.isChecked = prefs.getBoolean("is_vault_enabled", true)
     }
 
     private fun setupListeners() {
@@ -71,6 +72,9 @@ class SettingsActivity : BaseActivity() {
         }
         binding.showFileNames.setOnCheckedChangeListener { _, isChecked ->
             prefs.setBoolean("showFileName", isChecked)
+        }
+        binding.gotomain.setOnCheckedChangeListener { _, isChecked ->
+            prefs.setBoolean("is_vault_enabled", isChecked)
         }
 
         binding.customKeyStatusLayout.setOnClickListener {

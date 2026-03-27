@@ -261,4 +261,6 @@
     <string name="vibrations">Vibrations</string>
     <string name="formating">Formating</string>
     <string name="sounds">Sounds</string>
+    <string name="go_to_calculator">Go To Home</string>
+    <string name="go_to_main_description">Go to calculator when app closes or screen goes off</string>
 </resources>

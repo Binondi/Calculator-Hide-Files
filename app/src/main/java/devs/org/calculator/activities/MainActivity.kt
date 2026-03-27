@@ -22,6 +22,7 @@ import androidx.core.content.ContextCompat
 import androidx.core.content.edit
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
+import devs.org.calculator.CalculatorApp
 import devs.org.calculator.R
 import devs.org.calculator.callbacks.DialogActionsCallback
 import devs.org.calculator.databinding.ActivityMainBinding
@@ -406,6 +407,8 @@ class MainActivity : BaseCalculatorActivity(), DialogActionsCallback, DialogUtil
         }
 
         if (PrefsUtil(this).validatePassword(rawExpression)) {
+            val app = application as CalculatorApp
+            app.isVaultSessionActive = true
             val intent = Intent(this, HiddenActivity::class.java)
             intent.putExtra("password", rawExpression)
             startActivity(intent)

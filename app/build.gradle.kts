@@ -79,17 +79,16 @@ dependencies {
     implementation(libs.androidx.fragment.ktx)
     implementation(libs.androidx.constraintlayout)
     implementation(libs.androidx.gridlayout)
-    
-    // Lifecycle & MVVM
+
     implementation(libs.androidx.lifecycle.viewmodel.ktx)
     implementation(libs.androidx.lifecycle.livedata.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
+    implementation(libs.androidx.lifecycle.process)
 
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
 
-    //custom dependencies
     implementation(libs.exp4j)
     implementation(libs.glide)
     implementation(libs.androidx.documentfile)
@@ -99,16 +98,11 @@ dependencies {
     implementation(libs.lottie)
     implementation(libs.androidx.swiperefreshlayout)
 
-    // Room dependencies
     implementation(libs.androidx.room.runtime)
     implementation(libs.androidx.room.ktx)
     //noinspection KaptUsageInsteadOfKsp
     kapt(libs.androidx.room.compiler)
-
-    //okhttp for update check
     implementation(libs.okhttp)
-
-    //markdown
     implementation(libs.core)
     implementation(libs.linkify)
     implementation(libs.sdp.android)

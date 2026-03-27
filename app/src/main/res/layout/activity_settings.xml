@@ -225,6 +225,42 @@
                     app:layout_constraintTop_toTopOf="parent" />
             </androidx.constraintlayout.widget.ConstraintLayout>
 
+            <androidx.constraintlayout.widget.ConstraintLayout
+                style="@style/optionLayout"
+                android:layout_marginTop="8dp">
+
+                <androidx.appcompat.widget.AppCompatImageView
+                    android:id="@+id/gotomainImage"
+                    style="@style/optionImage"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toTopOf="parent"
+                    app:srcCompat="@drawable/ic_privacy_tip" />
+
+                <TextView
+                    android:id="@+id/gotomainTitleText"
+                    style="@style/optionTitleText"
+                    android:text="@string/go_to_calculator"
+                    app:layout_constraintEnd_toStartOf="@id/gotomain"
+                    app:layout_constraintStart_toEndOf="@id/gotomainImage"
+                    app:layout_constraintTop_toTopOf="parent" />
+
+                <TextView
+                    style="@style/optionDescriptionText"
+                    android:text="@string/go_to_main_description"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintEnd_toStartOf="@id/gotomain"
+                    app:layout_constraintStart_toEndOf="@id/gotomainImage"
+                    app:layout_constraintTop_toBottomOf="@id/gotomainTitleText" />
+
+                <com.google.android.material.materialswitch.MaterialSwitch
+                    android:id="@+id/gotomain"
+                    style="@style/optionSwitch"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintTop_toTopOf="parent" />
+            </androidx.constraintlayout.widget.ConstraintLayout>
+
         </LinearLayout>
     </androidx.core.widget.NestedScrollView>
 </androidx.coordinatorlayout.widget.CoordinatorLayout>
