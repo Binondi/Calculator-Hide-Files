@@ -1,1 +1,20 @@
-<p><b>Calculator Hide File App</b> is a smart Android app that looks and works like a <b>regular calculator</b> but secretly functions as a <b>secure file vault</b>. Keep your private images, videos, documents, and other files safe with a hidden passcode while enjoying a fully functional calculator interface.</p> <p><b>Key Features:</b></p> <ul> <li><b>Dual Functionality:</b> A real calculator that doubles as a hidden file vault.</li> <li><b>Secret Passcode:</b> Unlock your hidden files with a private code only you know.</li> <li><b>Secure File Manager:</b> Hide, unhide, and organize your files easily and safely.</li> <li><b>Fast & Lightweight:</b> Smooth performance on all Android devices.</li> <li><b>No Root Required:</b> Fully functional without rooting your device.</li> <li><b>File Encryption:</b> Protect your hidden files with strong encryption.</li> </ul> <p><b>Why Choose Calculator Hide File App?</b></p> <ul> <li>Completely secure and discreet – no one will suspect your files are hidden.</li> <li>Works like a normal calculator while keeping your private files safe.</li> <li>Supports images, videos, documents, and other file types.</li> <li>Open-source and transparent – you can inspect the code yourself to ensure your privacy.</li> </ul> <p><b>How It Works:</b></p> <ol> <li><b>Use as a Regular Calculator:</b> Perform standard arithmetic operations without revealing the hidden vault.</li> <li><b>Enter Secret Passcode:</b> Type your code and press "=" to access your hidden files.</li> <li><b>Manage Hidden Files:</b> Add, remove, and organize files safely. Files remain protected even after closing the app.</li> </ol> <p><b>Requirements:</b></p> <ul> <li>Android 6.0 or higher</li> <li>Storage permissions enabled</li> <li>“Manage All Files” permission for Android 11+ devices</li> </ul> <p><b>Technologies Used:</b> Kotlin, XML, Secure internal storage & MediaStore API</p> <p><b>Why You’ll Love It:</b> Keep your files completely hidden, enjoy a real calculator interface, and benefit from an open-source, lightweight, and secure app. Protect your privacy with ease!</p>
+<p><b>Calculator Hide File App</b> is an open-source Android application that combines a functional calculator interface with a secure private file storage feature. It allows users to store and manage personal files such as images, videos, documents, and notes, protected by a passcode.</p><p><b>Key Features:</b></p>
+<ul>
+<li><b>Dual Functionality:</b> A fully working calculator alongside a private file storage area accessible via passcode.</li>
+<li><b>Passcode Protection:</b> Access your private files securely using a user-defined code.</li>
+<li><b>Secure File Manager:</b> Add, remove, and organize files within a protected local environment.</li>
+<li><b>Local Storage:</b> All files are stored on-device, ensuring user control and privacy.</li>
+<li><b>Lightweight & Fast:</b> Designed to run smoothly across a wide range of Android devices.</li>
+<li><b>No Root Required:</b> Works on standard Android devices without requiring root access.</li>
+<li><b>File Encryption:</b> Protect stored data using encryption mechanisms.</li>
+</ul><p><b>How It Works:</b></p>
+<ol>
+<li><b>Calculator Mode:</b> Use the app as a standard calculator for everyday calculations.</li>
+<li><b>Access Private Storage:</b> Enter your passcode to open the secure file storage area.</li>
+<li><b>Manage Files:</b> Import, organize, and remove files within the app. Data remains protected locally on your device.</li>
+</ol><p><b>Requirements:</b></p>
+<ul>
+<li>Android 6.0 or higher</li>
+<li>Storage permissions enabled</li>
+<li>“Manage All Files” permission may be required on Android 11+ for full file access functionality</li>
+</ul><p><b>Technologies Used:</b> Kotlin, XML, Android SDK, MediaStore API, and secure local storage techniques</p><p><b>Open Source:</b> This project is fully open-source, allowing users to inspect the code and verify how data is handled.</p><p><b>Privacy Focus:</b> The app operates entirely offline and does not collect or share user data.</p>
