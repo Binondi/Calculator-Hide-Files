@@ -109,9 +109,9 @@ The **Calculator Hide File App** is an innovative **Android file-hiding app** th
 ### **[Click to Download Latest Version](https://github.com/Binondi/Calculator-Hide-Files/releases/latest)**
 
 ### 🔹 Prerequisites
-- **Android 6.0 or higher**  
+- **Android 8.0 or higher**  
 - **Storage permissions enabled**
-- **Need Manage All Files Permissons For Android 11 and Higher Versions.**
+- **Require Manage All Files Permissons For Android 11 and Higher Versions.**
 
 ### 🔹 Installation Steps
 ```bash

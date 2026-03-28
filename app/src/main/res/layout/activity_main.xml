@@ -43,7 +43,7 @@
         app:layout_constraintBottom_toTopOf="@id/pagerGuideline"
         app:layout_constraintTop_toTopOf="parent"/>
 
-    <devs.org.calculator.customViews.CustomInputKeyBoard
+    <devs.org.calculator.views.CustomInputKeyBoard
         android:id="@+id/display"
         android:layout_width="0dp"
         android:layout_height="0dp"

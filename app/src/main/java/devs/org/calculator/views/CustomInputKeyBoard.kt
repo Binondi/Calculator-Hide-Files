@@ -1,9 +1,9 @@
-package devs.org.calculator.customViews
+package devs.org.calculator.views
 
 import android.content.Context
+import android.graphics.Paint
 import android.util.AttributeSet
 import android.util.TypedValue
-import android.graphics.Paint
 import androidx.appcompat.widget.AppCompatEditText
 
 class CustomInputKeyBoard @JvmOverloads constructor(
