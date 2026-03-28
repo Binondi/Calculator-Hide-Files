@@ -1,1 +1,1 @@
-A calculator with a hidden vault to securely store your private files.
+Open-source Android vault app to hide photos, videos, audio, notes & documents securely with AES encryption
