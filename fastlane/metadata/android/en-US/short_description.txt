@@ -1,1 +1,1 @@
-Open-source Android vault app to hide photos, videos, audio, notes & documents securely with AES encryption
+Secure file vault with calculator interface
