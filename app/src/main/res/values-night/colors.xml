@@ -1,6 +1,7 @@
 <resources xmlns:tools="http://schemas.android.com/tools">
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
+    <color name="whiteBg">#000000</color>
     <color name="textColor">#FFFFFF</color>
     <color name="textColorDescription">#D9D9D9</color>
 

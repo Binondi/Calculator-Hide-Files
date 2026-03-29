@@ -249,7 +249,7 @@
     <string name="encrypting_files">Encrypting Files</string>
     <string name="decrypting_files">Decrypting Files</string>
     <string name="about_app">About App</string>
-    <string name="view_source_code">View Source Code</string>
+    <string name="view_source_code">Source Code</string>
     <string name="view_the_source_code_of_the_app">View the source code of the app</string>
     <string name="show_original_names_of_hidden_files">Show original names of hidden files</string>
     <string name="click_here_to_change_your_hidden_vault_password">Click here to change your hidden vault password</string>
@@ -263,4 +263,35 @@
     <string name="sounds">Sounds</string>
     <string name="go_to_calculator">Go To Home</string>
     <string name="go_to_main_description">Go to calculator when app closes or screen goes off</string>
+    <string name="update_note">Update Note</string>
+    <string name="edit">Edit</string>
+    <string name="list">List</string>
+    <string name="grid">Grid</string>
+    <string name="decimal_places">Decimal Places</string>
+    <string name="num_of_digits_after_decimal">Number of digits after decimal</string>
+    <string name="sound_haptic">Sound Haptic</string>
+    <string name="play_sound_on_button_press">Play sound on button press</string>
+    <string name="vibration_haptic">Vibration Haptic</string>
+    <string name="vibrate_on_button_press">Vibrate on button press</string>
+    <string name="about_description">About app, support, creadits</string>
+    <string name="about">About</string>
+    <string name="dev_name">Created By Binondi Borthakur</string>
+    <string name="donate">Donate</string>
+    <string name="ko_fi">Ko-fi</string>
+    <string name="ko_fi_url" translatable="false">https://ko-fi.com/binondi</string>
+    <string name="paypal">PayPal</string>
+    <string name="paypal_id" translatable="false">binondiborthakur56@gmail.com</string>
+    <string name="upi">UPI</string>
+    <string name="upi_id" translatable="false">Q249290610@ybl</string>
+    <string name="copied_to_clipboard">Copied to clipboard</string>
+    <string name="social_media">Social Media</string>
+    <string name="instagram">Instagram</string>
+    <string name="instagram_handle">thecodebotog</string>
+    <string name="instagram_url" translatable="false">https://www.instagram.com/thecodebotog</string>
+    <string name="telegram">Telegram</string>
+    <string name="telegram_handle">thecodebotog</string>
+    <string name="telegram_url" translatable="false">https://t.me/thecodebotog</string>
+    <string name="contact_us">Contact Us</string>
+    <string name="email">Email</string>
+    <string name="contact_email">borthakurbinondi@gmail.com</string>
 </resources>

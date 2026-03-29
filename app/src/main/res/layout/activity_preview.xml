@@ -6,32 +6,12 @@
     android:layout_height="match_parent"
     android:orientation="vertical">
 
-    <LinearLayout
-        android:id="@+id/toolbar"
+    <com.google.android.material.appbar.MaterialToolbar
         android:layout_width="match_parent"
-        android:layout_height="?attr/actionBarSize"
-        app:layout_constraintEnd_toEndOf="parent"
-        android:orientation="horizontal"
-        android:gravity="center_vertical"
-        android:paddingLeft="15dp"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" >
-        <androidx.appcompat.widget.AppCompatImageButton
-            android:layout_width="40dp"
-            android:layout_height="40dp"
-            android:src="@drawable/ic_back"
-            android:scaleType="fitCenter"
-            android:background="#00000000"
-            android:padding="8dp"
-            android:id="@+id/back"/>
-        <TextView
-            android:id="@+id/title"
-            android:layout_width="wrap_content"
-            android:textSize="22sp"
-            android:layout_height="wrap_content"
-            android:textStyle="bold"
-            android:text="@string/preview_file"/>
-    </LinearLayout>
+        android:layout_height="wrap_content"
+        android:id="@+id/toolBar"
+        app:navigationIcon="@drawable/ic_back"
+        app:title="@string/preview_file"/>
 
     <androidx.viewpager2.widget.ViewPager2
         android:id="@+id/viewPager"

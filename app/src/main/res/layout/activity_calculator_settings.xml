@@ -90,64 +90,6 @@
                     app:layout_constraintTop_toTopOf="parent" />
             </androidx.constraintlayout.widget.ConstraintLayout>
 
-            <androidx.constraintlayout.widget.ConstraintLayout
-                android:id="@+id/checkUpdateLayout"
-                style="@style/optionLayout"
-                android:layout_marginTop="4dp">
-
-                <androidx.appcompat.widget.AppCompatImageView
-                    android:id="@+id/updateImage"
-                    style="@style/optionImage"
-                    app:layout_constraintBottom_toBottomOf="parent"
-                    app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintTop_toTopOf="parent"
-                    app:srcCompat="@drawable/ic_history" />
-
-                <TextView
-                    android:id="@+id/updateTitleText"
-                    style="@style/optionTitleText"
-                    android:text="@string/check_for_updates"
-                    app:layout_constraintEnd_toStartOf="@+id/updateActionFrame"
-                    app:layout_constraintStart_toEndOf="@id/updateImage"
-                    app:layout_constraintTop_toTopOf="parent" />
-
-                <TextView
-                    android:id="@+id/textView3"
-                    style="@style/optionDescriptionText"
-                    android:text="@string/new_version_description"
-                    app:layout_constraintBottom_toBottomOf="parent"
-                    app:layout_constraintStart_toEndOf="@id/updateImage"
-                    app:layout_constraintTop_toBottomOf="@id/updateTitleText" />
-
-                <FrameLayout
-                    android:id="@+id/updateActionFrame"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginEnd="16dp"
-                    app:layout_constraintBottom_toBottomOf="parent"
-                    app:layout_constraintEnd_toEndOf="parent"
-                    app:layout_constraintTop_toTopOf="parent">
-
-                    <com.google.android.material.button.MaterialButton
-                        android:id="@+id/checkUpdate"
-                        style="@style/Widget.Material3.Button.TextButton"
-                        android:layout_width="wrap_content"
-                        android:layout_height="@dimen/_35sdp"
-                        android:text="@string/check"
-                        android:gravity="end|center_vertical"
-                        android:textSize="12sp" />
-
-                    <ProgressBar
-                        android:id="@+id/versionChackingProgress"
-                        android:layout_width="28dp"
-                        android:layout_height="28dp"
-                        android:layout_gravity="center"
-                        android:indeterminate="true"
-                        android:indeterminateTint="?attr/colorPrimary"
-                        android:visibility="gone" />
-                </FrameLayout>
-            </androidx.constraintlayout.widget.ConstraintLayout>
-
             <TextView
                 style="@style/sectionText"
                 android:text="@string/theme_settings" />
@@ -418,69 +360,34 @@
                     app:layout_constraintTop_toTopOf="parent" />
             </androidx.constraintlayout.widget.ConstraintLayout>
 
-            <TextView
-                style="@style/sectionText"
-                android:text="@string/about_app" />
-
             <androidx.constraintlayout.widget.ConstraintLayout
-                android:id="@+id/devGithubButton"
+                android:id="@+id/aboutButton"
                 style="@style/optionLayout"
                 android:layout_marginTop="8dp">
 
                 <androidx.appcompat.widget.AppCompatImageView
-                    android:id="@+id/githubImage"
+                    android:id="@+id/aboutImage"
                     style="@style/optionImage"
-                    android:padding="2dp"
                     app:layout_constraintBottom_toBottomOf="parent"
                     app:layout_constraintStart_toStartOf="parent"
                     app:layout_constraintTop_toTopOf="parent"
-                    app:srcCompat="@drawable/ic_github" />
+                    app:srcCompat="@drawable/ic_info" />
 
                 <TextView
-                    android:id="@+id/devNameText"
+                    android:id="@+id/aboutText"
                     style="@style/optionTitleText"
-                    android:text="@string/developer_details"
+                    android:text="@string/about"
                     app:layout_constraintEnd_toEndOf="parent"
-                    app:layout_constraintStart_toEndOf="@id/githubImage"
+                    app:layout_constraintStart_toEndOf="@id/aboutImage"
                     app:layout_constraintTop_toTopOf="parent" />
 
                 <TextView
                     style="@style/optionDescriptionText"
-                    android:text="@string/binondi_borthakur"
+                    android:text="@string/about_description"
                     app:layout_constraintBottom_toBottomOf="parent"
                     app:layout_constraintEnd_toEndOf="parent"
-                    app:layout_constraintStart_toEndOf="@id/githubImage"
-                    app:layout_constraintTop_toBottomOf="@id/devNameText" />
-            </androidx.constraintlayout.widget.ConstraintLayout>
-
-            <androidx.constraintlayout.widget.ConstraintLayout
-                android:id="@+id/sourceCodeLayout"
-                style="@style/optionLayout"
-                android:layout_marginTop="4dp">
-
-                <androidx.appcompat.widget.AppCompatImageView
-                    android:id="@+id/sourceCodeImage"
-                    style="@style/optionImage"
-                    android:padding="2dp"
-                    app:layout_constraintBottom_toBottomOf="parent"
-                    app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintTop_toTopOf="parent"
-                    app:srcCompat="@drawable/ic_github" />
-
-                <TextView
-                    android:id="@+id/sourceCodeTitleText"
-                    style="@style/optionTitleText"
-                    android:text="@string/view_source_code"
-                    app:layout_constraintStart_toEndOf="@id/sourceCodeImage"
-                    app:layout_constraintTop_toTopOf="parent" />
-
-                <TextView
-                    style="@style/optionDescriptionText"
-                    android:text="@string/view_the_source_code_of_the_app"
-                    app:layout_constraintBottom_toBottomOf="parent"
-                    app:layout_constraintStart_toEndOf="@id/sourceCodeImage"
-                    app:layout_constraintTop_toBottomOf="@id/sourceCodeTitleText" />
-
+                    app:layout_constraintStart_toEndOf="@id/aboutImage"
+                    app:layout_constraintTop_toBottomOf="@id/aboutText" />
             </androidx.constraintlayout.widget.ConstraintLayout>
 
         </LinearLayout>

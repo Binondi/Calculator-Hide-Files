@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+    <item
+        android:id="@+id/edit"
+        app:iconTint="?attr/colorPrimary"
+        android:icon="@drawable/ic_edit"
+        android:title="@string/edit"/>
+    <item
+        android:id="@+id/delete"
+
+        app:iconTint="?attr/colorPrimary"
+        android:icon="@drawable/ic_delete"
+        android:title="@string/delete"/>
+    <item
+        android:id="@+id/list"
+        app:showAsAction="always"
+        app:iconTint="?attr/colorPrimary"
+        android:icon="@drawable/ic_list"
+        android:title="@string/list"/>
+
+    <item
+        android:id="@+id/settings"
+        app:iconTint="?attr/colorPrimary"
+        android:icon="@drawable/ic_settings"
+        app:showAsAction="always"
+        android:title="@string/settings"/>
+
+</menu>

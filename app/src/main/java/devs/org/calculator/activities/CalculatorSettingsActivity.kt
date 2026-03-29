@@ -5,12 +5,8 @@ import android.content.pm.PackageManager
 import android.content.res.Configuration
 import android.os.Build
 import android.os.Bundle
-import android.os.Handler
-import android.os.Looper
 import android.view.HapticFeedbackConstants
 import android.view.SoundEffectConstants
-import android.view.View
-import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.core.net.toUri
@@ -19,7 +15,6 @@ import androidx.core.view.WindowInsetsCompat
 import com.google.android.material.snackbar.Snackbar
 import devs.org.calculator.R
 import devs.org.calculator.databinding.ActivityCalculatorSettingsBinding
-import devs.org.calculator.update.Update.checkForAppUpdate
 import devs.org.calculator.utils.formatResult
 
 class CalculatorSettingsActivity : BaseCalculatorActivity() {
@@ -97,12 +92,9 @@ class CalculatorSettingsActivity : BaseCalculatorActivity() {
         binding.githubButton.setOnClickListener {
             openUrl(GITHUB_URL)
         }
-        binding.sourceCodeLayout.setOnClickListener {
-            openUrl(GITHUB_URL)
-        }
 
-        binding.devGithubButton.setOnClickListener {
-            openUrl(DEV_GITHUB_URL)
+        binding.aboutButton.setOnClickListener {
+            startActivity(Intent(this, AboutActivity::class.java))
         }
 
         binding.dynamicColorsSwitch.setOnCheckedChangeListener { _, isChecked ->
@@ -124,17 +116,7 @@ class CalculatorSettingsActivity : BaseCalculatorActivity() {
             }
         }
 
-        binding.checkUpdate.setOnClickListener {
-            binding.checkUpdate.visibility = View.GONE
-            binding.versionChackingProgress.visibility = View.VISIBLE
-            Handler(Looper.getMainLooper()).postDelayed({
-                checkForAppUpdate(this){
-                    if (!it) Toast.makeText(this,"Using the latest version",Toast.LENGTH_SHORT).show()
-                    binding.checkUpdate.visibility = View.VISIBLE
-                    binding.versionChackingProgress.visibility = View.GONE
-                }
-            },1000)
-        }
+
         binding.vibrationStatus.setOnCheckedChangeListener { _, isChecked ->
             prefs.setBoolean("vibration_haptic", isChecked)
             if (isChecked) {

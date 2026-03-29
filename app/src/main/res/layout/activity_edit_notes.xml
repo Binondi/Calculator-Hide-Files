@@ -7,47 +7,16 @@
     android:layout_height="match_parent"
     tools:context=".activities.EditNotesActivity">
 
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="?attr/actionBarSize"
-        android:gravity="center_vertical"
-        android:orientation="horizontal"
-        android:padding="8dp"
+    <com.google.android.material.appbar.MaterialToolbar
         android:id="@+id/toolBar"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:navigationIcon="@drawable/ic_back"
+        app:menu="@menu/notes_menu"
+        app:title="@string/edit_note"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent">
-
-        <androidx.appcompat.widget.AppCompatImageButton
-            android:layout_width="40dp"
-            android:layout_height="40dp"
-            android:src="@drawable/ic_back"
-            app:tint="@color/svgTintColor"
-            android:scaleType="fitCenter"
-            android:background="#00000000"
-            android:padding="8dp"
-            android:id="@+id/back"/>
-        <TextView
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:text="@string/edit_note"
-            android:textSize="22sp"
-            android:singleLine="true"
-            android:padding="4dp"
-            android:textStyle="bold"
-            android:layout_weight="1"
-            android:id="@+id/folderName"/>
-
-        <com.google.android.material.button.MaterialButton
-            android:id="@+id/saveButton"
-            style="@style/Widget.Material3.Button.TextButton"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="end"
-            android:gravity="end|center_vertical"
-            android:text="@string/save" />
-
-    </LinearLayout>
+        app:layout_constraintTop_toTopOf="parent" />
 
     <androidx.core.widget.NestedScrollView
         android:layout_width="match_parent"

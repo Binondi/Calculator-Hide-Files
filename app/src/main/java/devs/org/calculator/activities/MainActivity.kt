@@ -182,6 +182,10 @@ class MainActivity : BaseCalculatorActivity(), DialogActionsCallback, DialogUtil
                     startActivity(Intent(this, CalculatorSettingsActivity::class.java))
                     true
                 }
+                R.id.about -> {
+                    startActivity(Intent(this, AboutActivity::class.java))
+                    true
+                }
                 else -> false
             }
         }

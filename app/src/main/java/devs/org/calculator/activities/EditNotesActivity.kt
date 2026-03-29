@@ -46,11 +46,22 @@ class EditNotesActivity : BaseActivity() {
             noteFile?.parentFile?.let {
                 notesDir = it
             }
+            binding.toolBar.title = getString(R.string.update_note)
             loadNote()
         }
 
-        binding.back.setOnClickListener { finish() }
-        binding.saveButton.setOnClickListener { saveNote() }
+        binding.toolBar.setNavigationOnClickListener {
+            finish()
+        }
+        binding.toolBar.setOnMenuItemClickListener { menuItem ->
+            when(menuItem.itemId){
+                R.id.save -> {
+                    saveNote()
+                    true
+                }
+                else -> false
+            }
+        }
     }
 
     private fun loadNote() {

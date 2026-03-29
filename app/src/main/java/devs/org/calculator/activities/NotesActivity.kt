@@ -55,7 +55,9 @@ class NotesActivity : BaseActivity() {
     }
 
     private fun setupToolbar() {
-        binding.back.setOnClickListener { finish() }
+        binding.toolBar.setNavigationOnClickListener {
+            finish()
+        }
     }
 
     private fun setupRecyclerView() {

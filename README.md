@@ -5,7 +5,7 @@
 # Calculator Hide File App for Android
 
 <a href="https://github.com/Binondi/Calculator-Hide-Files/releases/latest">
-      <img alt="Latest release" src="https://img.shields.io/badge/Releases-v2.0.0-blue?logo=github&style=for-the-badge">
+      <img alt="Latest release" src="https://img.shields.io/badge/Releases-v2.0.1-blue?logo=github&style=for-the-badge">
 </a>
 
 <a href="https://github.com/Binondi/Calculator-Hide-Files/releases/latest">
@@ -27,7 +27,7 @@
 [<img src="https://www.openapk.net/images/openapk-badge.png" alt="Get it on OpenApk" height="80">](https://www.openapk.net/calculator/devs.org.calculator/)
 [<img src="https://s1.ax1x.com/2023/01/12/pSnTZ0f.png"
      alt="Get it on Telegram Channel"
-     height="80">](https://t.me/calculatorhidefilesapp)
+     height="80">](https://t.me/thecodebotog)
 </a> 
 
 </div>

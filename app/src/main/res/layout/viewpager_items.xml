@@ -11,8 +11,7 @@
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:background="@android:color/black">
+        android:layout_height="match_parent">
 
         <com.jsibbold.zoomage.ZoomageView
             android:id="@+id/imageView"
@@ -48,7 +47,7 @@
             android:layout_margin="16dp"
             android:visibility="visible"
             app:icon="@drawable/ic_fullscreen"
-            android:backgroundTint="#40000000"
+            android:backgroundTint="?attr/colorSecondaryContainer"
             app:layout_constraintTop_toTopOf="parent"
             app:layout_constraintEnd_toEndOf="parent" />
 

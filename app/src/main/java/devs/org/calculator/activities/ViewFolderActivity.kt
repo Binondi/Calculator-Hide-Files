@@ -260,7 +260,7 @@ class ViewFolderActivity : BaseActivity() {
         }
 
         val files = folderManager.getFilesInFolder(folder)
-        binding.folderName.text = folder.name
+        binding.toolBar.title = folder.name
 
         if (files.isNotEmpty()) {
             showFileList(files, folder)
@@ -314,12 +314,18 @@ class ViewFolderActivity : BaseActivity() {
         binding.recyclerView.adapter = fileAdapter
         binding.swipeLayout.visibility = View.VISIBLE
         binding.noItems.visibility = View.GONE
-
-        binding.menuButton.setOnClickListener {
-            fileAdapter?.let { adapter ->
-                showFileOptionsMenu(adapter.getSelectedItems())
+        binding.toolBar.setOnMenuItemClickListener { menuItem ->
+            when(menuItem.itemId){
+                R.id.options ->{
+                    fileAdapter?.let { adapter ->
+                        showFileOptionsMenu(adapter.getSelectedItems())
+                    }
+                    true
+                }
+                else -> false
             }
         }
+
         showFileViewIcons()
     }
 
@@ -569,8 +575,8 @@ class ViewFolderActivity : BaseActivity() {
                             binding.noItems.visibility = View.GONE
 
                             val currentFiles = fileAdapter?.currentList ?: emptyList()
-                            val hasChanges = files.size != currentFiles.size || 
-                                files.any { newFile -> 
+                            val hasChanges = files.size != currentFiles.size ||
+                                files.any { newFile ->
                                     currentFiles.none { it.absolutePath == newFile.absolutePath }
                                 }
 
@@ -602,7 +608,7 @@ class ViewFolderActivity : BaseActivity() {
             if (isFabOpen) closeFabs()
             else openFabs()
         }
-        binding.back.setOnClickListener {
+        binding.toolBar.setNavigationOnClickListener {
             finish()
         }
         binding.swipeLayout.setOnRefreshListener {
@@ -636,7 +642,7 @@ class ViewFolderActivity : BaseActivity() {
     private fun openFabs() {
         if (!isFabOpen) {
             isFabOpen = true
-            
+
             binding.addImage.visibility = View.VISIBLE
             binding.addVideo.visibility = View.VISIBLE
             binding.addAudio.visibility = View.VISIBLE
@@ -656,7 +662,7 @@ class ViewFolderActivity : BaseActivity() {
     private fun closeFabs() {
         if (isFabOpen) {
             isFabOpen = false
-            
+
             binding.addImage.startAnimation(fabClose)
             binding.addVideo.startAnimation(fabClose)
             binding.addAudio.startAnimation(fabClose)
@@ -678,7 +684,7 @@ class ViewFolderActivity : BaseActivity() {
     }
 
     private fun showFileViewIcons() {
-        binding.menuButton.visibility = View.GONE
+        binding.toolBar.menu.findItem(R.id.options)?.isVisible = false
         binding.fabExpend.visibility = View.VISIBLE
         binding.addImage.visibility = View.GONE
         binding.addVideo.visibility = View.GONE
@@ -690,7 +696,7 @@ class ViewFolderActivity : BaseActivity() {
     }
 
     private fun showFileSelectionIcons() {
-        binding.menuButton.visibility = View.VISIBLE
+        binding.toolBar.menu.findItem(R.id.options)?.isVisible = true
         binding.fabExpend.visibility = View.GONE
         binding.addImage.visibility = View.GONE
         binding.addVideo.visibility = View.GONE
@@ -703,7 +709,7 @@ class ViewFolderActivity : BaseActivity() {
         lifecycleScope.launch {
             var allUnhidden = true
             val unhiddenFiles = mutableListOf<File>()
-            
+
             // Filter encrypted and plain files
             val encryptedFiles = selectedFiles.filter { file ->
                 val hiddenFile = fileAdapter?.hiddenFileRepository?.getHiddenFileByPath(file.absolutePath)
@@ -717,7 +723,7 @@ class ViewFolderActivity : BaseActivity() {
                 if (encryptedFiles.isNotEmpty()) {
                     showEncryptionDialog(R.string.decrypting_files)
                 } else if (plainFiles.isNotEmpty()) {
-                    showProcessingDialog(plainFiles.size)
+                    showCustomDialog(plainFiles.size)
                 }
             }
 
@@ -801,18 +807,6 @@ class ViewFolderActivity : BaseActivity() {
         }
     }
 
-    @SuppressLint("SetTextI18n")
-    private fun showProcessingDialog(count: Int) {
-        val dialogView = ProccessingDialogBinding.inflate(layoutInflater)
-        customDialog = MaterialAlertDialogBuilder(this)
-            .setView(dialogView.root)
-            .setCancelable(false)
-            .create()
-        dialogView.title.text = "Unhiding $count files"
-        customDialog?.show()
-        dialogShowTime = System.currentTimeMillis()
-    }
-    
     private fun showEncryptionDialog(titleResId: Int) {
         val binding = EncryptionProgressDialogBinding.inflate(LayoutInflater.from(this))
         binding.title.text = getString(titleResId)
@@ -936,7 +930,7 @@ class ViewFolderActivity : BaseActivity() {
                             isEncrypted = it.isEncrypted
                         )
                     }
-                    
+
                     if (file.delete()) {
                         movedFiles.add(file)
                     } else {
@@ -969,7 +963,7 @@ class ViewFolderActivity : BaseActivity() {
 
         val bottomSheetView = LayoutInflater.from(this).inflate(R.layout.bottom_sheet_folder_selection, null)
         val recyclerView = bottomSheetView.findViewById<RecyclerView>(R.id.folderRecyclerView)
-        
+
         val bottomSheetDialog = BottomSheetDialog(this)
         bottomSheetDialog.setContentView(bottomSheetView)
 

@@ -92,22 +92,22 @@ class PreviewActivity : BaseActivity() {
         when (type) {
             "IMAGE" -> {
                 filetype = FileManager.FileType.IMAGE
-                binding.title.text = getString(R.string.preview_images)
+                binding.toolBar.title = getString(R.string.preview_images)
             }
 
             "VIDEO" -> {
                 filetype = FileManager.FileType.VIDEO
-                binding.title.text = getString(R.string.preview_videos)
+                binding.toolBar.title = getString(R.string.preview_videos)
             }
 
             "AUDIO" -> {
                 filetype = FileManager.FileType.AUDIO
-                binding.title.text = getString(R.string.preview_audios)
+                binding.toolBar.title = getString(R.string.preview_audios)
             }
 
             else -> {
                 filetype = FileManager.FileType.DOCUMENT
-                binding.title.text = getString(R.string.preview_documents)
+                binding.toolBar.title = getString(R.string.preview_documents)
             }
         }
     }
@@ -162,7 +162,7 @@ class PreviewActivity : BaseActivity() {
     }
 
     private fun setupClickListeners() {
-        binding.back.setOnClickListener {
+        binding.toolBar.setNavigationOnClickListener {
             if (isFullscreen) toggleFullscreen() else finish()
         }
 
@@ -356,21 +356,21 @@ class PreviewActivity : BaseActivity() {
     private fun toggleFullscreen() {
         isFullscreen = !isFullscreen
         setFullscreen(isFullscreen)
-        if (isFullscreen) {
-            requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_SENSOR_LANDSCAPE
+        requestedOrientation = if (isFullscreen) {
+            ActivityInfo.SCREEN_ORIENTATION_SENSOR_LANDSCAPE
         } else {
-            requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
+            ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
         }
     }
 
     fun setFullscreen(isFullscreen: Boolean) {
         if (isFullscreen) {
-            binding.toolbar.visibility = View.GONE
+            binding.toolBar.visibility = View.GONE
             binding.unHide.visibility = View.GONE
             binding.delete.visibility = View.GONE
             window.addFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN)
         } else {
-            binding.toolbar.visibility = View.VISIBLE
+            binding.toolBar.visibility = View.VISIBLE
             binding.unHide.visibility = View.VISIBLE
             binding.delete.visibility = View.VISIBLE
             window.clearFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN)
