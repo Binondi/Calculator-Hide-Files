@@ -1,1 +1,1 @@
-A calculator with a hidden vault to securely store your private files.
+Secure file vault with calculator interface
