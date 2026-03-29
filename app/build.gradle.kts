@@ -102,7 +102,6 @@ dependencies {
     implementation(libs.androidx.room.ktx)
     //noinspection KaptUsageInsteadOfKsp
     kapt(libs.androidx.room.compiler)
-    implementation(libs.okhttp)
     implementation(libs.core)
     implementation(libs.linkify)
     implementation(libs.sdp.android)
