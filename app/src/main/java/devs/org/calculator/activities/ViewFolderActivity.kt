@@ -28,6 +28,7 @@ import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.textfield.TextInputEditText
+import devs.org.calculator.CalculatorApp
 import devs.org.calculator.R
 import devs.org.calculator.adapters.FileAdapter
 import devs.org.calculator.adapters.FolderSelectionAdapter
@@ -367,10 +368,10 @@ class ViewFolderActivity : BaseActivity() {
             var hasEncryptedFiles = false
             var hasDecryptedFiles = false
             var hasEncFilesWithoutMetadata = false
-            
+
             for (file in selectedFiles) {
                 val hiddenFile = fileAdapter?.hiddenFileRepository?.getHiddenFileByPath(file.absolutePath)
-                
+
                 if (file.name.endsWith(ENCRYPTED_EXTENSION)) {
                     if (hiddenFile?.isEncrypted == true) {
                         hasEncryptedFiles = true
@@ -413,7 +414,7 @@ class ViewFolderActivity : BaseActivity() {
                                     lifecycleScope.launch {
                                         val filesWithoutMetadata = selectedFiles.filter { file ->
                                             file.name.endsWith(ENCRYPTED_EXTENSION) &&
-                                            fileAdapter?.hiddenFileRepository?.getHiddenFileByPath(file.absolutePath)?.isEncrypted != true
+                                                    fileAdapter?.hiddenFileRepository?.getHiddenFileByPath(file.absolutePath)?.isEncrypted != true
                                         }
 
                                         if (filesWithoutMetadata.isNotEmpty()) {
@@ -576,9 +577,9 @@ class ViewFolderActivity : BaseActivity() {
 
                             val currentFiles = fileAdapter?.currentList ?: emptyList()
                             val hasChanges = files.size != currentFiles.size ||
-                                files.any { newFile ->
-                                    currentFiles.none { it.absolutePath == newFile.absolutePath }
-                                }
+                                    files.any { newFile ->
+                                        currentFiles.none { it.absolutePath == newFile.absolutePath }
+                                    }
 
                             if (hasChanges) {
                                 fileAdapter?.submitList(files.toMutableList())
@@ -636,6 +637,7 @@ class ViewFolderActivity : BaseActivity() {
             addFlags(Intent.FLAG_GRANT_PERSISTABLE_URI_PERMISSION)
         }
         closeFabs()
+        (application as CalculatorApp).isWaitingForResult = true
         pickImageLauncher.launch(intent)
     }
 
@@ -715,7 +717,7 @@ class ViewFolderActivity : BaseActivity() {
                 val hiddenFile = fileAdapter?.hiddenFileRepository?.getHiddenFileByPath(file.absolutePath)
                 hiddenFile?.isEncrypted == true
             }
-            
+
             val plainFiles = selectedFiles.filter { it !in encryptedFiles }
 
             // Switch to Main thread to show dialog immediately
@@ -736,7 +738,7 @@ class ViewFolderActivity : BaseActivity() {
                         if (hiddenFile?.isEncrypted == true) {
                             val originalExtension = hiddenFile.originalExtension
                             val decryptedFile = SecurityUtils.changeFileExtension(file, originalExtension)
-                            
+
                             if (SecurityUtils.decryptFile(this@ViewFolderActivity, file, decryptedFile)) {
                                 if (decryptedFile.exists() && decryptedFile.length() > 0) {
                                     val fileUri = FileManager.FileManager().getContentUriImage(this@ViewFolderActivity, decryptedFile)
@@ -882,7 +884,7 @@ class ViewFolderActivity : BaseActivity() {
                 try {
                     val newFile = File(destinationFolder, file.name)
                     file.copyTo(newFile, overwrite = true)
-                    
+
                     val hiddenFile = fileAdapter?.hiddenFileRepository?.getHiddenFileByPath(file.absolutePath)
                     hiddenFile?.let {
                         fileAdapter?.hiddenFileRepository?.insertHiddenFile(
@@ -920,7 +922,7 @@ class ViewFolderActivity : BaseActivity() {
                 try {
                     val newFile = File(destinationFolder, file.name)
                     file.copyTo(newFile, overwrite = true)
-                    
+
                     val hiddenFile = fileAdapter?.hiddenFileRepository?.getHiddenFileByPath(file.absolutePath)
                     hiddenFile?.let {
                         fileAdapter?.hiddenFileRepository?.updateEncryptionStatus(

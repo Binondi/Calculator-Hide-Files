@@ -22,11 +22,11 @@ class DialogUtil(private val context: Context) {
             .setMessage(message)
             .setPositiveButton(positiveButtonText) { _, _ -> callback.onPositiveButtonClicked() }
             .setNegativeButton(negativeButtonText) { _, _ -> callback.onNegativeButtonClicked() }
-        
+
         if (view != null) {
             builder.setView(view)
         }
-        
+
         builder.show()
     }
 

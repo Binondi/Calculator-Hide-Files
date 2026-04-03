@@ -17,6 +17,7 @@ import devs.org.calculator.databinding.ActivityAboutBinding
 class AboutActivity : AppCompatActivity() {
     private var DEV_GITHUB_URL = ""
     private var GITHUB_URL = ""
+    private var COFFEE_URL = "https://bit.ly/4sNR5Tn"
     private lateinit var binding : ActivityAboutBinding
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -41,6 +42,10 @@ class AboutActivity : AppCompatActivity() {
 
         binding.developer.setOnClickListener {
             openUrl(DEV_GITHUB_URL)
+        }
+
+        binding.bmclayout.setOnClickListener {
+            openUrl(COFFEE_URL)
         }
 
         binding.koFiLayout.setOnClickListener {
@@ -80,7 +85,7 @@ class AboutActivity : AppCompatActivity() {
     }
 
     private fun copyToClipboard(text: String, label: String) {
-        val clipboard = getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
+        val clipboard = getSystemService(CLIPBOARD_SERVICE) as ClipboardManager
         val clip = ClipData.newPlainText(label, text)
         clipboard.setPrimaryClip(clip)
         Snackbar.make(binding.root, getString(R.string.copied_to_clipboard), Snackbar.LENGTH_SHORT).show()

@@ -26,6 +26,7 @@ import androidx.documentfile.provider.DocumentFile
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.lifecycleScope
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
+import devs.org.calculator.CalculatorApp
 import devs.org.calculator.R
 import devs.org.calculator.callbacks.FileProcessCallback
 import devs.org.calculator.database.AppDatabase
@@ -220,6 +221,7 @@ class FileManager(private val context: Context, private val lifecycleOwner: Life
                             }
                         }
                         intentSender?.let { sender ->
+                            (context.applicationContext as? CalculatorApp)?.isWaitingForResult = true
                             intentSenderLauncher.launch(
                                 IntentSenderRequest.Builder(sender).build()
                             )
@@ -296,6 +298,7 @@ class FileManager(private val context: Context, private val lifecycleOwner: Life
                 val intent = Intent(Settings.ACTION_MANAGE_ALL_FILES_ACCESS_PERMISSION)
                 intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
                 try {
+                    (activity.applicationContext as? CalculatorApp)?.isWaitingForResult = true
                     activity.startActivity(intent)
                 } catch (e: ActivityNotFoundException) {
                     Toast.makeText(activity, "Unable to open settings. Please grant permission manually.", Toast.LENGTH_SHORT).show()

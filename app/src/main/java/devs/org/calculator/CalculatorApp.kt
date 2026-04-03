@@ -13,6 +13,7 @@ class CalculatorApp : Application(), Application.ActivityLifecycleCallbacks {
     private var activityCount = 0
 
     var isVaultSessionActive = false
+    var isWaitingForResult = false
 
     override fun onCreate() {
         super.onCreate()
@@ -32,12 +33,13 @@ class CalculatorApp : Application(), Application.ActivityLifecycleCallbacks {
 
     override fun onActivityStarted(activity: Activity) {
         activityCount++
+        isWaitingForResult = false
     }
 
     override fun onActivityStopped(activity: Activity) {
         activityCount--
 
-        if (activityCount == 0) {
+        if (activityCount <= 0 && !isWaitingForResult && !activity.isChangingConfigurations) {
             isVaultSessionActive = false
         }
     }

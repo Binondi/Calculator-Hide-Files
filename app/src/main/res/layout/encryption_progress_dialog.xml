@@ -31,10 +31,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:indeterminate="true"
-        app:trackThickness="12dp"
-        app:trackCornerRadius="6dp"
-        app:indicatorColor="?attr/colorPrimary"
-        app:indeterminateAnimationType="disjoint"
+        style="@style/Widget.Material3Expressive.LinearProgressIndicator.Wavy"
         android:layout_marginHorizontal="24dp"
         android:layout_marginTop="4dp"
         android:layout_marginBottom="32dp"/>
