@@ -22,9 +22,12 @@ import androidx.core.content.ContextCompat
 import androidx.core.content.edit
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
+import androidx.lifecycle.lifecycleScope
 import devs.org.calculator.CalculatorApp
 import devs.org.calculator.R
 import devs.org.calculator.callbacks.DialogActionsCallback
+import devs.org.calculator.database.AppDatabase
+import devs.org.calculator.database.CalculationHistory
 import devs.org.calculator.databinding.ActivityMainBinding
 import devs.org.calculator.utils.DialogUtil
 import devs.org.calculator.utils.FileManager
@@ -32,6 +35,8 @@ import devs.org.calculator.utils.PrefsUtil
 import devs.org.calculator.utils.StoragePermissionUtil
 import devs.org.calculator.utils.formatResult
 import devs.org.calculator.utils.formatWithCommas
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import net.objecthunter.exp4j.ExpressionBuilder
 import java.util.regex.Pattern
 
@@ -59,6 +64,7 @@ class MainActivity : BaseCalculatorActivity(), DialogActionsCallback, DialogUtil
     }
     private var soundEnabled = true
     private var vibrationEnabled = true
+    private val historyDao by lazy { AppDatabase.getDatabase(this).calculationHistoryDao() }
 
     @SuppressLint("ClickableViewAccessibility")
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -178,6 +184,10 @@ class MainActivity : BaseCalculatorActivity(), DialogActionsCallback, DialogUtil
         }
         binding.toolbar.setOnMenuItemClickListener { menuItem ->
             when(menuItem.itemId) {
+                R.id.history -> {
+                    startActivity(Intent(this, CalculationHistoryActivity::class.java))
+                    true
+                }
                 R.id.settings -> {
                     startActivity(Intent(this, CalculatorSettingsActivity::class.java))
                     true
@@ -423,6 +433,7 @@ class MainActivity : BaseCalculatorActivity(), DialogActionsCallback, DialogUtil
         }
 
         try {
+            val cleanExpression = currentExpression.replace("*", "×")
             var processedExpression = rawExpression.replace("×", "*")
 
             if (processedExpression.contains("%")) {
@@ -431,7 +442,16 @@ class MainActivity : BaseCalculatorActivity(), DialogActionsCallback, DialogUtil
 
             val result = ExpressionBuilder(processedExpression).build().evaluate()
             val precision = prefs.getInt("precision", 3)
-            currentExpression = formatResult(result, precision)
+            val formattedResult = formatResult(result, precision)
+
+            lifecycleScope.launch(Dispatchers.IO) {
+                historyDao.insert(CalculationHistory(
+                    expression = cleanExpression,
+                    result = "= $formattedResult"
+                ))
+            }
+
+            currentExpression = formattedResult
 
             lastWasOperator = false
             lastWasPercent = false

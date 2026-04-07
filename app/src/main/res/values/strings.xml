@@ -296,4 +296,9 @@
     <string name="contact_email">borthakurbinondi@gmail.com</string>
     <string name="buy_me_a_coffee">Buy Me A Coffee</string>
     <string name="coffee_url">https://buymeacoffee.com/binondi</string>
+    <string name="history">History</string>
+    <string name="calculation_history">Calculation History</string>
+    <string name="clear_history">Clear History</string>
+    <string name="no_history_available">No history available</string>
+    <string name="are_you_sure_you_want_to_clear_history">Are you sure you want to clear all history?</string>
 </resources>
