@@ -66,6 +66,8 @@ class MainActivity : BaseCalculatorActivity(), DialogActionsCallback, DialogUtil
     private var vibrationEnabled = true
     private val historyDao by lazy { AppDatabase.getDatabase(this).calculationHistoryDao() }
 
+    private var isUpdatingDisplay = false
+
     @SuppressLint("ClickableViewAccessibility")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -77,6 +79,42 @@ class MainActivity : BaseCalculatorActivity(), DialogActionsCallback, DialogUtil
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)
             insets
         }
+
+        binding.display.addTextChangedListener(object : android.text.TextWatcher {
+            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
+            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
+            override fun afterTextChanged(s: android.text.Editable?) {
+                if (isUpdatingDisplay) return
+                
+                val rawText = s?.toString() ?: ""
+                val cleanText = rawText.replace(",", "").replace("×", "*")
+                
+                if (cleanText != currentExpression) {
+                    currentExpression = cleanText
+                    // Re-calculate flags
+                    if (currentExpression.isNotEmpty()) {
+                        val lastChar = currentExpression.last()
+                        lastWasOperator = isOperator(lastChar.toString())
+                        lastWasPercent = lastChar == '%'
+                        
+                        val lastOperatorIndex = currentExpression.lastIndexOfAny(charArrayOf('+', '-', '*', '/'))
+                        val partAfterLastOperator = if (lastOperatorIndex == -1) currentExpression else currentExpression.substring(lastOperatorIndex + 1)
+                        hasDecimal = partAfterLastOperator.contains(".")
+                    } else {
+                        lastWasOperator = false
+                        lastWasPercent = false
+                        hasDecimal = false
+                    }
+                    
+                    binding.display.post { 
+                        val currentPos = binding.display.selectionStart
+                        val cleanPos = getCleanCursorPos(binding.display.text.toString(), currentPos)
+                        updateDisplay(cleanPos) 
+                    }
+                }
+            }
+        })
+
         binding.display.post {
             binding.display.requestFocus()
             binding.display.setSelection(binding.display.text?.length ?: 0)
@@ -248,10 +286,9 @@ class MainActivity : BaseCalculatorActivity(), DialogActionsCallback, DialogUtil
     private fun setupNumberButton(button: TextView, number: String) {
         button.setOnClickListener {
             applyHaptics(it)
-            currentExpression += number
+            insertIntoExpression(number)
             lastWasOperator = false
             lastWasPercent = false
-            updateDisplay()
         }
     }
 
@@ -264,23 +301,26 @@ class MainActivity : BaseCalculatorActivity(), DialogActionsCallback, DialogUtil
                 if (currentExpression == "0" || currentExpression.isEmpty()) return@setOnClickListener
             }
 
-            if (lastWasOperator) {
+            val displayText = binding.display.text?.toString() ?: ""
+            val cursorPos = binding.display.getCursorPosition()
+            val cleanCursorPos = getCleanCursorPos(displayText, cursorPos)
+
+            if (lastWasOperator && cleanCursorPos == currentExpression.length) {
                 currentExpression = currentExpression.dropLast(1) + internalOperator
-            } else if (!lastWasPercent) {
-                currentExpression += internalOperator
+                updateDisplay(currentExpression.length)
+            } else {
+                insertIntoExpression(internalOperator)
                 lastWasOperator = true
                 lastWasPercent = false
                 hasDecimal = false
             }
-            updateDisplay()
         }
     }
 
     private fun addPercentage() {
         if (!lastWasOperator && !lastWasPercent && currentExpression != "0" && currentExpression.isNotEmpty()) {
-            currentExpression += "%"
+            insertIntoExpression("%")
             lastWasPercent = true
-            updateDisplay()
         }
     }
 
@@ -291,17 +331,144 @@ class MainActivity : BaseCalculatorActivity(), DialogActionsCallback, DialogUtil
         lastWasPercent = false
         hasDecimal = false
         binding.display.resetTextSize()
-        updateDisplay()
+        updateDisplay(0)
     }
 
     private fun addDecimal() {
         if (!hasDecimal && !lastWasOperator && !lastWasPercent) {
-            currentExpression += "."
+            insertIntoExpression(".")
             hasDecimal = true
-            updateDisplay()
         }
     }
 
+    private fun getCleanCursorPos(displayText: String, cursorPos: Int): Int {
+        if (cursorPos <= 0) return 0
+        val textBeforeCursor = displayText.substring(0, cursorPos.coerceAtMost(displayText.length))
+        return textBeforeCursor.replace(",", "").length
+    }
+
+    private fun insertIntoExpression(toInsert: String) {
+        val start = binding.display.selectionStart
+        val end = binding.display.selectionEnd
+        val displayText = binding.display.text?.toString() ?: ""
+
+        val cleanStart = getCleanCursorPos(displayText, start)
+        val cleanEnd = getCleanCursorPos(displayText, end)
+
+        val sb = StringBuilder(currentExpression)
+        if (cleanStart < cleanEnd) {
+            sb.replace(cleanStart, cleanEnd, toInsert)
+        } else {
+            sb.insert(cleanStart, toInsert)
+        }
+
+        currentExpression = sb.toString()
+        updateDisplay(cleanStart + toInsert.length)
+    }
+
+    private fun updateDisplay(targetCleanPos: Int? = null) {
+        if (isUpdatingDisplay) return
+        isUpdatingDisplay = true
+
+        val displayText = currentExpression.replace("*", "×")
+        val formatted = formatWithCommas(displayText)
+        
+        if (binding.display.text.toString() != formatted) {
+            binding.display.setText(formatted)
+        }
+        
+        val newPos = if (targetCleanPos != null) {
+            getAdjustedCursorPos(formatted, targetCleanPos)
+        } else {
+            formatted.length
+        }
+        binding.display.setSelection(newPos.coerceIn(0, formatted.length))
+        
+        isUpdatingDisplay = false
+
+        if (currentExpression.isEmpty()) {
+            if (prefs.getBoolean("isFirst", true)) {
+                binding.display.setText(getString(R.string.enter_123456))
+            } else {
+                binding.display.setText("")
+            }
+            binding.total.text = ""
+            return
+        }
+
+        try {
+            var processedExpression = currentExpression.replace("×", "*")
+
+            if (isOperator(processedExpression.last().toString())) {
+                processedExpression = processedExpression.dropLast(1)
+            }
+
+            if (processedExpression.isEmpty()) {
+                binding.total.text = ""
+                return
+            }
+
+            if (processedExpression.contains("%")) {
+                processedExpression = preprocessExpression(processedExpression)
+            }
+
+            val result = ExpressionBuilder(processedExpression).build().evaluate()
+            val formattedResult = formatWithCommas(formatResult(result, prefs.getInt("precision", 3)))
+
+            binding.total.text = if (prefs.getBoolean("isFirst", true) && currentExpression == "123456") {
+                getString(R.string.now_enter_button)
+            } else {
+                formattedResult
+            }
+        } catch (_: Exception) {
+            binding.total.text = ""
+        }
+    }
+
+    private fun cutNumbers() {
+        if (currentExpression.isEmpty()) return
+
+        val start = binding.display.selectionStart
+        val end = binding.display.selectionEnd
+        val displayText = binding.display.text?.toString() ?: ""
+
+        if (start < end) {
+            val cleanStart = getCleanCursorPos(displayText, start)
+            val cleanEnd = getCleanCursorPos(displayText, end)
+            currentExpression = StringBuilder(currentExpression).delete(cleanStart, cleanEnd).toString()
+            updateDisplay(cleanStart)
+        } else {
+            if (start <= 0) {
+                updateDisplay()
+                return
+            }
+
+            val cleanCursorPos = getCleanCursorPos(displayText, start)
+
+            if (cleanCursorPos <= 0 || cleanCursorPos > currentExpression.length) {
+                updateDisplay()
+                return
+            }
+
+            val charToDelete = currentExpression[cleanCursorPos - 1]
+
+            currentExpression = StringBuilder(currentExpression).deleteAt(cleanCursorPos - 1).toString()
+
+            when {
+                charToDelete == '%' -> lastWasPercent = false
+                isOperator(charToDelete.toString()) -> lastWasOperator = false
+                charToDelete == '.' -> hasDecimal = false
+            }
+
+            updateDisplay(cleanCursorPos - 1)
+        }
+
+        if (currentExpression.isEmpty()) {
+            lastWasOperator = false
+            lastWasPercent = false
+            hasDecimal = false
+         }
+    }
 
     private fun preprocessExpression(expression: String): String {
         val percentagePattern = Pattern.compile("(\\d+\\.?\\d*)%")
@@ -464,102 +631,16 @@ class MainActivity : BaseCalculatorActivity(), DialogActionsCallback, DialogUtil
         }
     }
 
-    private fun updateDisplay() {
-        val displayText = currentExpression.replace("*", "×")
-        binding.display.setText(formatWithCommas(displayText))
-        binding.display.setSelection(binding.display.text?.length ?: 0)
-
-        if (currentExpression.isEmpty()) {
-            if (prefs.getBoolean("isFirst", true)) {
-                binding.display.setText(getString(R.string.enter_123456))
-            } else {
-                binding.display.setText("")
-            }
-            binding.total.text = ""
-            return
-        }
-
-        try {
-            var processedExpression = currentExpression.replace("×", "*")
-
-            if (isOperator(processedExpression.last().toString())) {
-                processedExpression = processedExpression.dropLast(1)
-            }
-
-            if (processedExpression.isEmpty()) {
-                binding.total.text = ""
-                return
-            }
-
-            if (processedExpression.contains("%")) {
-                processedExpression = preprocessExpression(processedExpression)
-            }
-
-            val result = ExpressionBuilder(processedExpression).build().evaluate()
-            val formattedResult = formatWithCommas(formatResult(result, prefs.getInt("precision", 3)))
-
-            binding.total.text = if (prefs.getBoolean("isFirst", true) && currentExpression == "123456") {
-                getString(R.string.now_enter_button)
-            } else {
-                formattedResult
-            }
-        } catch (_: Exception) {
-            binding.total.text = ""
-        }
-    }
-
-    private fun cutNumbers() {
-        if (currentExpression.isEmpty()) return
-
-        val displayText = binding.display.text?.toString() ?: ""
-        val cursorPos = binding.display.getCursorPosition()
-
-        if (cursorPos <= 0) {
-            updateDisplay()
-            return
-        }
-
-        val cleanDisplayText = displayText.replace(",", "")
-        val cleanCursorPos = displayText.substring(0, cursorPos).replace(",", "").length
-
-        if (cleanCursorPos <= 0 || cleanCursorPos > cleanDisplayText.length) {
-            updateDisplay()
-            return
-        }
-
-        val charToDelete = cleanDisplayText[cleanCursorPos - 1]
-
-        currentExpression = cleanDisplayText.substring(0, cleanCursorPos - 1) +
-                cleanDisplayText.substring(cleanCursorPos)
-
-        when {
-            charToDelete == '%' -> lastWasPercent = false
-            isOperator(charToDelete.toString()) -> lastWasOperator = false
-            charToDelete == '.' -> hasDecimal = false
-        }
-
-        if (currentExpression.isEmpty()) {
-            lastWasOperator = false
-            lastWasPercent = false
-            hasDecimal = false
-        }
-
-        val newCursorPos = cleanCursorPos - 1
-
-        updateDisplay()
-
-        binding.display.post {
-            val newDisplayText = binding.display.text?.toString() ?: ""
-            val adjustedPos = getAdjustedCursorPos(newDisplayText, newCursorPos)
-            binding.display.setSelection(adjustedPos.coerceIn(0, newDisplayText.length))
-        }
-    }
-
     private fun getAdjustedCursorPos(displayText: String, cleanPos: Int): Int {
+        if (cleanPos <= 0) return 0
         var cleanCount = 0
         for (i in displayText.indices) {
-            if (displayText[i] != ',') cleanCount++
-            if (cleanCount == cleanPos) return i + 1
+            if (displayText[i] != ',') {
+                cleanCount++
+            }
+            if (cleanCount == cleanPos) {
+                return i + 1
+            }
         }
         return displayText.length
     }

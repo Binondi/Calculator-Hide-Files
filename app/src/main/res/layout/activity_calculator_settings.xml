@@ -64,7 +64,7 @@
                 <TextView
                     android:id="@+id/appNameText"
                     style="@style/optionTitleText"
-                    android:text="@string/full_app_name"
+                    android:text="@string/app_name"
                     app:layout_constraintEnd_toStartOf="@id/githubButton"
                     app:layout_constraintStart_toEndOf="@+id/appLogo"
                     app:layout_constraintTop_toTopOf="parent" />

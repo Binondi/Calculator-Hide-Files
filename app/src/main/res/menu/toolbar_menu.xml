@@ -5,12 +5,15 @@
         android:id="@+id/history"
         android:title="@string/history"
         app:showAsAction="always"
-        app:iconTint="?attr/colorPrimary"
         android:icon="@drawable/ic_history"/>
     <item
         android:id="@+id/settings"
-        android:title="@string/settings"/>
+        android:title="@string/settings"
+        app:showAsAction="always"
+        android:icon="@drawable/ic_settings"/>
     <item
         android:id="@+id/about"
-        android:title="@string/about"/>
+        android:title="@string/about"
+        app:showAsAction="always"
+        android:icon="@drawable/ic_info"/>
 </menu>

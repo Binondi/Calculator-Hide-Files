@@ -89,6 +89,7 @@
     <string name="file_unhidden_successfully">File Will Now Show In Gallery</string>
     <string name="file_unhidden_but_failed_to_remove_from_hidden_folder">File unhidden but failed to remove from hidden folder</string>
     <string name="failed_to_unhidden_file">Failed to unhidden file</string>
+    <string name="failed_to_unhidden_file_path">Failed to unhidden file: %1$s</string>
     <string name="failed_to_create_uri_for_file">Failed to create URI for file</string>
     <string name="error_unhiding_file">Error unhiding file: %1$s</string>
     <string name="select_multiple">Select Multiple</string>
@@ -301,4 +302,6 @@
     <string name="clear_history">Clear History</string>
     <string name="no_history_available">No history available</string>
     <string name="are_you_sure_you_want_to_clear_history">Are you sure you want to clear all history?</string>
+    <string name="made_with_heart">Made with ❤️ by devs.org</string>
+    <string name="copyright_text">© 2024 Calculator Vault</string>
 </resources>
