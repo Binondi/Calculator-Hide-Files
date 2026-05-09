@@ -28,6 +28,8 @@ import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.textfield.TextInputEditText
+import android.provider.MediaStore
+import androidx.core.content.FileProvider
 import devs.org.calculator.CalculatorApp
 import devs.org.calculator.R
 import devs.org.calculator.adapters.FileAdapter
@@ -62,6 +64,8 @@ class ViewFolderActivity : BaseActivity() {
     private var currentFolder: File? = null
     private val hiddenDir = File(Environment.getExternalStorageDirectory(), HIDDEN_DIR)
     private lateinit var pickImageLauncher: ActivityResultLauncher<Intent>
+    private lateinit var takePhotoLauncher: ActivityResultLauncher<Intent>
+    private var tempPhotoFile: File? = null
 
     private var customDialog: androidx.appcompat.app.AlertDialog? = null
 
@@ -105,6 +109,11 @@ class ViewFolderActivity : BaseActivity() {
         pickImageLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
             if (result.resultCode == RESULT_OK) {
                 handleFilePickerResult(result.data)
+            }
+        }
+        takePhotoLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
+            if (result.resultCode == RESULT_OK) {
+                handleCameraResult()
             }
         }
     }
@@ -276,11 +285,61 @@ class ViewFolderActivity : BaseActivity() {
         binding.swipeLayout.visibility = View.GONE
     }
 
+    private fun showViewSettingsDialog() {
+        val bottomSheetDialog = BottomSheetDialog(this)
+        val view = layoutInflater.inflate(R.layout.bottom_sheet_view_settings, null)
+        bottomSheetDialog.setContentView(view)
+
+        val cornerRadiusSlider = view.findViewById<com.google.android.material.slider.Slider>(R.id.cornerRadiusSlider)
+        val spanCountToggleGroup = view.findViewById<com.google.android.material.button.MaterialButtonToggleGroup>(R.id.spanCountToggleGroup)
+        val showFileNameSwitch = view.findViewById<com.google.android.material.materialswitch.MaterialSwitch>(R.id.showFileNameSwitch)
+
+        val currentCornerRadius = prefs.getInt("cornerRadius", 10)
+        val currentSpanCount = prefs.getInt("spanCount", 3)
+        val currentShowFileName = prefs.getBoolean("showFileName", true)
+
+        cornerRadiusSlider.value = currentCornerRadius.toFloat()
+        showFileNameSwitch.isChecked = currentShowFileName
+
+        when (currentSpanCount) {
+            2 -> spanCountToggleGroup.check(R.id.span2)
+            3 -> spanCountToggleGroup.check(R.id.span3)
+            4 -> spanCountToggleGroup.check(R.id.span4)
+        }
+
+        cornerRadiusSlider.addOnChangeListener { _, value, _ ->
+            prefs.setInt("cornerRadius", value.toInt())
+            fileAdapter?.updateViewSettings(showFileNameSwitch.isChecked, value.toInt())
+        }
+
+        spanCountToggleGroup.addOnButtonCheckedListener { _, checkedId, isChecked ->
+            if (isChecked) {
+                val newSpanCount = when (checkedId) {
+                    R.id.span2 -> 2
+                    R.id.span3 -> 3
+                    R.id.span4 -> 4
+                    else -> 3
+                }
+                prefs.setInt("spanCount", newSpanCount)
+                (binding.recyclerView.layoutManager as? GridLayoutManager)?.spanCount = newSpanCount
+            }
+        }
+
+        showFileNameSwitch.setOnCheckedChangeListener { _, isChecked ->
+            prefs.setBoolean("showFileName", isChecked)
+            fileAdapter?.updateViewSettings(isChecked, cornerRadiusSlider.value.toInt())
+        }
+
+        bottomSheetDialog.show()
+    }
+
     private fun showFileList(files: List<File>, folder: File) {
-        binding.recyclerView.layoutManager = GridLayoutManager(this, 3)
+        val spanCount = prefs.getInt("spanCount", 3)
+        val cornerRadius = prefs.getInt("cornerRadius", 10)
+        binding.recyclerView.layoutManager = GridLayoutManager(this, spanCount)
         fileAdapter?.cleanup()
 
-        fileAdapter = FileAdapter(this, this, folder, prefs.getBoolean("showFileName", true),
+        fileAdapter = FileAdapter(this, this, folder, prefs.getBoolean("showFileName", true), cornerRadius,
             onFolderLongClick = { isSelected ->
                 handleFileSelectionModeChange(isSelected)
             }).apply {
@@ -317,6 +376,10 @@ class ViewFolderActivity : BaseActivity() {
         binding.noItems.visibility = View.GONE
         binding.toolBar.setOnMenuItemClickListener { menuItem ->
             when(menuItem.itemId){
+                R.id.view_settings -> {
+                    showViewSettingsDialog()
+                    true
+                }
                 R.id.options ->{
                     fileAdapter?.let { adapter ->
                         showFileOptionsMenu(adapter.getSelectedItems())
@@ -616,6 +679,7 @@ class ViewFolderActivity : BaseActivity() {
             openFolder(currentFolder!!)
         }
 
+        binding.takePhoto.setOnClickListener { openCamera() }
         binding.addImage.setOnClickListener { openFilePicker("image/*") }
         binding.addVideo.setOnClickListener { openFilePicker("video/*") }
         binding.addAudio.setOnClickListener { openFilePicker("audio/*") }
@@ -641,15 +705,55 @@ class ViewFolderActivity : BaseActivity() {
         pickImageLauncher.launch(intent)
     }
 
+    private fun openCamera() {
+        val photoFile = try {
+            val storageDir = getExternalFilesDir(Environment.DIRECTORY_PICTURES)
+            File.createTempFile("TEMP_PHOTO_", ".jpg", storageDir).apply {
+                tempPhotoFile = this
+            }
+        } catch (e: Exception) {
+            null
+        }
+
+        photoFile?.also {
+            val photoURI: Uri = FileProvider.getUriForFile(
+                this,
+                "devs.org.calculator.fileprovider",
+                it
+            )
+            val takePictureIntent = Intent(MediaStore.ACTION_IMAGE_CAPTURE).apply {
+                putExtra(MediaStore.EXTRA_OUTPUT, photoURI)
+            }
+            closeFabs()
+            (application as CalculatorApp).isWaitingForResult = true
+            takePhotoLauncher.launch(takePictureIntent)
+        }
+    }
+
+    private fun handleCameraResult() {
+        tempPhotoFile?.let { file ->
+            if (file.exists() && file.length() > 0) {
+                val uri = FileProvider.getUriForFile(
+                    this,
+                    "devs.org.calculator.fileprovider",
+                    file
+                )
+                processSelectedFiles(listOf(uri))
+            }
+        }
+    }
+
     private fun openFabs() {
         if (!isFabOpen) {
             isFabOpen = true
 
+            binding.takePhoto.visibility = View.VISIBLE
             binding.addImage.visibility = View.VISIBLE
             binding.addVideo.visibility = View.VISIBLE
             binding.addAudio.visibility = View.VISIBLE
             binding.addDocument.visibility = View.VISIBLE
 
+            binding.takePhoto.startAnimation(fabOpen)
             binding.addImage.startAnimation(fabOpen)
             binding.addVideo.startAnimation(fabOpen)
             binding.addAudio.startAnimation(fabOpen)
@@ -665,6 +769,7 @@ class ViewFolderActivity : BaseActivity() {
         if (isFabOpen) {
             isFabOpen = false
 
+            binding.takePhoto.startAnimation(fabClose)
             binding.addImage.startAnimation(fabClose)
             binding.addVideo.startAnimation(fabClose)
             binding.addAudio.startAnimation(fabClose)
@@ -676,6 +781,7 @@ class ViewFolderActivity : BaseActivity() {
 
             mainHandler.postDelayed({
                 if (!isFabOpen) {
+                    binding.takePhoto.visibility = View.GONE
                     binding.addImage.visibility = View.GONE
                     binding.addVideo.visibility = View.GONE
                     binding.addAudio.visibility = View.GONE
@@ -687,7 +793,9 @@ class ViewFolderActivity : BaseActivity() {
 
     private fun showFileViewIcons() {
         binding.toolBar.menu.findItem(R.id.options)?.isVisible = false
+        binding.toolBar.menu.findItem(R.id.view_settings)?.isVisible = true
         binding.fabExpend.visibility = View.VISIBLE
+        binding.takePhoto.visibility = View.GONE
         binding.addImage.visibility = View.GONE
         binding.addVideo.visibility = View.GONE
         binding.addAudio.visibility = View.GONE
@@ -699,7 +807,9 @@ class ViewFolderActivity : BaseActivity() {
 
     private fun showFileSelectionIcons() {
         binding.toolBar.menu.findItem(R.id.options)?.isVisible = true
+        binding.toolBar.menu.findItem(R.id.view_settings)?.isVisible = false
         binding.fabExpend.visibility = View.GONE
+        binding.takePhoto.visibility = View.GONE
         binding.addImage.visibility = View.GONE
         binding.addVideo.visibility = View.GONE
         binding.addAudio.visibility = View.GONE

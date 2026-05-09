@@ -194,6 +194,7 @@
     <string name="secret_notes">Secret Notes</string>
     <string name="edit_note">Edit Note</string>
     <string name="save">Save</string>
+    <string name="take_photo">Take Photo</string>
     <string name="add_music">Add Music</string>
     <string name="check_for_updates">Check for Updates</string>
     <string name="enter_title">Enter Title</string>
@@ -302,6 +303,10 @@
     <string name="clear_history">Clear History</string>
     <string name="no_history_available">No history available</string>
     <string name="are_you_sure_you_want_to_clear_history">Are you sure you want to clear all history?</string>
+    <string name="view_settings">View Settings</string>
+    <string name="corner_radius">Corner Radius</string>
+    <string name="span_count">Span Count</string>
+    <string name="columns">Columns</string>
     <string name="made_with_heart">Made with ❤️ by devs.org</string>
     <string name="copyright_text">© 2024 Calculator Vault</string>
 </resources>

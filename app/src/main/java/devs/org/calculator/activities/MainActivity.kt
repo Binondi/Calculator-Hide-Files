@@ -471,89 +471,39 @@ class MainActivity : BaseCalculatorActivity(), DialogActionsCallback, DialogUtil
     }
 
     private fun preprocessExpression(expression: String): String {
-        val percentagePattern = Pattern.compile("(\\d+\\.?\\d*)%")
-        val operatorPercentPattern = Pattern.compile("([+\\-*/])(\\d+\\.?\\d*)%")
+        var sb = StringBuilder(expression)
+        val percentPattern = Pattern.compile("(\\d*\\.?\\d+)%")
+        var matcher = percentPattern.matcher(sb)
+        var offset = 0
 
-        var processedExpression = expression
-        val matcher = percentagePattern.matcher(processedExpression)
-        while (matcher.find()) {
-            val fullMatch = matcher.group(0)
-            val number = matcher.group(1)
-
+        while (matcher.find(offset)) {
+            val percentNumberStr = matcher.group(1)
             val start = matcher.start()
-            if (start == 0 || !isOperator(processedExpression[start-1].toString())) {
-                val percentageValue = number!!.toDouble() / 100
-                processedExpression = processedExpression.replace(fullMatch!!, percentageValue.toString())
-            }
-        }
-        val opMatcher = operatorPercentPattern.matcher(processedExpression)
-        val sb = StringBuilder(processedExpression)
-        val matches = mutableListOf<Triple<Int, Int, String>>()
+            val end = matcher.end()
 
-        while (opMatcher.find()) {
-            val operator = opMatcher.group(1)
-            val percentValue = opMatcher.group(2)!!.toDouble()
-            val start = opMatcher.start()
-            val end = opMatcher.end()
-
-            matches.add(Triple(start, end, "$operator$percentValue%"))
-        }
-
-        for (match in matches.reversed()) {
-            val (start, end, fullMatch) = match
-
-            var leftNumberStart = start - 1
-
-            if (leftNumberStart >= 0 && sb[leftNumberStart] == ')') {
-                var openParens = 1
-                leftNumberStart--
-
-                while (leftNumberStart >= 0 && openParens > 0) {
-                    if (sb[leftNumberStart] == ')') openParens++
-                    else if (sb[leftNumberStart] == '(') openParens--
-                    leftNumberStart--
-                }
-
-                if (leftNumberStart >= 0) {
-                    while (leftNumberStart >= 0 && (isDigit(sb[leftNumberStart].toString()) || sb[leftNumberStart] == '.' || sb[leftNumberStart] == '-')) {
-                        leftNumberStart--
-                    }
-                    leftNumberStart++
-                } else {
-                    leftNumberStart = 0
-                }
-            } else {
-
-                while (leftNumberStart >= 0 && (isDigit(sb[leftNumberStart].toString()) || sb[leftNumberStart] == '.')) {
-                    leftNumberStart--
-                }
-                leftNumberStart++
-            }
-
-            if (leftNumberStart < start) {
-                val leftPart = sb.substring(leftNumberStart, start)
-
-                try {
-
-                    val baseNumber = evaluateExpression(leftPart)
-                    val operator = fullMatch.substring(0, 1)
-                    val percentNumber = fullMatch.substring(1, fullMatch.length - 1).toDouble()
-
-                    val percentValue = baseNumber * (percentNumber / 100)
-
-                    val newValue = when (operator) {
-                        "+" -> baseNumber + percentValue
-                        "-" -> baseNumber - percentValue
-                        "*" -> baseNumber * (percentNumber / 100)
-                        "/" -> baseNumber / (percentNumber / 100)
-                        else -> baseNumber
-                    }
-
-                    sb.replace(leftNumberStart, end, newValue.toString())
-                } catch (e: Exception) {
-                    Log.e("Calculator", "Error processing percentage expression: $e")
+            val prevIdx = start - 1
+            if (prevIdx >= 0 && (sb[prevIdx] == '+' || sb[prevIdx] == '-')) {
+                val baseExpression = sb.substring(0, prevIdx)
+                if (baseExpression.isNotEmpty()) {
+                    try {
+                        val baseValue = evaluateExpression(baseExpression)
+                        val percentNumber = percentNumberStr.toDouble()
+                        
+                        val replacement = "(($baseValue) * $percentNumber / 100.0)"
+                        
+                        sb.replace(start, end, replacement)
+                        offset = start + replacement.length
+                        matcher = percentPattern.matcher(sb)
+                        continue
+                    } catch (_: Exception) {}
                 }
             }
+
+            val percentNumber = percentNumberStr.toDouble()
+            val replacement = "($percentNumber / 100.0)"
+            sb.replace(start, end, replacement)
+            offset = start + replacement.length
+            matcher = percentPattern.matcher(sb)
         }
 
         return sb.toString()

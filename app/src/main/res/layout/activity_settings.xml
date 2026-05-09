@@ -194,42 +194,6 @@
                 android:layout_marginTop="8dp">
 
                 <androidx.appcompat.widget.AppCompatImageView
-                    android:id="@+id/showFileNameImage"
-                    style="@style/optionImage"
-                    app:layout_constraintBottom_toBottomOf="parent"
-                    app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintTop_toTopOf="parent"
-                    app:srcCompat="@drawable/document_add" />
-
-                <TextView
-                    android:id="@+id/showFileNameTitleText"
-                    style="@style/optionTitleText"
-                    android:text="@string/show_file_names"
-                    app:layout_constraintEnd_toStartOf="@id/showFileNames"
-                    app:layout_constraintStart_toEndOf="@id/showFileNameImage"
-                    app:layout_constraintTop_toTopOf="parent" />
-
-                <TextView
-                    style="@style/optionDescriptionText"
-                    android:text="@string/show_original_names_of_hidden_files"
-                    app:layout_constraintBottom_toBottomOf="parent"
-                    app:layout_constraintEnd_toStartOf="@id/showFileNames"
-                    app:layout_constraintStart_toEndOf="@id/showFileNameImage"
-                    app:layout_constraintTop_toBottomOf="@id/showFileNameTitleText" />
-
-                <com.google.android.material.materialswitch.MaterialSwitch
-                    android:id="@+id/showFileNames"
-                    style="@style/optionSwitch"
-                    app:layout_constraintBottom_toBottomOf="parent"
-                    app:layout_constraintEnd_toEndOf="parent"
-                    app:layout_constraintTop_toTopOf="parent" />
-            </androidx.constraintlayout.widget.ConstraintLayout>
-
-            <androidx.constraintlayout.widget.ConstraintLayout
-                style="@style/optionLayout"
-                android:layout_marginTop="8dp">
-
-                <androidx.appcompat.widget.AppCompatImageView
                     android:id="@+id/gotomainImage"
                     style="@style/optionImage"
                     app:layout_constraintBottom_toBottomOf="parent"

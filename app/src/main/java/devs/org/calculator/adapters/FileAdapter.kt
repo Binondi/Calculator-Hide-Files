@@ -7,6 +7,7 @@ import android.net.Uri
 import android.os.Handler
 import android.os.Looper
 import android.util.Log
+import android.util.TypedValue
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -43,7 +44,8 @@ class FileAdapter(
     private val context: Context,
     private val lifecycleOwner: LifecycleOwner,
     private val currentFolder: File,
-    private val showFileName: Boolean,
+    private var showFileName: Boolean,
+    private var cornerRadius: Int = 10,
     private val onFolderLongClick: (Boolean) -> Unit,
 ) : ListAdapter<File, FileAdapter.FilesViewHolder>(FileDiffCallback()) {
 
@@ -52,6 +54,12 @@ class FileAdapter(
     private var isSelectionMode = false
     private val fileExecutor = Executors.newSingleThreadExecutor()
     private val mainHandler = Handler(Looper.getMainLooper())
+
+    fun updateViewSettings(showFileName: Boolean, cornerRadius: Int) {
+        this.showFileName = showFileName
+        this.cornerRadius = cornerRadius
+        notifyItemRangeChanged(0, itemCount, "VIEW_SETTINGS_CHANGED")
+    }
 
     interface FilesOperationCallback {
         fun onFileDeleted(file: File)
@@ -78,12 +86,49 @@ class FileAdapter(
         holder.bind(getItem(position))
     }
 
+    override fun onBindViewHolder(holder: FilesViewHolder, position: Int, payloads: MutableList<Any>) {
+        if (payloads.isEmpty()) {
+            super.onBindViewHolder(holder, position, payloads)
+        } else {
+            for (payload in payloads) {
+                if (payload == "VIEW_SETTINGS_CHANGED") {
+                    holder.updateViewSettingsOnly()
+                }
+            }
+        }
+    }
+
     inner class FilesViewHolder(private val binding: ListItemFileBinding) :
         RecyclerView.ViewHolder(binding.root) {
+
+        private var currentFilePath: String? = null
+
+        fun updateViewSettingsOnly() {
+            binding.cardView.radius = TypedValue.applyDimension(
+                TypedValue.COMPLEX_UNIT_DIP,
+                cornerRadius.toFloat(),
+                context.resources.displayMetrics
+            )
+            binding.fileNameTextView.visibility = if (showFileName) View.VISIBLE else View.GONE
+            binding.shade.visibility = if (showFileName) View.VISIBLE else View.GONE
+        }
 
         @SuppressLint("FileEndsWithExt")
         fun bind(file: File) {
             val position = adapterPosition
+
+            updateViewSettingsOnly()
+            
+            if (currentFilePath == file.absolutePath) {
+                updateSelectionUI(selectedItems.contains(position))
+                return
+            }
+            currentFilePath = file.absolutePath
+
+            // Reset state
+            binding.fileIconImageView.setImageDrawable(null)
+            binding.videoPlay.visibility = View.GONE
+            binding.loadingProgress.visibility = View.VISIBLE
             
             lifecycleOwner.lifecycleScope.launch(Dispatchers.Main) {
                 try {

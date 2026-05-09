@@ -48,7 +48,6 @@ class SettingsActivity : BaseActivity() {
         val isUsingCustomKey = SecurityUtils.isUsingCustomKey(this)
         binding.customKeyStatus.isChecked = isUsingCustomKey
         binding.screenshotRestrictionSwitch.isChecked = prefs.getBoolean("screenshot_restriction", true)
-        binding.showFileNames.isChecked = prefs.getBoolean("showFileName", true)
         binding.encryptionSwitch.isChecked = prefs.getBoolean("encryption", false)
         binding.gotomain.isChecked = prefs.getBoolean("is_vault_enabled", true)
     }
@@ -69,9 +68,6 @@ class SettingsActivity : BaseActivity() {
             } else {
                 disableScreenshotRestriction()
             }
-        }
-        binding.showFileNames.setOnCheckedChangeListener { _, isChecked ->
-            prefs.setBoolean("showFileName", isChecked)
         }
         binding.gotomain.setOnCheckedChangeListener { _, isChecked ->
             prefs.setBoolean("is_vault_enabled", isChecked)
@@ -140,7 +136,6 @@ class SettingsActivity : BaseActivity() {
     }
 
     private fun updateUI() {
-        binding.showFileNames.isChecked = prefs.getBoolean("showFileName", true)
         binding.encryptionSwitch.isChecked = prefs.getBoolean("encryption", false)
         val isUsingCustomKey = SecurityUtils.isUsingCustomKey(this)
         binding.customKeyStatus.isChecked = isUsingCustomKey
