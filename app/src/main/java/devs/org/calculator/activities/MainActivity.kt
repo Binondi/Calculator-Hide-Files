@@ -46,6 +46,7 @@ class MainActivity : BaseCalculatorActivity(), DialogActionsCallback, DialogUtil
     private var lastWasOperator = false
     private var hasDecimal = false
     private var lastWasPercent = false
+    private var is2nd = false
     private lateinit var launcher: ActivityResultLauncher<Intent>
     private lateinit var baseDocumentTreeUri: Uri
     private val dialogUtil = DialogUtil(this)
@@ -173,7 +174,6 @@ class MainActivity : BaseCalculatorActivity(), DialogActionsCallback, DialogUtil
         }
 
         setupNumberButton(binding.btn0, "0")
-        setupNumberButton(binding.btn00, "00")
         setupNumberButton(binding.btn1, "1")
         setupNumberButton(binding.btn2, "2")
         setupNumberButton(binding.btn3, "3")
@@ -187,6 +187,11 @@ class MainActivity : BaseCalculatorActivity(), DialogActionsCallback, DialogUtil
         setupOperatorButton(binding.btnMinus, "-")
         setupOperatorButton(binding.btnMultiply, "×")
         setupOperatorButton(binding.btnDivide, "/")
+
+        binding.btn2nd.setOnClickListener {
+            applyHaptics(it)
+            toggle2nd()
+        }
 
         binding.btnClear.setOnClickListener { 
             applyHaptics(it)
@@ -313,6 +318,108 @@ class MainActivity : BaseCalculatorActivity(), DialogActionsCallback, DialogUtil
                 lastWasOperator = true
                 lastWasPercent = false
                 hasDecimal = false
+            }
+        }
+    }
+
+    private fun insertFunction(function: String) {
+        insertIntoExpression("$function(")
+        lastWasOperator = false
+        lastWasPercent = false
+        hasDecimal = false
+    }
+
+    private fun toggle2nd() {
+        is2nd = !is2nd
+
+        if(is2nd) {
+            binding.btn7.text = getString(R.string.text_sin)
+            binding.btn8.text = getString(R.string.text_cos)
+            binding.btn9.text = getString(R.string.text_tan)
+
+            binding.btn4.text = getString(R.string.text_asin)
+            binding.btn5.text = getString(R.string.text_acos)
+            binding.btn6.text = getString(R.string.text_atan)
+
+            binding.btn1.text = getString(R.string.text_sqrt)
+            binding.btn2.text = getString(R.string.text_log)
+            binding.btn3.text = getString(R.string.text_pi)
+
+            binding.btnDot.text = ")"
+
+            binding.btn7.setOnClickListener {
+                applyHaptics(it)
+                insertFunction("sin")
+            }
+            binding.btn8.setOnClickListener {
+                applyHaptics(it)
+                insertFunction("cos")
+            }
+            binding.btn9.setOnClickListener {
+                applyHaptics(it)
+                insertFunction("tan")
+            }
+
+            binding.btn4.setOnClickListener {
+                applyHaptics(it)
+                insertFunction("asin")
+            }
+            binding.btn5.setOnClickListener {
+                applyHaptics(it)
+                insertFunction("acos")
+            }
+            binding.btn6.setOnClickListener {
+                applyHaptics(it)
+                insertFunction("atan")
+            }
+
+            binding.btn1.setOnClickListener {
+                applyHaptics(it)
+                insertFunction("sqrt")
+            }
+            binding.btn2.setOnClickListener {
+                applyHaptics(it)
+                insertIntoExpression("log(")
+            }
+            binding.btn3.setOnClickListener {
+                applyHaptics(it)
+                insertIntoExpression("pi")
+            }
+
+            binding.btnDot.setOnClickListener {
+                applyHaptics(it)
+                insertIntoExpression(")")
+            }
+        } else {
+            binding.btn7.text = getString(R.string.text_7)
+            binding.btn8.text = getString(R.string.text_8)
+            binding.btn9.text = getString(R.string.text_9)
+
+            binding.btn4.text = getString(R.string.text_4)
+            binding.btn5.text = getString(R.string.text_5)
+            binding.btn6.text = getString(R.string.text_6)
+
+            binding.btn1.text = getString(R.string.text_1)
+            binding.btn2.text = getString(R.string.text_2)
+            binding.btn3.text = getString(R.string.text_3)
+
+            binding.btnDot.text = getString(R.string.text_dot)
+
+            setupNumberButton(binding.btn7, "7")
+            setupNumberButton(binding.btn8, "8")
+            setupNumberButton(binding.btn9, "9")
+
+            setupNumberButton(binding.btn4, "4")
+            setupNumberButton(binding.btn5, "5")
+            setupNumberButton(binding.btn6, "6")
+
+            setupNumberButton(binding.btn1, "1")
+            setupNumberButton(binding.btn2, "2")
+            setupNumberButton(binding.btn3, "3")
+
+            binding.btnDot.setOnClickListener {
+                applyHaptics(it)
+                addDecimal()
             }
         }
     }
