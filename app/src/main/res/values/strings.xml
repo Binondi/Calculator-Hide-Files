@@ -206,16 +206,25 @@
     <string name="text_7">7</string>
     <string name="text_8">8</string>
     <string name="text_9">9</string>
+    <string name="text_sin">sin</string>
+    <string name="text_cos">cos</string>
+    <string name="text_tan">tan</string>
     <string name="into">×</string>
     <string name="text_4">4</string>
     <string name="text_5">5</string>
     <string name="text_6">6</string>
+    <string name="text_asin">asin</string>
+    <string name="text_acos">acos</string>
+    <string name="text_atan">atan</string>
     <string name="minus">—</string>
     <string name="text_1">1</string>
     <string name="text_2">2</string>
     <string name="text_3">3</string>
+    <string name="text_sqrt">√</string>
+    <string name="text_log">log</string>
+    <string name="text_pi">π</string>
     <string name="plus">+</string>
-    <string name="text_00">00</string>
+    <string name="text_2nd">2nd</string>
     <string name="text_dot">.</string>
     <string name="text_equal">=</string>
     <string name="arrow_back_tool_tip">Back</string>
