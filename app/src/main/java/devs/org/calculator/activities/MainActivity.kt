@@ -71,6 +71,9 @@ class MainActivity : BaseCalculatorActivity(), DialogActionsCallback, DialogUtil
     @SuppressLint("ClickableViewAccessibility")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        if (!prefs.hasPassword()) {
+            startActivity(Intent(this, SetupPasswordActivity::class.java))
+        }
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
         enableEdgeToEdge()
@@ -128,48 +131,6 @@ class MainActivity : BaseCalculatorActivity(), DialogActionsCallback, DialogUtil
 
         launcher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
             handleActivityResult(result)
-        }
-
-        val hasPermission = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
-            Environment.isExternalStorageManager()
-        } else {
-            ContextCompat.checkSelfPermission(
-                this,
-                android.Manifest.permission.WRITE_EXTERNAL_STORAGE
-            ) == PackageManager.PERMISSION_GRANTED
-        }
-
-        if (!hasPermission) {
-            dialogUtil.showMaterialDialog(
-                getString(R.string.storage_permission),
-                getString(R.string.to_ensure_the_app_works_properly_and_allows_you_to_easily_hide_or_un_hide_your_private_files_please_grant_storage_access_permission) +
-                        "\n" +
-                        getString(R.string.for_devices_running_android_11_or_higher_you_ll_need_to_grant_the_all_files_access_permission),
-                getString(R.string.grant_permission),
-                getString(R.string.later),
-                object : DialogUtil.DialogCallback {
-                    override fun onPositiveButtonClicked() {
-                        storagePermissionUtil.requestStoragePermission(permissionLauncher) {
-                            Toast.makeText(this@MainActivity, getString(R.string.permission_granted), Toast.LENGTH_SHORT).show()
-                        }
-                    }
-
-                    override fun onNegativeButtonClicked() {
-                        Toast.makeText(
-                            this@MainActivity,
-                            getString(R.string.storage_permission_is_required_for_the_app_to_function_properly),
-                            Toast.LENGTH_LONG
-                        ).show()
-                    }
-
-                    override fun onNaturalButtonClicked() {
-                        Toast.makeText(
-                            this@MainActivity,
-                            getString(R.string.you_can_grant_permission_later_from_settings),
-                            Toast.LENGTH_LONG
-                        ).show()
-                    }
-                })
         }
 
         setupNumberButton(binding.btn0, "0")
@@ -239,6 +200,55 @@ class MainActivity : BaseCalculatorActivity(), DialogActionsCallback, DialogUtil
         }
     }
 
+    private var permissionDialogShown = false
+
+    private fun checkStoragePermission() {
+        if (!prefs.hasPassword() || permissionDialogShown) return
+
+        val hasPermission = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+            Environment.isExternalStorageManager()
+        } else {
+            ContextCompat.checkSelfPermission(
+                this,
+                android.Manifest.permission.WRITE_EXTERNAL_STORAGE
+            ) == PackageManager.PERMISSION_GRANTED
+        }
+
+        if (!hasPermission) {
+            permissionDialogShown = true
+            dialogUtil.showMaterialDialog(
+                getString(R.string.storage_permission),
+                getString(R.string.to_ensure_the_app_works_properly_and_allows_you_to_easily_hide_or_un_hide_your_private_files_please_grant_storage_access_permission) +
+                        "\n" +
+                        getString(R.string.for_devices_running_android_11_or_higher_you_ll_need_to_grant_the_all_files_access_permission),
+                getString(R.string.grant_permission),
+                getString(R.string.later),
+                object : DialogUtil.DialogCallback {
+                    override fun onPositiveButtonClicked() {
+                        storagePermissionUtil.requestStoragePermission(permissionLauncher) {
+                            Toast.makeText(this@MainActivity, getString(R.string.permission_granted), Toast.LENGTH_SHORT).show()
+                        }
+                    }
+
+                    override fun onNegativeButtonClicked() {
+                        Toast.makeText(
+                            this@MainActivity,
+                            getString(R.string.storage_permission_is_required_for_the_app_to_function_properly),
+                            Toast.LENGTH_LONG
+                        ).show()
+                    }
+
+                    override fun onNaturalButtonClicked() {
+                        Toast.makeText(
+                            this@MainActivity,
+                            getString(R.string.you_can_grant_permission_later_from_settings),
+                            Toast.LENGTH_LONG
+                        ).show()
+                    }
+                })
+        }
+    }
+
     private fun applyHaptics(view: View) {
         if (soundEnabled) {
             view.playSoundEffect(SoundEffectConstants.CLICK)
@@ -263,6 +273,9 @@ class MainActivity : BaseCalculatorActivity(), DialogActionsCallback, DialogUtil
         soundEnabled = prefs.getBoolean("sound_haptic", true)
         vibrationEnabled = prefs.getBoolean("vibration_haptic", true)
         updateDisplay()
+        if (prefs.hasPassword()) {
+            checkStoragePermission()
+        }
     }
 
     override fun onDestroy() {
@@ -387,11 +400,7 @@ class MainActivity : BaseCalculatorActivity(), DialogActionsCallback, DialogUtil
         isUpdatingDisplay = false
 
         if (currentExpression.isEmpty()) {
-            if (prefs.getBoolean("isFirst", true)) {
-                binding.display.setText(getString(R.string.enter_123456))
-            } else {
-                binding.display.setText("")
-            }
+            binding.display.setText("")
             binding.total.text = ""
             return
         }
@@ -415,11 +424,7 @@ class MainActivity : BaseCalculatorActivity(), DialogActionsCallback, DialogUtil
             val result = ExpressionBuilder(processedExpression).build().evaluate()
             val formattedResult = formatWithCommas(formatResult(result, prefs.getInt("precision", 3)))
 
-            binding.total.text = if (prefs.getBoolean("isFirst", true) && currentExpression == "123456") {
-                getString(R.string.now_enter_button)
-            } else {
-                formattedResult
-            }
+            binding.total.text = formattedResult
         } catch (_: Exception) {
             binding.total.text = ""
         }
@@ -529,11 +534,9 @@ class MainActivity : BaseCalculatorActivity(), DialogActionsCallback, DialogUtil
     private fun calculateResult() {
         val rawExpression = currentExpression.replace(",", "")
         if (rawExpression == "123456") {
-            prefs.setBoolean("isFirst", false)
             val app = application as CalculatorApp
             app.isVaultSessionActive = true
             val intent = Intent(this, SetupPasswordActivity::class.java)
-            intent.putExtra("password", rawExpression)
             startActivity(intent)
             clearDisplay()
             return

@@ -4,28 +4,68 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:orientation="vertical"
-    android:padding="16dp">
+    android:paddingStart="24dp"
+    android:paddingEnd="24dp"
+    android:paddingTop="12dp"
+    android:paddingBottom="8dp">
 
-    <!-- Security Question -->
-    <TextView
-        android:id="@+id/security_question"
+    <!-- Security Question Display Card -->
+    <com.google.android.material.card.MaterialCardView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Security Question"
-        android:textSize="16sp"
-        android:layout_marginLeft="10dp"
-        android:layout_marginBottom="8dp" />
+        app:cardCornerRadius="14dp"
+        app:cardElevation="0dp"
+        app:strokeWidth="1dp"
+        app:strokeColor="?attr/colorOutlineVariant"
+        app:cardBackgroundColor="?attr/colorPrimaryContainer">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:padding="12dp">
+
+            <ImageView
+                android:layout_width="24dp"
+                android:layout_height="24dp"
+                android:src="@drawable/ic_privacy_tip"
+                app:tint="?attr/colorOnPrimaryContainer"
+                android:contentDescription="@null" />
+
+            <com.google.android.material.textview.MaterialTextView
+                android:id="@+id/security_question"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:layout_marginStart="12dp"
+                android:textStyle="bold"
+                android:textColor="?attr/colorOnPrimaryContainer"
+                style="@style/TextAppearance.Material3.BodyLarge" />
+
+        </LinearLayout>
+
+    </com.google.android.material.card.MaterialCardView>
 
     <!-- User Answer Input -->
     <com.google.android.material.textfield.TextInputLayout
         android:id="@+id/text_input_layout"
+        style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:hint="Your Answer">
+        android:layout_marginTop="16dp"
+        android:hint="@string/security_answer"
+        app:boxCornerRadiusTopStart="14dp"
+        app:boxCornerRadiusTopEnd="14dp"
+        app:boxCornerRadiusBottomStart="14dp"
+        app:boxCornerRadiusBottomEnd="14dp"
+        app:startIconDrawable="@drawable/ic_edit">
 
         <com.google.android.material.textfield.TextInputEditText
             android:id="@+id/text_input_edit_text"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content" />
+            android:layout_height="wrap_content"
+            android:singleLine="true" />
     </com.google.android.material.textfield.TextInputLayout>
+
 </LinearLayout>

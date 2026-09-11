@@ -309,4 +309,12 @@
     <string name="columns">Columns</string>
     <string name="made_with_heart">Made with ❤️ by devs.org</string>
     <string name="copyright_text">© 2024 Calculator Vault</string>
+    <string name="setup_pin_title">Create Vault PIN</string>
+    <string name="setup_pin_subtitle">Set a numeric PIN to protect your secret files. You will enter this PIN on the calculator and tap \'=\' to unlock.</string>
+    <string name="change_pin_subtitle">Enter your old PIN to configure a new PIN or reset via security questions.</string>
+    <string name="security_recovery_title">Recovery Question</string>
+    <string name="security_recovery_subtitle">Used to reset your PIN if you ever forget it</string>
+    <string name="pin_hint">Enter PIN</string>
+    <string name="confirm_pin_hint">Confirm PIN</string>
+    <string name="pin_helper">Enter numbers only</string>
 </resources>

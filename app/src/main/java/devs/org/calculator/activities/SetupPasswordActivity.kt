@@ -3,10 +3,12 @@ package devs.org.calculator.activities
 import android.content.Intent
 import android.os.Bundle
 import android.view.LayoutInflater
+import android.view.WindowManager
 import android.view.inputmethod.InputMethodManager
 import android.widget.ArrayAdapter
 import android.widget.TextView
 import android.widget.Toast
+import androidx.activity.OnBackPressedCallback
 import androidx.activity.enableEdgeToEdge
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
@@ -16,31 +18,62 @@ import devs.org.calculator.R
 import devs.org.calculator.databinding.ActivityChangePasswordBinding
 import devs.org.calculator.databinding.ActivitySetupPasswordBinding
 
-class SetupPasswordActivity : BaseActivity() {
-    private lateinit var binding: ActivitySetupPasswordBinding
-    private lateinit var binding2: ActivityChangePasswordBinding
+class SetupPasswordActivity : BaseCalculatorActivity() {
+    private var setupBinding: ActivitySetupPasswordBinding? = null
+    private var changeBinding: ActivityChangePasswordBinding? = null
     private var hasPassword = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        binding = ActivitySetupPasswordBinding.inflate(layoutInflater)
-        binding2 = ActivityChangePasswordBinding.inflate(layoutInflater)
-        setContentView(binding.root)
+        setupFlagSecure()
         hasPassword = prefs.hasPassword()
-        if (hasPassword){
-            setContentView(binding2.root)
-        }else{
-            setContentView(binding.root)
-        }
-        binding.etSecurityQuestion.isFocusable = true
         enableEdgeToEdge()
-        setViewPadding()
-        setupSecurityQuestions()
-        clickListeners()
 
+        if (hasPassword) {
+            val binding2 = ActivityChangePasswordBinding.inflate(layoutInflater)
+            changeBinding = binding2
+            setContentView(binding2.root)
+            setViewPadding(binding2.root)
+            setupChangePasswordListeners(binding2)
+        } else {
+            val binding = ActivitySetupPasswordBinding.inflate(layoutInflater)
+            setupBinding = binding
+            setContentView(binding.root)
+            binding.toolbar.navigationIcon = null
+            binding.etSecurityQuestion.isFocusable = true
+            setViewPadding(binding.root)
+            setupSecurityQuestions(binding)
+            setupCreatePasswordListeners(binding)
+        }
+
+        onBackPressedDispatcher.addCallback(this, object : OnBackPressedCallback(true) {
+            override fun handleOnBackPressed() {
+                if (!hasPassword) {
+                    finishAffinity()
+                } else {
+                    finish()
+                }
+            }
+        })
     }
 
-    private fun setupSecurityQuestions() {
+    override fun onResume() {
+        super.onResume()
+        setupFlagSecure()
+    }
+
+    private fun setupFlagSecure() {
+        if (prefs.getBoolean("screenshot_restriction", true)) {
+            window.setFlags(
+                WindowManager.LayoutParams.FLAG_SECURE,
+                WindowManager.LayoutParams.FLAG_SECURE
+            )
+        } else {
+            window.clearFlags(WindowManager.LayoutParams.FLAG_SECURE)
+        }
+    }
+
+    private fun setupSecurityQuestions(binding: ActivitySetupPasswordBinding) {
         val questions = arrayOf(
             getString(R.string.what_is_your_pet_name),
             getString(R.string.what_is_your_birth_city),
@@ -82,34 +115,34 @@ class SetupPasswordActivity : BaseActivity() {
         }
     }
 
-    private fun setViewPadding() {
-        ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main)) { v, insets ->
+    private fun setViewPadding(view: android.view.View) {
+        ViewCompat.setOnApplyWindowInsetsListener(view) { v, insets ->
             val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)
             insets
         }
     }
 
-    private fun clickListeners(){
+    private fun setupCreatePasswordListeners(binding: ActivitySetupPasswordBinding) {
         binding.btnSavePassword.setOnClickListener {
-            val password = binding.etPassword.text.toString()
-            val confirmPassword = binding.etConfirmPassword.text.toString()
-            val securityQuestion = binding.etSecurityQuestion.text.toString()
-            val securityAnswer = binding.etSecurityAnswer.text.toString()
+            val password = binding.etPassword.text.toString().trim()
+            val confirmPassword = binding.etConfirmPassword.text.toString().trim()
+            val securityQuestion = binding.etSecurityQuestion.text.toString().trim()
+            val securityAnswer = binding.etSecurityAnswer.text.toString().trim()
 
-            if (password.isEmpty()){
+            if (password.isEmpty()) {
                 binding.etPassword.error = getString(R.string.enter_password)
                 return@setOnClickListener
             }
-            if (confirmPassword.isEmpty()){
+            if (confirmPassword.isEmpty()) {
                 binding.etConfirmPassword.error = getString(R.string.confirm_password)
                 return@setOnClickListener
             }
-            if (securityQuestion.isEmpty()){
+            if (securityQuestion.isEmpty()) {
                 binding.etSecurityQuestion.error = getString(R.string.enter_security_question)
                 return@setOnClickListener
             }
-            if (securityAnswer.isEmpty()){
+            if (securityAnswer.isEmpty()) {
                 binding.etSecurityAnswer.error = getString(R.string.enter_security_answer)
                 return@setOnClickListener
             }
@@ -120,13 +153,17 @@ class SetupPasswordActivity : BaseActivity() {
             prefs.savePassword(password)
             prefs.saveSecurityQA(securityQuestion, securityAnswer)
             Toast.makeText(this, getString(R.string.password_set_successfully), Toast.LENGTH_SHORT).show()
-            startActivity(Intent(this, MainActivity::class.java))
             finish()
         }
+        binding.toolbar.setNavigationOnClickListener {
+            finishAffinity()
+        }
+    }
 
-        binding2.btnChangePassword.setOnClickListener{
-            val oldPassword = binding2.etOldPassword.text.toString()
-            val newPassword = binding2.etNewPassword.text.toString()
+    private fun setupChangePasswordListeners(binding2: ActivityChangePasswordBinding) {
+        binding2.btnChangePassword.setOnClickListener {
+            val oldPassword = binding2.etOldPassword.text.toString().trim()
+            val newPassword = binding2.etNewPassword.text.toString().trim()
             if (oldPassword.isEmpty()) {
                 binding2.etOldPassword.error = getString(R.string.this_field_can_t_be_empty)
                 return@setOnClickListener
@@ -136,30 +173,28 @@ class SetupPasswordActivity : BaseActivity() {
                 return@setOnClickListener
             }
 
-            if (prefs.validatePassword(oldPassword)){
-                if (oldPassword != newPassword){
+            if (prefs.validatePassword(oldPassword)) {
+                if (oldPassword != newPassword) {
                     prefs.savePassword(newPassword)
                     Toast.makeText(this,
                         getString(R.string.password_reset_successfully), Toast.LENGTH_SHORT).show()
-                    startActivity(Intent(this, MainActivity::class.java))
                     finish()
-
-                }else {
+                } else {
                     Toast.makeText(this,
                         getString(R.string.old_password_and_new_password_not_be_same), Toast.LENGTH_SHORT).show()
                     binding2.etNewPassword.error = getString(R.string.old_password_and_new_password_not_be_same)
                 }
-            }else {
+            } else {
                 Toast.makeText(this, getString(R.string.wrong_password_entered), Toast.LENGTH_SHORT).show()
                 binding2.etOldPassword.error = getString(R.string.old_password_not_matching)
             }
         }
-        binding2.btnResetPassword.setOnClickListener{
-            if (prefs.getSecurityQuestion() != null) showSecurityQuestionDialog(prefs.getSecurityQuestion().toString())
-            else Toast.makeText(this, getString(R.string.this_field_can_t_be_empty), Toast.LENGTH_SHORT).show()
-        }
-        binding.toolbar.setNavigationOnClickListener {
-            finish()
+        binding2.btnResetPassword.setOnClickListener {
+            if (prefs.getSecurityQuestion() != null) {
+                showSecurityQuestionDialog(prefs.getSecurityQuestion().toString())
+            } else {
+                Toast.makeText(this, getString(R.string.this_field_can_t_be_empty), Toast.LENGTH_SHORT).show()
+            }
         }
         binding2.toolbar.setNavigationOnClickListener {
             finish()
@@ -172,7 +207,6 @@ class SetupPasswordActivity : BaseActivity() {
         val questionTextView: TextView = dialogView.findViewById(R.id.security_question)
         questionTextView.text = securityQuestion
 
-
         MaterialAlertDialogBuilder(this)
             .setTitle(getString(R.string.answer_the_security_question))
             .setView(dialogView)
@@ -184,20 +218,20 @@ class SetupPasswordActivity : BaseActivity() {
                     Toast.makeText(this,
                         getString(R.string.answer_cannot_be_empty), Toast.LENGTH_SHORT).show()
                 } else {
-                    if (prefs.validateSecurityAnswer(userAnswer)){
+                    if (prefs.validateSecurityAnswer(userAnswer)) {
                         prefs.resetPassword()
                         Toast.makeText(this,
                             getString(R.string.password_successfully_reset), Toast.LENGTH_SHORT).show()
                         dialog.dismiss()
+                        val intent = Intent(this, SetupPasswordActivity::class.java)
+                        startActivity(intent)
                         finish()
-                    }else {
+                    } else {
                         Toast.makeText(this, getString(R.string.invalid_answer), Toast.LENGTH_SHORT).show()
                     }
-
                 }
             }
             .setNegativeButton(getString(R.string.cancel)) { dialog, _ ->
-
                 dialog.dismiss()
             }
             .show()
