@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:orientation="vertical">
 
     <FrameLayout
@@ -17,9 +17,12 @@
                 android:id="@+id/cardView"
                 android:layout_width="match_parent"
                 android:layout_height="0dp"
-                app:cardCornerRadius="10dp"
-                android:layout_margin="5dp"
-                android:backgroundTint="@android:color/transparent"
+                android:layout_margin="4dp"
+                app:cardCornerRadius="14dp"
+                app:cardElevation="0dp"
+                app:strokeWidth="1dp"
+                app:strokeColor="?attr/colorOutlineVariant"
+                app:cardBackgroundColor="?attr/colorSurfaceContainerLow"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintDimensionRatio="1:1"
                 app:layout_constraintEnd_toEndOf="parent"
@@ -35,7 +38,8 @@
                         android:layout_width="match_parent"
                         android:layout_height="match_parent"
                         android:layout_gravity="center"
-                        android:scaleType="centerCrop"/>
+                        android:scaleType="centerCrop"
+                        android:contentDescription="@null" />
 
                     <com.google.android.material.progressindicator.CircularProgressIndicator
                         android:id="@+id/loadingProgress"
@@ -51,14 +55,14 @@
                         android:id="@+id/shade"
                         android:layout_width="match_parent"
                         android:layout_height="match_parent"
-                        android:background="@drawable/bottom_shade"/>
+                        android:background="@drawable/bottom_shade" />
 
                     <LinearLayout
                         android:id="@+id/selectedLayer"
                         android:layout_width="match_parent"
                         android:layout_height="match_parent"
-                        android:alpha="0.3"
-                        android:background="?attr/colorControlNormal"
+                        android:alpha="0.25"
+                        android:background="?attr/colorPrimary"
                         android:orientation="horizontal"
                         android:visibility="gone" />
                 </FrameLayout>
@@ -70,46 +74,69 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:gravity="center_vertical"
-                android:paddingHorizontal="13dp"
-                android:paddingVertical="6dp"
-                android:textColor="#fff"
-                android:textSize="10sp"
-                android:textAppearance="@style/TextAppearance.AppCompat.Small"
+                android:paddingHorizontal="12dp"
+                android:paddingVertical="8dp"
+                android:textColor="#ffffff"
+                android:textSize="11sp"
+                android:singleLine="true"
+                android:ellipsize="end"
+                android:shadowColor="#80000000"
+                android:shadowDx="0"
+                android:shadowDy="1"
+                android:shadowRadius="2"
                 app:layout_constraintBottom_toBottomOf="@+id/cardView"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent" />
 
         </androidx.constraintlayout.widget.ConstraintLayout>
 
-        <ImageView
+        <!-- Video Play Icon Badge -->
+        <com.google.android.material.card.MaterialCardView
             android:id="@+id/videoPlay"
             android:layout_width="40dp"
             android:layout_height="40dp"
+            android:layout_gravity="center"
             android:visibility="gone"
-            android:src="@drawable/ic_play_circle"
-            android:elevation="4dp"
-            android:layout_gravity="center"/>
+            app:cardCornerRadius="20dp"
+            app:cardElevation="4dp"
+            app:strokeWidth="0dp"
+            app:cardBackgroundColor="#80000000">
 
+            <ImageView
+                android:layout_width="24dp"
+                android:layout_height="24dp"
+                android:layout_gravity="center"
+                android:src="@drawable/ic_play_circle"
+                app:tint="#ffffff"
+                android:contentDescription="@null" />
+        </com.google.android.material.card.MaterialCardView>
+
+        <!-- Encryption Status Badge -->
         <ImageView
-            android:layout_width="30dp"
-            android:layout_height="30dp"
-            android:visibility="gone"
-            android:src="@drawable/encrypted"
-            android:layout_gravity="end"
+            android:id="@+id/encrypted"
+            android:layout_width="24dp"
+            android:layout_height="24dp"
+            android:layout_gravity="top|start"
+            android:layout_margin="8dp"
             android:elevation="4dp"
-            android:id="@+id/encrypted"/>
+            android:src="@drawable/encrypted"
+            android:visibility="gone"
+            android:contentDescription="@null" />
 
+        <!-- Selected Check Badge -->
         <ImageView
             android:id="@+id/selected"
-            android:layout_width="20dp"
-            android:layout_height="20dp"
-            android:padding="3dp"
-            app:tint="#fff"
-            android:visibility="gone"
-            android:src="@drawable/selected"
+            android:layout_width="22dp"
+            android:layout_height="22dp"
+            android:layout_gravity="top|end"
+            android:layout_margin="8dp"
             android:background="@drawable/gradient_bg"
             android:elevation="4dp"
-            android:layout_gravity="end"/>
+            android:padding="4dp"
+            android:src="@drawable/selected"
+            android:visibility="gone"
+            app:tint="#ffffff"
+            android:contentDescription="@null" />
 
     </FrameLayout>
 

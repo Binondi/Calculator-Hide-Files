@@ -148,6 +148,9 @@ class PreviewActivity : BaseActivity() {
         binding.viewPager.registerOnPageChangeCallback(object : ViewPager2.OnPageChangeCallback() {
             override fun onPageSelected(position: Int) {
                 super.onPageSelected(position)
+                if (currentPosition != position) {
+                    adapter.onItemScrolledAway(currentPosition)
+                }
                 currentPosition = position
                 updateFileInfo()
             }
@@ -173,13 +176,6 @@ class PreviewActivity : BaseActivity() {
         binding.unHide.setOnClickListener {
             performFileUnHiding()
         }
-        binding.viewPager.registerOnPageChangeCallback(object : ViewPager2.OnPageChangeCallback() {
-            override fun onPageSelected(position: Int) {
-                super.onPageSelected(position)
-                adapter.onItemScrolledAway(currentPosition)
-                currentPosition = position
-            }
-        })
     }
 
     private fun handleDeleteFile() {
@@ -333,19 +329,25 @@ class PreviewActivity : BaseActivity() {
         if (position < 0 || position >= files.size) return
         adapter.releaseAllResources()
         files.removeAt(position)
-        adapter.images = files
+
         if (files.isEmpty()) {
-            finish()
+            adapter.submitFiles(emptyList()) {
+                finish()
+            }
             return
         }
-        currentPosition = if (position >= files.size) {
+
+        val targetPosition = if (position >= files.size) {
             files.size - 1
         } else {
             position
         }
 
-        binding.viewPager.setCurrentItem(currentPosition, false)
-        updateFileInfo()
+        adapter.submitFiles(ArrayList(files)) {
+            currentPosition = targetPosition
+            binding.viewPager.setCurrentItem(targetPosition, true)
+            updateFileInfo()
+        }
     }
 
     override fun onSupportNavigateUp(): Boolean {

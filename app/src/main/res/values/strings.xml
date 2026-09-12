@@ -317,4 +317,7 @@
     <string name="pin_hint">Enter PIN</string>
     <string name="confirm_pin_hint">Confirm PIN</string>
     <string name="pin_helper">Enter numbers only</string>
+    <string name="no_items_available">No Items Available</string>
+    <string name="undo">Undo</string>
+    <string name="redo">Redo</string>
 </resources>

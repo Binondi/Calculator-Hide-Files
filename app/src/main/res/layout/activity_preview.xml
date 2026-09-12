@@ -1,59 +1,83 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    android:layout_width="match_parent"
     android:id="@+id/main"
+    android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical">
+    android:background="?attr/colorSurface">
 
     <com.google.android.material.appbar.MaterialToolbar
+        android:id="@+id/toolBar"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:id="@+id/toolBar"
         app:navigationIcon="@drawable/ic_back"
-        app:title="@string/preview_file"/>
+        app:title="@string/preview_file"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent" />
 
     <androidx.viewpager2.widget.ViewPager2
         android:id="@+id/viewPager"
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        android:layout_weight="1"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/toolBar"
+        app:layout_constraintBottom_toTopOf="@+id/bottomBarCard"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintEnd_toEndOf="parent" />
 
-    <LinearLayout
+    <!-- Floating Modern Bottom Actions Bar -->
+    <com.google.android.material.card.MaterialCardView
+        android:id="@+id/bottomBarCard"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:gravity="center_horizontal"
-        android:orientation="horizontal"
-        android:padding="0dp"
-        app:layout_constraintBottom_toBottomOf="@+id/viewPager"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent">
+        android:layout_marginHorizontal="16dp"
+        android:layout_marginBottom="16dp"
+        app:cardCornerRadius="20dp"
+        app:cardElevation="4dp"
+        app:strokeWidth="1dp"
+        app:strokeColor="?attr/colorOutlineVariant"
+        app:cardBackgroundColor="?attr/colorSurface"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent">
 
-        <com.google.android.material.button.MaterialButton
-            android:id="@+id/unHide"
+        <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginHorizontal="@dimen/_6sdp"
-            android:layout_marginVertical="@dimen/_10sdp"
-            android:minWidth="120dp"
-            android:layout_weight="1"
-            style="@style/Widget.Material3.Button.OutlinedButton"
-            android:text="@string/un_hide" />
+            android:orientation="horizontal"
+            android:padding="8dp">
 
-        <com.google.android.material.button.MaterialButton
-            android:id="@+id/delete"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:layout_marginHorizontal="@dimen/_6sdp"
-            android:layout_marginVertical="@dimen/_10sdp"
-            android:minWidth="120dp"
-            android:text="@string/delete" />
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/unHide"
+                style="@style/Widget.Material3.Button.TonalButton"
+                android:layout_width="0dp"
+                android:layout_height="50dp"
+                android:layout_weight="1"
+                android:layout_marginEnd="6dp"
+                android:text="@string/un_hide"
+                android:textStyle="bold"
+                app:cornerRadius="14dp"
+                app:icon="@drawable/ic_privacy_tip"
+                app:iconGravity="textStart" />
 
-    </LinearLayout>
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/delete"
+                style="@style/Widget.Material3.Button"
+                android:layout_width="0dp"
+                android:layout_height="50dp"
+                android:layout_weight="1"
+                android:layout_marginStart="6dp"
+                android:text="@string/delete"
+                android:textStyle="bold"
+                app:backgroundTint="?attr/colorError"
+                app:iconTint="?attr/colorOnError"
+                android:textColor="?attr/colorOnError"
+                app:cornerRadius="14dp"
+                app:icon="@drawable/ic_delete"
+                app:iconGravity="textStart" />
 
-</LinearLayout>
+        </LinearLayout>
+
+    </com.google.android.material.card.MaterialCardView>
+
+</androidx.constraintlayout.widget.ConstraintLayout>

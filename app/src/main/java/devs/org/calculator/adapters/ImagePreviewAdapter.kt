@@ -38,9 +38,27 @@ class ImagePreviewAdapter(
         HiddenFileRepository(AppDatabase.getDatabase(context).hiddenFileDao())
     }
 
+    init {
+        setHasStableIds(true)
+    }
+
     var images: List<File>
         get() = differ.currentList
-        set(value) = differ.submitList(value)
+        set(value) = submitFiles(value)
+
+    fun submitFiles(newFiles: List<File>, onCommit: (() -> Unit)? = null) {
+        differ.submitList(ArrayList(newFiles)) {
+            onCommit?.invoke()
+        }
+    }
+
+    override fun getItemId(position: Int): Long {
+        return if (position in 0 until images.size) {
+            images[position].absolutePath.hashCode().toLong()
+        } else {
+            RecyclerView.NO_ID
+        }
+    }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ImageViewHolder {
         val binding = ViewpagerItemsBinding.inflate(LayoutInflater.from(context), parent, false)

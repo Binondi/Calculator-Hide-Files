@@ -3,14 +3,17 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_marginHorizontal="2dp"
-    android:layout_height="wrap_content">
+    android:layout_height="wrap_content"
+    android:padding="4dp">
 
     <com.google.android.material.card.MaterialCardView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_margin="4dp"
-        app:cardCornerRadius="8dp">
+        app:cardCornerRadius="16dp"
+        app:cardElevation="0dp"
+        app:strokeWidth="1dp"
+        app:strokeColor="?attr/colorOutlineVariant"
+        app:cardBackgroundColor="?attr/colorSurface">
 
         <androidx.constraintlayout.widget.ConstraintLayout
             android:layout_width="match_parent"
@@ -20,8 +23,8 @@
                 android:id="@+id/selectedLayer"
                 android:layout_width="match_parent"
                 android:layout_height="0dp"
-                android:alpha="0.3"
-                android:background="?attr/colorControlNormal"
+                android:alpha="0.15"
+                android:background="?attr/colorPrimary"
                 android:orientation="horizontal"
                 android:visibility="gone"
                 app:layout_constraintBottom_toBottomOf="parent"
@@ -34,44 +37,62 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="vertical"
-                android:padding="8dp"
+                android:gravity="center"
+                android:padding="16dp"
                 app:layout_constraintBottom_toBottomOf="parent"
-                app:layout_constraintDimensionRatio="1:1"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toTopOf="parent">
 
-                <ImageView
-                    android:id="@+id/folderIcon"
-                    android:layout_width="48dp"
-                    android:layout_height="48dp"
-                    android:layout_gravity="center"
-                    app:tint="?attr/colorPrimary"
-                    android:src="@drawable/ic_folder" />
+                <!-- Folder Icon Container -->
+                <com.google.android.material.card.MaterialCardView
+                    android:layout_width="56dp"
+                    android:layout_height="56dp"
+                    app:cardCornerRadius="28dp"
+                    app:cardElevation="0dp"
+                    app:strokeWidth="0dp"
+                    app:cardBackgroundColor="?attr/colorPrimaryContainer">
+
+                    <ImageView
+                        android:id="@+id/folderIcon"
+                        android:layout_width="28dp"
+                        android:layout_height="28dp"
+                        android:layout_gravity="center"
+                        app:tint="?attr/colorOnPrimaryContainer"
+                        android:src="@drawable/ic_folder"
+                        android:contentDescription="@null" />
+                </com.google.android.material.card.MaterialCardView>
 
                 <TextView
                     android:id="@+id/folderName"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="4dp"
+                    android:layout_marginTop="12dp"
                     android:ellipsize="end"
                     android:gravity="center"
                     android:singleLine="true"
-                    android:textColor="?attr/colorPrimary"
+                    android:textStyle="bold"
+                    android:textColor="?attr/colorOnSurface"
                     android:maxLines="1"
                     android:textSize="14sp" />
 
             </LinearLayout>
+
         </androidx.constraintlayout.widget.ConstraintLayout>
     </com.google.android.material.card.MaterialCardView>
+
     <ImageView
         android:id="@+id/selected"
-        android:layout_width="20dp"
-        android:layout_height="20dp"
+        android:layout_width="22dp"
+        android:layout_height="22dp"
+        android:layout_gravity="top|end"
+        android:layout_marginTop="8dp"
+        android:layout_marginEnd="8dp"
         android:background="@drawable/gradient_bg"
-        android:padding="3dp"
+        android:padding="4dp"
         android:src="@drawable/selected"
-        android:layout_gravity="end"
-        android:visibility="visible"
-        app:tint="#fff" />
+        android:visibility="gone"
+        app:tint="#ffffff"
+        android:contentDescription="@null" />
+
 </FrameLayout>

@@ -203,7 +203,7 @@ class MainActivity : BaseCalculatorActivity(), DialogActionsCallback, DialogUtil
     private var permissionDialogShown = false
 
     private fun checkStoragePermission() {
-        if (!prefs.hasPassword() || permissionDialogShown) return
+        if (!prefs.hasPassword() || permissionDialogShown || isFinishing || isDestroyed) return
 
         val hasPermission = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
             Environment.isExternalStorageManager()
@@ -281,6 +281,7 @@ class MainActivity : BaseCalculatorActivity(), DialogActionsCallback, DialogUtil
     override fun onDestroy() {
         super.onDestroy()
         stopRapidDelete()
+        dialogUtil.dismissActiveDialog()
     }
 
     private fun handleActivityResult(result: androidx.activity.result.ActivityResult) {

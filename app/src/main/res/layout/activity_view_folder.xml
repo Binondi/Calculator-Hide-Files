@@ -6,51 +6,79 @@
     android:id="@+id/main"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="?attr/colorSurface"
     tools:context=".activities.ViewFolderActivity">
 
     <com.google.android.material.appbar.MaterialToolbar
+        android:id="@+id/toolBar"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:id="@+id/toolBar"
         android:title="@string/hidden_space"
         app:navigationIcon="@drawable/ic_back"
         app:layout_constraintTop_toTopOf="parent"
         app:menu="@menu/viewfolder_menu"
-        app:layout_constraintStart_toStartOf="parent"/>
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent" />
 
     <androidx.swiperefreshlayout.widget.SwipeRefreshLayout
-        android:layout_width="match_parent"
         android:id="@+id/swipeLayout"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/toolBar"
-        android:layout_height="0dp">
+        app:layout_constraintTop_toBottomOf="@+id/toolBar">
+
         <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/recyclerView"
             android:layout_width="match_parent"
-            android:layout_height="0dp">
+            android:layout_height="match_parent"
+            android:clipToPadding="false"
+            android:paddingHorizontal="8dp"
+            android:paddingTop="6dp"
+            android:paddingBottom="96dp" />
 
-        </androidx.recyclerview.widget.RecyclerView>
     </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
 
-
+    <!-- Modern Empty State -->
     <LinearLayout
         android:id="@+id/noItems"
-        android:layout_width="wrap_content"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:gravity="center"
         android:orientation="vertical"
+        android:paddingHorizontal="32dp"
         android:visibility="gone"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent">
+        app:layout_constraintTop_toBottomOf="@+id/toolBar">
 
-        <ImageView
-            android:layout_width="48dp"
-            android:layout_height="48dp"
-            android:src="@drawable/ic_file_no_item" />
+        <com.google.android.material.card.MaterialCardView
+            android:layout_width="88dp"
+            android:layout_height="88dp"
+            app:cardCornerRadius="44dp"
+            app:cardElevation="0dp"
+            app:strokeWidth="0dp"
+            app:cardBackgroundColor="?attr/colorPrimaryContainer">
+
+            <ImageView
+                android:layout_width="44dp"
+                android:layout_height="44dp"
+                android:layout_gravity="center"
+                android:src="@drawable/ic_file_no_item"
+                app:tint="?attr/colorOnPrimaryContainer"
+                android:contentDescription="@null" />
+        </com.google.android.material.card.MaterialCardView>
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="20dp"
+            android:text="@string/no_items_available"
+            android:textStyle="bold"
+            android:textSize="18sp"
+            android:textColor="?attr/colorOnSurface" />
 
         <TextView
             android:id="@+id/noItemsTxt"
@@ -58,20 +86,27 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="8dp"
             android:gravity="center"
-            android:padding="10dp"
             android:text="@string/no_items_available_add_one_by_clicking_on_the_plus_button"
-            android:textSize="16sp" />
+            android:textColor="?attr/colorOnSurfaceVariant"
+            android:textSize="14sp" />
 
     </LinearLayout>
 
+    <!-- Speed Dial FABs -->
     <com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton
         android:id="@+id/takePhoto"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginBottom="10dp"
         android:text="@string/take_photo"
+        android:textStyle="bold"
         android:visibility="gone"
+        app:cornerRadius="16dp"
+        app:elevation="4dp"
         app:icon="@drawable/ic_camera"
+        app:backgroundTint="?attr/colorSecondaryContainer"
+        app:iconTint="?attr/colorOnSecondaryContainer"
+        android:textColor="?attr/colorOnSecondaryContainer"
         app:layout_constraintBottom_toTopOf="@+id/addImage"
         app:layout_constraintEnd_toEndOf="@+id/addImage" />
 
@@ -81,8 +116,14 @@
         android:layout_height="wrap_content"
         android:layout_marginBottom="10dp"
         android:text="@string/add_image"
+        android:textStyle="bold"
         android:visibility="gone"
+        app:cornerRadius="16dp"
+        app:elevation="4dp"
         app:icon="@drawable/add_image"
+        app:backgroundTint="?attr/colorSecondaryContainer"
+        app:iconTint="?attr/colorOnSecondaryContainer"
+        android:textColor="?attr/colorOnSecondaryContainer"
         app:layout_constraintBottom_toTopOf="@+id/addVideo"
         app:layout_constraintEnd_toEndOf="@+id/addVideo" />
 
@@ -92,8 +133,14 @@
         android:layout_height="wrap_content"
         android:layout_marginBottom="10dp"
         android:text="@string/add_video"
+        android:textStyle="bold"
         android:visibility="gone"
+        app:cornerRadius="16dp"
+        app:elevation="4dp"
         app:icon="@drawable/video_add"
+        app:backgroundTint="?attr/colorSecondaryContainer"
+        app:iconTint="?attr/colorOnSecondaryContainer"
+        android:textColor="?attr/colorOnSecondaryContainer"
         app:layout_constraintBottom_toTopOf="@+id/addAudio"
         app:layout_constraintEnd_toEndOf="@+id/addAudio" />
 
@@ -103,34 +150,45 @@
         android:layout_height="wrap_content"
         android:layout_marginBottom="10dp"
         android:text="@string/add_music"
+        android:textStyle="bold"
         android:visibility="gone"
+        app:cornerRadius="16dp"
+        app:elevation="4dp"
         app:icon="@drawable/add_music"
+        app:backgroundTint="?attr/colorSecondaryContainer"
+        app:iconTint="?attr/colorOnSecondaryContainer"
+        android:textColor="?attr/colorOnSecondaryContainer"
         app:layout_constraintBottom_toTopOf="@+id/addDocument"
-        app:layout_constraintEnd_toEndOf="@+id/addDocument"
-        app:tint="@color/white" />
+        app:layout_constraintEnd_toEndOf="@+id/addDocument" />
 
     <com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton
         android:id="@+id/addDocument"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginBottom="10dp"
-        app:icon="@drawable/document_add"
         android:text="@string/add_document"
+        android:textStyle="bold"
         android:visibility="gone"
+        app:cornerRadius="16dp"
+        app:elevation="4dp"
+        app:icon="@drawable/document_add"
+        app:backgroundTint="?attr/colorSecondaryContainer"
+        app:iconTint="?attr/colorOnSecondaryContainer"
+        android:textColor="?attr/colorOnSecondaryContainer"
         app:layout_constraintBottom_toTopOf="@+id/fabExpend"
-        app:layout_constraintEnd_toEndOf="@+id/fabExpend"
-        app:tint="@color/white" />
+        app:layout_constraintEnd_toEndOf="@+id/fabExpend" />
 
+    <!-- Main Expand FAB -->
     <com.google.android.material.floatingactionbutton.FloatingActionButton
         android:id="@+id/fabExpend"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        app:fabCustomSize="60dp"
         android:layout_marginEnd="16dp"
-        android:layout_marginBottom="20dp"
+        android:layout_marginBottom="24dp"
         android:src="@drawable/ic_add"
-        app:maxImageSize="24dp"
-        app:useCompatPadding="true"
+        app:elevation="6dp"
+        app:backgroundTint="?attr/colorPrimary"
+        app:tint="?attr/colorOnPrimary"
         app:shapeAppearanceOverlay="@style/ShapeAppearance.Material3.Corner.Full"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent" />

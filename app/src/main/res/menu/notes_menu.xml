@@ -2,6 +2,18 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto">
     <item
+        android:id="@+id/action_undo"
+        android:icon="@drawable/ic_undo"
+        android:title="@string/undo"
+        app:iconTint="?attr/colorOnSurface"
+        app:showAsAction="always" />
+    <item
+        android:id="@+id/action_redo"
+        android:icon="@drawable/ic_redo"
+        android:title="@string/redo"
+        app:iconTint="?attr/colorOnSurface"
+        app:showAsAction="always" />
+    <item
         android:id="@+id/save"
         app:showAsAction="always"
         app:iconTint="?attr/colorPrimary"
