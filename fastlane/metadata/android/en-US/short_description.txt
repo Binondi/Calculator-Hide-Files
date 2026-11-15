@@ -1,1 +1,1 @@
-Secure file vault with calculator interface
+Encrypted file vault with calculator interface
