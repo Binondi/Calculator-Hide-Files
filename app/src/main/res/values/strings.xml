@@ -7,6 +7,9 @@
     <string name="add_files">Add Files</string>
     <string name="share">Share</string>
     <string name="file_options">File Options</string>
+    <string name="select_all">Select All</string>
+    <string name="deselect_all">Deselect All</string>
+    <string name="files_selected">%1$d selected</string>
     <string name="rename_file">Rename File</string>
     <string name="share_file">Share File</string>
     <string name="add_document">Add Document</string>

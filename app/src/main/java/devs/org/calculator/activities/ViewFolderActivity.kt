@@ -16,6 +16,7 @@ import android.widget.CheckBox
 import android.widget.CompoundButton
 import android.widget.LinearLayout
 import android.widget.Toast
+import androidx.activity.OnBackPressedCallback
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
@@ -86,6 +87,7 @@ class ViewFolderActivity : BaseActivity() {
         setupAnimations()
         initialize()
         setupClickListeners()
+        setupBackPressed()
         closeFabs()
         val folder = intent.getStringExtra("folder").toString()
         currentFolder = File(folder)
@@ -283,6 +285,9 @@ class ViewFolderActivity : BaseActivity() {
     private fun showEmptyState() {
         binding.noItems.visibility = View.VISIBLE
         binding.swipeLayout.visibility = View.GONE
+        binding.toolBar.menu.findItem(R.id.select_all)?.isVisible = false
+        binding.toolBar.menu.findItem(R.id.options)?.isVisible = false
+        binding.toolBar.menu.findItem(R.id.view_settings)?.isVisible = false
     }
 
     private fun showViewSettingsDialog() {
@@ -376,6 +381,10 @@ class ViewFolderActivity : BaseActivity() {
         binding.noItems.visibility = View.GONE
         binding.toolBar.setOnMenuItemClickListener { menuItem ->
             when(menuItem.itemId){
+                R.id.select_all -> {
+                    fileAdapter?.toggleSelectAll()
+                    true
+                }
                 R.id.view_settings -> {
                     showViewSettingsDialog()
                     true
@@ -393,11 +402,12 @@ class ViewFolderActivity : BaseActivity() {
         showFileViewIcons()
     }
 
-
-    @Deprecated("This method has been deprecated in favor of using the\n      {@link OnBackPressedDispatcher} via {@link #getOnBackPressedDispatcher()}.\n      The OnBackPressedDispatcher controls how back button events are dispatched\n      to one or more {@link OnBackPressedCallback} objects.")
-    @SuppressLint("MissingSuperCall")
-    override fun onBackPressed() {
-        handleBackPress()
+    private fun setupBackPressed() {
+        onBackPressedDispatcher.addCallback(this, object : OnBackPressedCallback(true) {
+            override fun handleOnBackPressed() {
+                handleBackPress()
+            }
+        })
     }
 
     private fun handleBackPress() {
@@ -405,7 +415,7 @@ class ViewFolderActivity : BaseActivity() {
             return
         }
 
-        super.onBackPressed()
+        finish()
     }
 
     private fun handleFileSelectionModeChange(isSelectionMode: Boolean) {
@@ -446,7 +456,14 @@ class ViewFolderActivity : BaseActivity() {
                 }
             }
 
+            val selectAllOption = if (fileAdapter?.isAllSelected() == true) {
+                getString(R.string.deselect_all)
+            } else {
+                getString(R.string.select_all)
+            }
+
             val options = mutableListOf(
+                selectAllOption,
                 getString(R.string.un_hide),
                 getString(R.string.delete),
                 getString(R.string.copy_to_another_folder),
@@ -464,28 +481,27 @@ class ViewFolderActivity : BaseActivity() {
             MaterialAlertDialogBuilder(this@ViewFolderActivity)
                 .setTitle(getString(R.string.file_options))
                 .setItems(options.toTypedArray()) { _, which ->
-                    when (which) {
-                        0 -> unhideSelectedFiles(selectedFiles)
-                        1 -> deleteSelectedFiles(selectedFiles)
-                        2 -> copyToAnotherFolder(selectedFiles)
-                        3 -> moveToAnotherFolder(selectedFiles)
-                        else -> {
-                            val option = options[which]
-                            when (option) {
-                                getString(R.string.encrypt_file) -> fileAdapter?.encryptSelectedFiles()
-                                getString(R.string.decrypt_file) -> {
-                                    lifecycleScope.launch {
-                                        val filesWithoutMetadata = selectedFiles.filter { file ->
-                                            file.name.endsWith(ENCRYPTED_EXTENSION) &&
-                                                    fileAdapter?.hiddenFileRepository?.getHiddenFileByPath(file.absolutePath)?.isEncrypted != true
-                                        }
+                    val chosen = options[which]
+                    when (chosen) {
+                        getString(R.string.select_all), getString(R.string.deselect_all) -> {
+                            fileAdapter?.toggleSelectAll()
+                        }
+                        getString(R.string.un_hide) -> unhideSelectedFiles(selectedFiles)
+                        getString(R.string.delete) -> deleteSelectedFiles(selectedFiles)
+                        getString(R.string.copy_to_another_folder) -> copyToAnotherFolder(selectedFiles)
+                        getString(R.string.move_to_another_folder) -> moveToAnotherFolder(selectedFiles)
+                        getString(R.string.encrypt_file) -> fileAdapter?.encryptSelectedFiles()
+                        getString(R.string.decrypt_file) -> {
+                            lifecycleScope.launch {
+                                val filesWithoutMetadata = selectedFiles.filter { file ->
+                                    file.name.endsWith(ENCRYPTED_EXTENSION) &&
+                                            fileAdapter?.hiddenFileRepository?.getHiddenFileByPath(file.absolutePath)?.isEncrypted != true
+                                }
 
-                                        if (filesWithoutMetadata.isNotEmpty()) {
-                                            showDecryptionTypeDialog(filesWithoutMetadata)
-                                        } else {
-                                            fileAdapter?.decryptSelectedFiles()
-                                        }
-                                    }
+                                if (filesWithoutMetadata.isNotEmpty()) {
+                                    showDecryptionTypeDialog(filesWithoutMetadata)
+                                } else {
+                                    fileAdapter?.decryptSelectedFiles()
                                 }
                             }
                         }
@@ -673,7 +689,7 @@ class ViewFolderActivity : BaseActivity() {
             else openFabs()
         }
         binding.toolBar.setNavigationOnClickListener {
-            finish()
+            handleBackPress()
         }
         binding.swipeLayout.setOnRefreshListener {
             openFolder(currentFolder!!)
@@ -792,6 +808,14 @@ class ViewFolderActivity : BaseActivity() {
     }
 
     private fun showFileViewIcons() {
+        binding.toolBar.title = currentFolder?.name ?: getString(R.string.hidden_space)
+        binding.toolBar.setNavigationIcon(R.drawable.ic_back)
+        val hasFiles = (fileAdapter?.itemCount ?: 0) > 0
+        binding.toolBar.menu.findItem(R.id.select_all)?.apply {
+            isVisible = hasFiles
+            setIcon(R.drawable.ic_select_all)
+            setTitle(R.string.select_all)
+        }
         binding.toolBar.menu.findItem(R.id.options)?.isVisible = false
         binding.toolBar.menu.findItem(R.id.view_settings)?.isVisible = true
         binding.fabExpend.visibility = View.VISIBLE
@@ -806,6 +830,20 @@ class ViewFolderActivity : BaseActivity() {
     }
 
     private fun showFileSelectionIcons() {
+        val selectedCount = fileAdapter?.getSelectedItemCount() ?: 0
+        binding.toolBar.title = getString(R.string.files_selected, selectedCount)
+        binding.toolBar.setNavigationIcon(R.drawable.ic_close)
+        val isAll = fileAdapter?.isAllSelected() == true
+        binding.toolBar.menu.findItem(R.id.select_all)?.apply {
+            isVisible = true
+            if (isAll) {
+                setIcon(R.drawable.ic_deselect_all)
+                setTitle(R.string.deselect_all)
+            } else {
+                setIcon(R.drawable.ic_select_all)
+                setTitle(R.string.select_all)
+            }
+        }
         binding.toolBar.menu.findItem(R.id.options)?.isVisible = true
         binding.toolBar.menu.findItem(R.id.view_settings)?.isVisible = false
         binding.fabExpend.visibility = View.GONE

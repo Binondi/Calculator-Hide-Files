@@ -15,6 +15,7 @@
         android:layout_height="wrap_content"
         android:title="@string/hidden_space"
         app:navigationIcon="@drawable/ic_back"
+        app:navigationIconTint="?attr/colorOnSurface"
         app:layout_constraintTop_toTopOf="parent"
         app:menu="@menu/viewfolder_menu"
         app:layout_constraintStart_toStartOf="parent"

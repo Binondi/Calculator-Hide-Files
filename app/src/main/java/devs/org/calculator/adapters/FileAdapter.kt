@@ -115,7 +115,7 @@ class FileAdapter(
 
         @SuppressLint("FileEndsWithExt")
         fun bind(file: File) {
-            val position = adapterPosition
+            val position = bindingAdapterPosition
 
             updateViewSettingsOnly()
             
@@ -306,7 +306,7 @@ class FileAdapter(
                                         val intent = Intent(context, PreviewActivity::class.java).apply {
                                             putExtra("type", fileTypeString)
                                             putExtra("folder", currentFolder.toString())
-                                            putExtra("position", adapterPosition)
+                                            putExtra("position", bindingAdapterPosition)
                                             putExtra("isEncrypted", true)
                                             putExtra("tempFile", tempFile.absolutePath)
                                         }
@@ -360,7 +360,7 @@ class FileAdapter(
             val intent = Intent(context, PreviewActivity::class.java).apply {
                 putExtra("type", fileTypeString)
                 putExtra("folder", currentFolder.toString())
-                putExtra("position", adapterPosition)
+                putExtra("position", bindingAdapterPosition)
             }
             context.startActivity(intent)
         }
@@ -376,7 +376,7 @@ class FileAdapter(
                 val intent = Intent(context, PreviewActivity::class.java).apply {
                     putExtra("type", fileTypeString)
                     putExtra("folder", currentFolder.toString())
-                    putExtra("position", adapterPosition)
+                    putExtra("position", bindingAdapterPosition)
                 }
                 context.startActivity(intent)
             } catch (_: Exception) {
@@ -419,13 +419,13 @@ class FileAdapter(
 
         private fun setupClickListeners(file: File, fileType: FileManager.FileType) {
             itemView.setOnClickListener {
-                val position = adapterPosition
+                val position = bindingAdapterPosition
                 if (position == RecyclerView.NO_POSITION) return@setOnClickListener
                 if (isSelectionMode) toggleSelection(position) else openFile(file, fileType)
             }
 
             itemView.setOnLongClickListener {
-                val position = adapterPosition
+                val position = bindingAdapterPosition
                 if (position == RecyclerView.NO_POSITION) return@setOnLongClickListener false
                 if (!isSelectionMode) {
                     enterSelectionMode()
@@ -479,7 +479,7 @@ class FileAdapter(
                                 val intent = Intent(context, PreviewActivity::class.java).apply {
                                     putExtra("type", if (fileType == FileManager.FileType.IMAGE) "image" else "video")
                                     putExtra("folder", currentFolder.toString())
-                                    putExtra("position", adapterPosition)
+                                    putExtra("position", bindingAdapterPosition)
                                     putExtra("isEncrypted", false)
                                     putExtra("file", decryptedFile.absolutePath)
                                 }
@@ -528,9 +528,47 @@ class FileAdapter(
     fun exitSelectionMode() {
         if (isSelectionMode) {
             isSelectionMode = false
-            selectedItems.forEach { position -> notifyItemChanged(position) }
+            val hadMany = selectedItems.size > 20
+            val oldPositions = selectedItems.toSet()
             selectedItems.clear()
+            if (hadMany) {
+                notifyDataSetChanged()
+            } else {
+                oldPositions.forEach { position -> notifyItemChanged(position) }
+            }
             notifySelectionModeChange()
+            onSelectionCountChanged(0)
+        }
+    }
+
+    @SuppressLint("NotifyDataSetChanged")
+    fun selectAll() {
+        if (itemCount == 0) return
+        isSelectionMode = true
+        selectedItems.clear()
+        for (i in 0 until itemCount) {
+            selectedItems.add(i)
+        }
+        notifyDataSetChanged()
+        notifySelectionModeChange()
+        onSelectionCountChanged(selectedItems.size)
+    }
+
+    fun deselectAll() {
+        exitSelectionMode()
+    }
+
+    fun isAllSelected(): Boolean {
+        return itemCount > 0 && selectedItems.size == itemCount
+    }
+
+    fun getSelectedItemCount(): Int = selectedItems.size
+
+    fun toggleSelectAll() {
+        if (isAllSelected()) {
+            deselectAll()
+        } else {
+            selectAll()
         }
     }
 
