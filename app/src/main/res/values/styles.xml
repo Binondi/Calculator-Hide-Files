@@ -64,6 +64,75 @@
         <item name="android:background">@drawable/background_button_equals</item>
     </style>
 
+    <style name="Button.Scientific" parent="Button">
+        <item name="android:layout_marginStart">@dimen/_2sdp</item>
+        <item name="android:layout_marginEnd">@dimen/_2sdp</item>
+        <item name="android:layout_marginTop">@dimen/_2sdp</item>
+        <item name="android:layout_marginBottom">@dimen/_2sdp</item>
+        <item name="android:autoSizeStepGranularity">1sp</item>
+        <item name="android:autoSizeTextType">uniform</item>
+    </style>
+
+    <style name="Button.Scientific.Number">
+        <item name="android:textSize">22sp</item>
+        <item name="android:autoSizeMaxTextSize">24sp</item>
+        <item name="android:autoSizeMinTextSize">8sp</item>
+        <item name="android:textColor">?attr/colorOnSurface</item>
+        <item name="android:background">@drawable/background_button_number</item>
+    </style>
+
+    <style name="Button.Scientific.Operator">
+        <item name="android:textSize">22sp</item>
+        <item name="android:autoSizeMaxTextSize">24sp</item>
+        <item name="android:autoSizeMinTextSize">8sp</item>
+        <item name="android:textColor">?attr/colorOnSecondaryContainer</item>
+        <item name="android:background">@drawable/background_button_operator</item>
+    </style>
+
+    <style name="Button.Scientific.Function">
+        <item name="android:textSize">16sp</item>
+        <item name="android:autoSizeMaxTextSize">18sp</item>
+        <item name="android:autoSizeMinTextSize">7sp</item>
+        <item name="android:textColor">?attr/colorPrimary</item>
+        <item name="android:fontFamily">sans-serif-medium</item>
+        <item name="android:background">@drawable/background_button_scientific</item>
+    </style>
+
+    <style name="Button.Scientific.Equals">
+        <item name="android:textSize">26sp</item>
+        <item name="android:autoSizeMaxTextSize">28sp</item>
+        <item name="android:autoSizeMinTextSize">10sp</item>
+        <item name="android:textColor">?attr/colorOnPrimaryContainer</item>
+        <item name="android:background">@drawable/background_button_equals</item>
+        <item name="android:text">=</item>
+    </style>
+
+    <style name="ScientificTabLayout" parent="Widget.Material3.TabLayout">
+        <item name="tabIndicatorAnimationMode">elastic</item>
+        <item name="tabIndicatorGravity">stretch</item>
+        <item name="tabIndicator">@drawable/tab_indicator_pill</item>
+        <item name="tabIndicatorColor">?attr/colorPrimary</item>
+        <item name="tabIndicatorFullWidth">true</item>
+        <item name="tabSelectedTextColor">?attr/colorOnPrimary</item>
+        <item name="tabTextColor">?attr/colorOnSurfaceVariant</item>
+        <item name="tabBackground">@drawable/tab_ripple_pill</item>
+        <item name="tabRippleColor">@android:color/transparent</item>
+        <item name="tabMode">fixed</item>
+        <item name="tabGravity">fill</item>
+        <item name="tabTextAppearance">@style/ScientificTabTextAppearance</item>
+        <item name="tabPaddingStart">0dp</item>
+        <item name="tabPaddingEnd">0dp</item>
+        <item name="tabPaddingTop">0dp</item>
+        <item name="tabPaddingBottom">0dp</item>
+    </style>
+
+    <style name="ScientificTabTextAppearance" parent="TextAppearance.Material3.LabelMedium">
+        <item name="android:textSize">12sp</item>
+        <item name="android:fontFamily">sans-serif-medium</item>
+        <item name="android:textAllCaps">false</item>
+        <item name="textAllCaps">false</item>
+    </style>
+
 
     <style name="Expression" parent="Widget.AppCompat.EditText">
         <item name="android:layout_width">0dp</item>

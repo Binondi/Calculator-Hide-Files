@@ -60,6 +60,23 @@
         tools:ignore="Suspicious0dp" />
 
     <TextView
+        android:id="@+id/tvAngleMode"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="@dimen/_12sdp"
+        android:layout_marginBottom="@dimen/_10sdp"
+        android:text="@string/deg"
+        android:textColor="?attr/colorPrimary"
+        android:textSize="13sp"
+        android:fontFamily="sans-serif-medium"
+        android:paddingHorizontal="10dp"
+        android:paddingVertical="4dp"
+        android:background="@drawable/background_button_scientific"
+        android:visibility="gone"
+        app:layout_constraintBottom_toBottomOf="@+id/displayContainer"
+        app:layout_constraintStart_toStartOf="parent" />
+
+    <TextView
         android:id="@+id/total"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
@@ -76,19 +93,21 @@
         android:textSize="40sp"
         app:layout_constraintBottom_toBottomOf="@+id/displayContainer"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintStart_toEndOf="@+id/tvAngleMode"
         tools:ignore="Suspicious0dp" />
+
     <com.google.android.material.appbar.MaterialToolbar
         android:id="@+id/toolbar"
         style="@style/Toolbar"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
+
     <androidx.constraintlayout.widget.Guideline
         android:id="@+id/pagerGuideline"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
-        app:layout_constraintGuide_percent="0.4" />
+        app:layout_constraintGuide_percent="0.34" />
 
     <androidx.constraintlayout.widget.Guideline
         android:id="@+id/bottomExtraButtonsGuideline"
@@ -104,17 +123,33 @@
         android:orientation="horizontal"
         app:layout_constraintGuide_end="@dimen/_3sdp" />
 
+    <com.google.android.material.tabs.TabLayout
+        android:id="@+id/tabLayout"
+        style="@style/ScientificTabLayout"
+        android:layout_width="220dp"
+        android:layout_height="34dp"
+        android:layout_marginTop="@dimen/_4sdp"
+        android:background="@drawable/background_tab_pill"
+        android:clipChildren="false"
+        android:clipToPadding="false"
+        app:tabIndicatorFullWidth="true"
+        app:tabRippleColor="@android:color/transparent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/displayContainer" />
+
+    <!-- Standard Keypad -->
     <androidx.constraintlayout.widget.ConstraintLayout
         android:id="@+id/buttonContainer"
         android:layout_width="0dp"
         android:layout_height="0dp"
         android:layout_marginHorizontal="@dimen/_1sdp"
-        android:layout_marginVertical="@dimen/_10sdp"
+        android:layout_marginTop="@dimen/_4sdp"
+        android:layout_marginBottom="@dimen/_4sdp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="@id/paddingRightGuideline"
         app:layout_constraintStart_toStartOf="@id/paddingLeftGuideline"
-        app:layout_constraintTop_toBottomOf="@+id/displayContainer">
-
+        app:layout_constraintTop_toBottomOf="@+id/tabLayout">
 
         <TextView
             android:id="@+id/btnClear"
@@ -218,7 +253,6 @@
             app:layout_constraintStart_toEndOf="@+id/btn9"
             app:layout_constraintTop_toBottomOf="@+id/cut" />
 
-
         <TextView
             android:id="@+id/btn4"
             style="@style/Button.Number"
@@ -266,7 +300,6 @@
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toEndOf="@+id/btn6"
             app:layout_constraintTop_toBottomOf="@+id/btnMultiply" />
-
 
         <TextView
             android:id="@+id/btn1"
@@ -316,7 +349,6 @@
             app:layout_constraintStart_toEndOf="@+id/btn3"
             app:layout_constraintTop_toBottomOf="@+id/btnMinus" />
 
-
         <TextView
             android:id="@+id/btn00"
             style="@style/Button.Number"
@@ -365,6 +397,417 @@
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toEndOf="@+id/btnDot"
             app:layout_constraintTop_toBottomOf="@+id/btnPlus" />
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+    <!-- Scientific Keypad -->
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/scientificKeypad"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:layout_marginHorizontal="@dimen/_1sdp"
+        android:layout_marginTop="@dimen/_4sdp"
+        android:layout_marginBottom="@dimen/_4sdp"
+        android:visibility="gone"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="@id/paddingRightGuideline"
+        app:layout_constraintStart_toStartOf="@id/paddingLeftGuideline"
+        app:layout_constraintTop_toBottomOf="@+id/tabLayout">
+
+        <!-- Row 1: 2nd, DEG/RAD, sin, cos, tan -->
+        <TextView
+            android:id="@+id/btnSci2nd"
+            style="@style/Button.Scientific.Function"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:text="@string/second_func"
+            app:layout_constraintBottom_toTopOf="@+id/btnSciPower"
+            app:layout_constraintEnd_toStartOf="@+id/btnSciDegRad"
+            app:layout_constraintHorizontal_chainStyle="spread"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintVertical_chainStyle="spread" />
+
+        <TextView
+            android:id="@+id/btnSciDegRad"
+            style="@style/Button.Scientific.Function"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:text="@string/deg"
+            app:layout_constraintBottom_toTopOf="@+id/btnSciLog"
+            app:layout_constraintEnd_toStartOf="@+id/btnSciSin"
+            app:layout_constraintStart_toEndOf="@+id/btnSci2nd"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <TextView
+            android:id="@+id/btnSciSin"
+            style="@style/Button.Scientific.Function"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:text="@string/sin"
+            app:layout_constraintBottom_toTopOf="@+id/btnSciLn"
+            app:layout_constraintEnd_toStartOf="@+id/btnSciCos"
+            app:layout_constraintStart_toEndOf="@+id/btnSciDegRad"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <TextView
+            android:id="@+id/btnSciCos"
+            style="@style/Button.Scientific.Function"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:text="@string/cos"
+            app:layout_constraintBottom_toTopOf="@+id/btnSciOpenParen"
+            app:layout_constraintEnd_toStartOf="@+id/btnSciTan"
+            app:layout_constraintStart_toEndOf="@+id/btnSciSin"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <TextView
+            android:id="@+id/btnSciTan"
+            style="@style/Button.Scientific.Function"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:text="@string/tan"
+            app:layout_constraintBottom_toTopOf="@+id/btnSciCloseParen"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toEndOf="@+id/btnSciCos"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <!-- Row 2: xʸ, log, ln, (, ) -->
+        <TextView
+            android:id="@+id/btnSciPower"
+            style="@style/Button.Scientific.Function"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:text="@string/power"
+            app:layout_constraintBottom_toTopOf="@+id/btnSciSqrt"
+            app:layout_constraintEnd_toStartOf="@+id/btnSciLog"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/btnSci2nd" />
+
+        <TextView
+            android:id="@+id/btnSciLog"
+            style="@style/Button.Scientific.Function"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:text="@string/log"
+            app:layout_constraintBottom_toTopOf="@+id/btnSciClear"
+            app:layout_constraintEnd_toStartOf="@+id/btnSciLn"
+            app:layout_constraintStart_toEndOf="@+id/btnSciPower"
+            app:layout_constraintTop_toBottomOf="@+id/btnSciDegRad" />
+
+        <TextView
+            android:id="@+id/btnSciLn"
+            style="@style/Button.Scientific.Function"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:text="@string/ln"
+            app:layout_constraintBottom_toTopOf="@+id/btnSciCut"
+            app:layout_constraintEnd_toStartOf="@+id/btnSciOpenParen"
+            app:layout_constraintStart_toEndOf="@+id/btnSciLog"
+            app:layout_constraintTop_toBottomOf="@+id/btnSciSin" />
+
+        <TextView
+            android:id="@+id/btnSciOpenParen"
+            style="@style/Button.Scientific.Function"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:text="@string/open_bracket"
+            app:layout_constraintBottom_toTopOf="@+id/btnSciPercent"
+            app:layout_constraintEnd_toStartOf="@+id/btnSciCloseParen"
+            app:layout_constraintStart_toEndOf="@+id/btnSciLn"
+            app:layout_constraintTop_toBottomOf="@+id/btnSciCos" />
+
+        <TextView
+            android:id="@+id/btnSciCloseParen"
+            style="@style/Button.Scientific.Function"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:text="@string/close_bracket"
+            app:layout_constraintBottom_toTopOf="@+id/btnSciDivide"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toEndOf="@+id/btnSciOpenParen"
+            app:layout_constraintTop_toBottomOf="@+id/btnSciTan" />
+
+        <!-- Row 3: √, AC, Backspace, %, ÷ -->
+        <TextView
+            android:id="@+id/btnSciSqrt"
+            style="@style/Button.Scientific.Function"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:text="@string/sqrt"
+            app:layout_constraintBottom_toTopOf="@+id/btnSciFactorial"
+            app:layout_constraintEnd_toStartOf="@+id/btnSciClear"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/btnSciPower" />
+
+        <TextView
+            android:id="@+id/btnSciClear"
+            style="@style/Button.Scientific.Operator"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:text="@string/all_clear"
+            app:layout_constraintBottom_toTopOf="@+id/btnSci7"
+            app:layout_constraintEnd_toStartOf="@+id/btnSciCut"
+            app:layout_constraintStart_toEndOf="@+id/btnSciSqrt"
+            app:layout_constraintTop_toBottomOf="@+id/btnSciLog" />
+
+        <androidx.appcompat.widget.AppCompatImageButton
+            android:id="@+id/btnSciCut"
+            style="@style/Button.Scientific.Operator"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:scaleType="centerInside"
+            android:src="@drawable/backspace"
+            android:tint="?attr/colorOnSurface"
+            app:layout_constraintBottom_toTopOf="@+id/btnSci8"
+            app:layout_constraintEnd_toStartOf="@+id/btnSciPercent"
+            app:layout_constraintStart_toEndOf="@+id/btnSciClear"
+            app:layout_constraintTop_toBottomOf="@+id/btnSciLn" />
+
+        <TextView
+            android:id="@+id/btnSciPercent"
+            style="@style/Button.Scientific.Operator"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:text="@string/percentage"
+            app:layout_constraintBottom_toTopOf="@+id/btnSci9"
+            app:layout_constraintEnd_toStartOf="@+id/btnSciDivide"
+            app:layout_constraintStart_toEndOf="@+id/btnSciCut"
+            app:layout_constraintTop_toBottomOf="@+id/btnSciOpenParen" />
+
+        <TextView
+            android:id="@+id/btnSciDivide"
+            style="@style/Button.Scientific.Operator"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:text="@string/devide"
+            app:layout_constraintBottom_toTopOf="@+id/btnSciMultiply"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toEndOf="@+id/btnSciPercent"
+            app:layout_constraintTop_toBottomOf="@+id/btnSciCloseParen" />
+
+        <!-- Row 4: x!, 7, 8, 9, × -->
+        <TextView
+            android:id="@+id/btnSciFactorial"
+            style="@style/Button.Scientific.Function"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:text="@string/factorial"
+            app:layout_constraintBottom_toTopOf="@+id/btnSciReciprocal"
+            app:layout_constraintEnd_toStartOf="@+id/btnSci7"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/btnSciSqrt" />
+
+        <TextView
+            android:id="@+id/btnSci7"
+            style="@style/Button.Scientific.Number"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:text="@string/text_7"
+            app:layout_constraintBottom_toTopOf="@+id/btnSci4"
+            app:layout_constraintEnd_toStartOf="@+id/btnSci8"
+            app:layout_constraintStart_toEndOf="@+id/btnSciFactorial"
+            app:layout_constraintTop_toBottomOf="@+id/btnSciClear" />
+
+        <TextView
+            android:id="@+id/btnSci8"
+            style="@style/Button.Scientific.Number"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:text="@string/text_8"
+            app:layout_constraintBottom_toTopOf="@+id/btnSci5"
+            app:layout_constraintEnd_toStartOf="@+id/btnSci9"
+            app:layout_constraintStart_toEndOf="@+id/btnSci7"
+            app:layout_constraintTop_toBottomOf="@+id/btnSciCut" />
+
+        <TextView
+            android:id="@+id/btnSci9"
+            style="@style/Button.Scientific.Number"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:text="@string/text_9"
+            app:layout_constraintBottom_toTopOf="@+id/btnSci6"
+            app:layout_constraintEnd_toStartOf="@+id/btnSciMultiply"
+            app:layout_constraintStart_toEndOf="@+id/btnSci8"
+            app:layout_constraintTop_toBottomOf="@+id/btnSciPercent" />
+
+        <TextView
+            android:id="@+id/btnSciMultiply"
+            style="@style/Button.Scientific.Operator"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:text="@string/into"
+            app:layout_constraintBottom_toTopOf="@+id/btnSciMinus"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toEndOf="@+id/btnSci9"
+            app:layout_constraintTop_toBottomOf="@+id/btnSciDivide" />
+
+        <!-- Row 5: 1/x, 4, 5, 6, — -->
+        <TextView
+            android:id="@+id/btnSciReciprocal"
+            style="@style/Button.Scientific.Function"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:text="@string/reciprocal"
+            app:layout_constraintBottom_toTopOf="@+id/btnSciPi"
+            app:layout_constraintEnd_toStartOf="@+id/btnSci4"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/btnSciFactorial" />
+
+        <TextView
+            android:id="@+id/btnSci4"
+            style="@style/Button.Scientific.Number"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:text="@string/text_4"
+            app:layout_constraintBottom_toTopOf="@+id/btnSci1"
+            app:layout_constraintEnd_toStartOf="@+id/btnSci5"
+            app:layout_constraintStart_toEndOf="@+id/btnSciReciprocal"
+            app:layout_constraintTop_toBottomOf="@+id/btnSci7" />
+
+        <TextView
+            android:id="@+id/btnSci5"
+            style="@style/Button.Scientific.Number"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:text="@string/text_5"
+            app:layout_constraintBottom_toTopOf="@+id/btnSci2"
+            app:layout_constraintEnd_toStartOf="@+id/btnSci6"
+            app:layout_constraintStart_toEndOf="@+id/btnSci4"
+            app:layout_constraintTop_toBottomOf="@+id/btnSci8" />
+
+        <TextView
+            android:id="@+id/btnSci6"
+            style="@style/Button.Scientific.Number"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:text="@string/text_6"
+            app:layout_constraintBottom_toTopOf="@+id/btnSci3"
+            app:layout_constraintEnd_toStartOf="@+id/btnSciMinus"
+            app:layout_constraintStart_toEndOf="@+id/btnSci5"
+            app:layout_constraintTop_toBottomOf="@+id/btnSci9" />
+
+        <TextView
+            android:id="@+id/btnSciMinus"
+            style="@style/Button.Scientific.Operator"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:text="@string/minus"
+            app:layout_constraintBottom_toTopOf="@+id/btnSciPlus"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toEndOf="@+id/btnSci6"
+            app:layout_constraintTop_toBottomOf="@+id/btnSciMultiply" />
+
+        <!-- Row 6: π, 1, 2, 3, + -->
+        <TextView
+            android:id="@+id/btnSciPi"
+            style="@style/Button.Scientific.Function"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:text="@string/pi"
+            app:layout_constraintBottom_toTopOf="@+id/btnSciE"
+            app:layout_constraintEnd_toStartOf="@+id/btnSci1"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/btnSciReciprocal" />
+
+        <TextView
+            android:id="@+id/btnSci1"
+            style="@style/Button.Scientific.Number"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:text="@string/text_1"
+            app:layout_constraintBottom_toTopOf="@+id/btnSci00"
+            app:layout_constraintEnd_toStartOf="@+id/btnSci2"
+            app:layout_constraintStart_toEndOf="@+id/btnSciPi"
+            app:layout_constraintTop_toBottomOf="@+id/btnSci4" />
+
+        <TextView
+            android:id="@+id/btnSci2"
+            style="@style/Button.Scientific.Number"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:text="@string/text_2"
+            app:layout_constraintBottom_toTopOf="@+id/btnSci0"
+            app:layout_constraintEnd_toStartOf="@+id/btnSci3"
+            app:layout_constraintStart_toEndOf="@+id/btnSci1"
+            app:layout_constraintTop_toBottomOf="@+id/btnSci5" />
+
+        <TextView
+            android:id="@+id/btnSci3"
+            style="@style/Button.Scientific.Number"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:text="@string/text_3"
+            app:layout_constraintBottom_toTopOf="@+id/btnSciDot"
+            app:layout_constraintEnd_toStartOf="@+id/btnSciPlus"
+            app:layout_constraintStart_toEndOf="@+id/btnSci2"
+            app:layout_constraintTop_toBottomOf="@+id/btnSci6" />
+
+        <TextView
+            android:id="@+id/btnSciPlus"
+            style="@style/Button.Scientific.Operator"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:text="@string/plus"
+            app:layout_constraintBottom_toTopOf="@+id/btnSciEquals"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toEndOf="@+id/btnSci3"
+            app:layout_constraintTop_toBottomOf="@+id/btnSciMinus" />
+
+        <!-- Row 7: e, 00, 0, ., = -->
+        <TextView
+            android:id="@+id/btnSciE"
+            style="@style/Button.Scientific.Function"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:text="@string/euler"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toStartOf="@+id/btnSci00"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/btnSciPi" />
+
+        <TextView
+            android:id="@+id/btnSci00"
+            style="@style/Button.Scientific.Number"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:text="@string/text_00"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toStartOf="@+id/btnSci0"
+            app:layout_constraintStart_toEndOf="@+id/btnSciE"
+            app:layout_constraintTop_toBottomOf="@+id/btnSci1" />
+
+        <TextView
+            android:id="@+id/btnSci0"
+            style="@style/Button.Scientific.Number"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:text="@string/text_0"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toStartOf="@+id/btnSciDot"
+            app:layout_constraintStart_toEndOf="@+id/btnSci00"
+            app:layout_constraintTop_toBottomOf="@+id/btnSci2" />
+
+        <TextView
+            android:id="@+id/btnSciDot"
+            style="@style/Button.Scientific.Number"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:text="@string/text_dot"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toStartOf="@+id/btnSciEquals"
+            app:layout_constraintStart_toEndOf="@+id/btnSci0"
+            app:layout_constraintTop_toBottomOf="@+id/btnSci3" />
+
+        <TextView
+            android:id="@+id/btnSciEquals"
+            style="@style/Button.Scientific.Equals"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toEndOf="@+id/btnSciDot"
+            app:layout_constraintTop_toBottomOf="@+id/btnSciPlus" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 

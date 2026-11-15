@@ -9,7 +9,6 @@ import android.os.Bundle
 import android.os.Environment
 import android.os.Handler
 import android.os.Looper
-import android.util.Log
 import android.view.HapticFeedbackConstants
 import android.view.SoundEffectConstants
 import android.view.View
@@ -23,6 +22,7 @@ import androidx.core.content.edit
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.lifecycle.lifecycleScope
+import com.google.android.material.tabs.TabLayout
 import devs.org.calculator.CalculatorApp
 import devs.org.calculator.R
 import devs.org.calculator.callbacks.DialogActionsCallback
@@ -32,13 +32,12 @@ import devs.org.calculator.databinding.ActivityMainBinding
 import devs.org.calculator.utils.DialogUtil
 import devs.org.calculator.utils.FileManager
 import devs.org.calculator.utils.PrefsUtil
+import devs.org.calculator.utils.ScientificEvaluator
 import devs.org.calculator.utils.StoragePermissionUtil
 import devs.org.calculator.utils.formatResult
 import devs.org.calculator.utils.formatWithCommas
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import net.objecthunter.exp4j.ExpressionBuilder
-import java.util.regex.Pattern
 
 class MainActivity : BaseCalculatorActivity(), DialogActionsCallback, DialogUtil.DialogCallback {
     private lateinit var binding: ActivityMainBinding
@@ -68,6 +67,9 @@ class MainActivity : BaseCalculatorActivity(), DialogActionsCallback, DialogUtil
 
     private var isUpdatingDisplay = false
 
+    private var isDegMode = true
+    private var isSecondFunc = false
+
     @SuppressLint("ClickableViewAccessibility")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -83,24 +85,25 @@ class MainActivity : BaseCalculatorActivity(), DialogActionsCallback, DialogUtil
             insets
         }
 
+        isDegMode = prefs.getBoolean("calc_angle_mode_deg", true)
+
         binding.display.addTextChangedListener(object : android.text.TextWatcher {
             override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
             override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
             override fun afterTextChanged(s: android.text.Editable?) {
                 if (isUpdatingDisplay) return
-                
+
                 val rawText = s?.toString() ?: ""
                 val cleanText = rawText.replace(",", "").replace("×", "*")
-                
+
                 if (cleanText != currentExpression) {
                     currentExpression = cleanText
-                    // Re-calculate flags
                     if (currentExpression.isNotEmpty()) {
                         val lastChar = currentExpression.last()
                         lastWasOperator = isOperator(lastChar.toString())
                         lastWasPercent = lastChar == '%'
-                        
-                        val lastOperatorIndex = currentExpression.lastIndexOfAny(charArrayOf('+', '-', '*', '/'))
+
+                        val lastOperatorIndex = currentExpression.lastIndexOfAny(charArrayOf('+', '-', '*', '/', '^'))
                         val partAfterLastOperator = if (lastOperatorIndex == -1) currentExpression else currentExpression.substring(lastOperatorIndex + 1)
                         hasDecimal = partAfterLastOperator.contains(".")
                     } else {
@@ -108,11 +111,11 @@ class MainActivity : BaseCalculatorActivity(), DialogActionsCallback, DialogUtil
                         lastWasPercent = false
                         hasDecimal = false
                     }
-                    
-                    binding.display.post { 
+
+                    binding.display.post {
                         val currentPos = binding.display.selectionStart
                         val cleanPos = getCleanCursorPos(binding.display.text.toString(), currentPos)
-                        updateDisplay(cleanPos) 
+                        updateDisplay(cleanPos)
                     }
                 }
             }
@@ -133,6 +136,7 @@ class MainActivity : BaseCalculatorActivity(), DialogActionsCallback, DialogUtil
             handleActivityResult(result)
         }
 
+        // Setup Standard Keypad Buttons
         setupNumberButton(binding.btn0, "0")
         setupNumberButton(binding.btn00, "00")
         setupNumberButton(binding.btn1, "1")
@@ -149,38 +153,28 @@ class MainActivity : BaseCalculatorActivity(), DialogActionsCallback, DialogUtil
         setupOperatorButton(binding.btnMultiply, "×")
         setupOperatorButton(binding.btnDivide, "/")
 
-        binding.btnClear.setOnClickListener { 
+        binding.btnClear.setOnClickListener {
             applyHaptics(it)
-            clearDisplay() 
+            clearDisplay()
         }
-        binding.btnDot.setOnClickListener { 
+        binding.btnDot.setOnClickListener {
             applyHaptics(it)
-            addDecimal() 
+            addDecimal()
         }
-        binding.btnEquals.setOnClickListener { 
+        binding.btnEquals.setOnClickListener {
             applyHaptics(it)
-            calculateResult() 
+            calculateResult()
         }
-        binding.btnPercent.setOnClickListener { 
+        binding.btnPercent.setOnClickListener {
             applyHaptics(it)
-            addPercentage() 
+            addPercentage()
         }
-        binding.cut.setOnClickListener { 
-            applyHaptics(it)
-            cutNumbers() 
-        }
-        binding.cut.setOnLongClickListener {
-            applyHaptics(it)
-            startRapidDelete()
-            true
-        }
-        binding.cut.setOnTouchListener { _, event ->
-            if (event.action == android.view.MotionEvent.ACTION_UP ||
-                event.action == android.view.MotionEvent.ACTION_CANCEL) {
-                stopRapidDelete()
-            }
-            false
-        }
+        setupCutButton(binding.cut)
+
+        // Setup Tabs and Scientific Buttons
+        setupTabs()
+        setupScientificButtons()
+
         binding.toolbar.setOnMenuItemClickListener { menuItem ->
             when(menuItem.itemId) {
                 R.id.history -> {
@@ -197,6 +191,240 @@ class MainActivity : BaseCalculatorActivity(), DialogActionsCallback, DialogUtil
                 }
                 else -> false
             }
+        }
+    }
+
+    private fun setupTabs() {
+        binding.tabLayout.removeAllTabs()
+        binding.tabLayout.addTab(binding.tabLayout.newTab().setText(R.string.tab_standard))
+        binding.tabLayout.addTab(binding.tabLayout.newTab().setText(R.string.tab_scientific))
+
+        val tabStrip = binding.tabLayout.getChildAt(0) as? android.view.ViewGroup
+        tabStrip?.let { strip ->
+            for (i in 0 until strip.childCount) {
+                val tabView = strip.getChildAt(i)
+                tabView.clipToOutline = true
+                tabView.outlineProvider = object : android.view.ViewOutlineProvider() {
+                    override fun getOutline(view: View, outline: android.graphics.Outline) {
+                        val density = view.resources.displayMetrics.density
+                        val insetTop = (2.5f * density).toInt()
+                        val insetBottom = (2.5f * density).toInt()
+                        val insetLeft = (3f * density).toInt()
+                        val insetRight = (3f * density).toInt()
+                        val radius = 15f * density
+                        outline.setRoundRect(
+                            insetLeft,
+                            insetTop,
+                            view.width - insetRight,
+                            view.height - insetBottom,
+                            radius
+                        )
+                    }
+                }
+            }
+        }
+
+        val lastTab = prefs.getInt("last_calculator_tab", 0)
+
+        binding.tabLayout.addOnTabSelectedListener(object : TabLayout.OnTabSelectedListener {
+            override fun onTabSelected(tab: TabLayout.Tab?) {
+                applyHaptics(binding.tabLayout)
+                when (tab?.position) {
+                    0 -> showStandardKeypad()
+                    1 -> showScientificKeypad()
+                }
+            }
+
+            override fun onTabUnselected(tab: TabLayout.Tab?) {}
+            override fun onTabReselected(tab: TabLayout.Tab?) {}
+        })
+
+        if (lastTab == 1) {
+            binding.tabLayout.getTabAt(1)?.select()
+            showScientificKeypad(savePref = false)
+        } else {
+            binding.tabLayout.getTabAt(0)?.select()
+            showStandardKeypad(savePref = false)
+        }
+    }
+
+    private fun showStandardKeypad(savePref: Boolean = true) {
+        if (savePref) prefs.setInt("last_calculator_tab", 0)
+        binding.scientificKeypad.visibility = View.GONE
+        binding.buttonContainer.visibility = View.VISIBLE
+        binding.tvAngleMode.visibility = View.GONE
+    }
+
+    private fun showScientificKeypad(savePref: Boolean = true) {
+        if (savePref) prefs.setInt("last_calculator_tab", 1)
+        binding.buttonContainer.visibility = View.GONE
+        binding.scientificKeypad.visibility = View.VISIBLE
+        binding.tvAngleMode.visibility = View.VISIBLE
+        updateAngleModeUI()
+    }
+
+    private fun setupScientificButtons() {
+        // Mode & 2nd
+        binding.btnSciDegRad.setOnClickListener {
+            applyHaptics(it)
+            toggleAngleMode()
+        }
+        binding.tvAngleMode.setOnClickListener {
+            applyHaptics(it)
+            toggleAngleMode()
+        }
+        binding.btnSci2nd.setOnClickListener {
+            applyHaptics(it)
+            toggleSecondFunc()
+        }
+
+        // Functions
+        binding.btnSciSin.setOnClickListener {
+            applyHaptics(it)
+            insertIntoExpression(if (isSecondFunc) "sin⁻¹(" else "sin(")
+        }
+        binding.btnSciCos.setOnClickListener {
+            applyHaptics(it)
+            insertIntoExpression(if (isSecondFunc) "cos⁻¹(" else "cos(")
+        }
+        binding.btnSciTan.setOnClickListener {
+            applyHaptics(it)
+            insertIntoExpression(if (isSecondFunc) "tan⁻¹(" else "tan(")
+        }
+        binding.btnSciLn.setOnClickListener {
+            applyHaptics(it)
+            insertIntoExpression(if (isSecondFunc) "e^(" else "ln(")
+        }
+        binding.btnSciLog.setOnClickListener {
+            applyHaptics(it)
+            insertIntoExpression(if (isSecondFunc) "10^(" else "log(")
+        }
+        binding.btnSciSqrt.setOnClickListener {
+            applyHaptics(it)
+            insertIntoExpression(if (isSecondFunc) "^2" else "√(")
+        }
+        binding.btnSciPower.setOnClickListener {
+            applyHaptics(it)
+            insertIntoExpression("^")
+        }
+        binding.btnSciFactorial.setOnClickListener {
+            applyHaptics(it)
+            insertIntoExpression("!")
+        }
+        binding.btnSciReciprocal.setOnClickListener {
+            applyHaptics(it)
+            insertIntoExpression("1/(")
+        }
+        binding.btnSciPi.setOnClickListener {
+            applyHaptics(it)
+            insertIntoExpression("π")
+        }
+        binding.btnSciE.setOnClickListener {
+            applyHaptics(it)
+            insertIntoExpression("e")
+        }
+        binding.btnSciOpenParen.setOnClickListener {
+            applyHaptics(it)
+            insertIntoExpression("(")
+        }
+        binding.btnSciCloseParen.setOnClickListener {
+            applyHaptics(it)
+            insertIntoExpression(")")
+        }
+
+        // Numbers on Scientific Keypad
+        setupNumberButton(binding.btnSci0, "0")
+        setupNumberButton(binding.btnSci00, "00")
+        setupNumberButton(binding.btnSci1, "1")
+        setupNumberButton(binding.btnSci2, "2")
+        setupNumberButton(binding.btnSci3, "3")
+        setupNumberButton(binding.btnSci4, "4")
+        setupNumberButton(binding.btnSci5, "5")
+        setupNumberButton(binding.btnSci6, "6")
+        setupNumberButton(binding.btnSci7, "7")
+        setupNumberButton(binding.btnSci8, "8")
+        setupNumberButton(binding.btnSci9, "9")
+
+        // Operators & Controls on Scientific Keypad
+        setupOperatorButton(binding.btnSciPlus, "+")
+        setupOperatorButton(binding.btnSciMinus, "-")
+        setupOperatorButton(binding.btnSciMultiply, "×")
+        setupOperatorButton(binding.btnSciDivide, "/")
+
+        binding.btnSciDot.setOnClickListener {
+            applyHaptics(it)
+            addDecimal()
+        }
+        binding.btnSciPercent.setOnClickListener {
+            applyHaptics(it)
+            addPercentage()
+        }
+        binding.btnSciClear.setOnClickListener {
+            applyHaptics(it)
+            clearDisplay()
+        }
+        binding.btnSciEquals.setOnClickListener {
+            applyHaptics(it)
+            calculateResult()
+        }
+        setupCutButton(binding.btnSciCut)
+
+        updateAngleModeUI()
+    }
+
+    private fun toggleAngleMode() {
+        isDegMode = !isDegMode
+        prefs.setBoolean("calc_angle_mode_deg", isDegMode)
+        updateAngleModeUI()
+        updateDisplay()
+    }
+
+    private fun updateAngleModeUI() {
+        val modeText = if (isDegMode) getString(R.string.deg) else getString(R.string.rad)
+        binding.btnSciDegRad.text = modeText
+        binding.tvAngleMode.text = modeText
+    }
+
+    private fun toggleSecondFunc() {
+        isSecondFunc = !isSecondFunc
+        if (isSecondFunc) {
+            binding.btnSci2nd.setBackgroundResource(R.drawable.background_button_scientific_active)
+            binding.btnSci2nd.setTextColor(ContextCompat.getColor(this, R.color.md_theme_onPrimaryContainer))
+            binding.btnSciSin.text = getString(R.string.asin)
+            binding.btnSciCos.text = getString(R.string.acos)
+            binding.btnSciTan.text = getString(R.string.atan)
+            binding.btnSciLn.text = getString(R.string.exp_e)
+            binding.btnSciLog.text = getString(R.string.exp_10)
+            binding.btnSciSqrt.text = getString(R.string.sqr)
+        } else {
+            binding.btnSci2nd.setBackgroundResource(R.drawable.background_button_scientific)
+            binding.btnSci2nd.setTextColor(ContextCompat.getColor(this, R.color.md_theme_primary))
+            binding.btnSciSin.text = getString(R.string.sin)
+            binding.btnSciCos.text = getString(R.string.cos)
+            binding.btnSciTan.text = getString(R.string.tan)
+            binding.btnSciLn.text = getString(R.string.ln)
+            binding.btnSciLog.text = getString(R.string.log)
+            binding.btnSciSqrt.text = getString(R.string.sqrt)
+        }
+    }
+
+    @SuppressLint("ClickableViewAccessibility")
+    private fun setupCutButton(cutButton: View) {
+        cutButton.setOnClickListener {
+            applyHaptics(it)
+            cutNumbers()
+        }
+        cutButton.setOnLongClickListener {
+            applyHaptics(it)
+            startRapidDelete()
+            true
+        }
+        cutButton.setOnTouchListener { _, event ->
+            if (event.action == android.view.MotionEvent.ACTION_UP ||
+                event.action == android.view.MotionEvent.ACTION_CANCEL) {
+                stopRapidDelete()
+            }
+            false
         }
     }
 
@@ -272,6 +500,8 @@ class MainActivity : BaseCalculatorActivity(), DialogActionsCallback, DialogUtil
         super.onResume()
         soundEnabled = prefs.getBoolean("sound_haptic", true)
         vibrationEnabled = prefs.getBoolean("vibration_haptic", true)
+        isDegMode = prefs.getBoolean("calc_angle_mode_deg", true)
+        updateAngleModeUI()
         updateDisplay()
         if (prefs.hasPassword()) {
             checkStoragePermission()
@@ -386,18 +616,18 @@ class MainActivity : BaseCalculatorActivity(), DialogActionsCallback, DialogUtil
 
         val displayText = currentExpression.replace("*", "×")
         val formatted = formatWithCommas(displayText)
-        
+
         if (binding.display.text.toString() != formatted) {
             binding.display.setText(formatted)
         }
-        
+
         val newPos = if (targetCleanPos != null) {
             getAdjustedCursorPos(formatted, targetCleanPos)
         } else {
             formatted.length
         }
         binding.display.setSelection(newPos.coerceIn(0, formatted.length))
-        
+
         isUpdatingDisplay = false
 
         if (currentExpression.isEmpty()) {
@@ -406,27 +636,12 @@ class MainActivity : BaseCalculatorActivity(), DialogActionsCallback, DialogUtil
             return
         }
 
-        try {
-            var processedExpression = currentExpression.replace("×", "*")
-
-            if (isOperator(processedExpression.last().toString())) {
-                processedExpression = processedExpression.dropLast(1)
-            }
-
-            if (processedExpression.isEmpty()) {
-                binding.total.text = ""
-                return
-            }
-
-            if (processedExpression.contains("%")) {
-                processedExpression = preprocessExpression(processedExpression)
-            }
-
-            val result = ExpressionBuilder(processedExpression).build().evaluate()
-            val formattedResult = formatWithCommas(formatResult(result, prefs.getInt("precision", 3)))
-
+        val previewResult = ScientificEvaluator.evaluatePreview(currentExpression, isDegMode)
+        if (previewResult != null) {
+            val precision = prefs.getInt("precision", 3)
+            val formattedResult = formatWithCommas(formatResult(previewResult, precision))
             binding.total.text = formattedResult
-        } catch (_: Exception) {
+        } else {
             binding.total.text = ""
         }
     }
@@ -456,79 +671,38 @@ class MainActivity : BaseCalculatorActivity(), DialogActionsCallback, DialogUtil
                 return
             }
 
-            val charToDelete = currentExpression[cleanCursorPos - 1]
+            val textBeforeCursor = currentExpression.substring(0, cleanCursorPos)
+            val functionTokens = listOf(
+                "sin⁻¹(", "cos⁻¹(", "tan⁻¹(", "10^(", "e^(", "1/(",
+                "asin(", "acos(", "atan(", "sin(", "cos(", "tan(",
+                "log(", "ln(", "√("
+            )
+            val matchedToken = functionTokens.firstOrNull { textBeforeCursor.endsWith(it) }
 
-            currentExpression = StringBuilder(currentExpression).deleteAt(cleanCursorPos - 1).toString()
+            val charsToDelete = matchedToken?.length ?: 1
+            val deleteStart = (cleanCursorPos - charsToDelete).coerceAtLeast(0)
 
-            when {
-                charToDelete == '%' -> lastWasPercent = false
-                isOperator(charToDelete.toString()) -> lastWasOperator = false
-                charToDelete == '.' -> hasDecimal = false
-            }
+            currentExpression = StringBuilder(currentExpression).delete(deleteStart, cleanCursorPos).toString()
 
-            updateDisplay(cleanCursorPos - 1)
+            updateDisplay(deleteStart)
         }
 
-        if (currentExpression.isEmpty()) {
+        if (currentExpression.isNotEmpty()) {
+            val lastChar = currentExpression.last()
+            lastWasOperator = isOperator(lastChar.toString())
+            lastWasPercent = lastChar == '%'
+            val lastOperatorIndex = currentExpression.lastIndexOfAny(charArrayOf('+', '-', '*', '/', '^'))
+            val partAfterLastOperator = if (lastOperatorIndex == -1) currentExpression else currentExpression.substring(lastOperatorIndex + 1)
+            hasDecimal = partAfterLastOperator.contains(".")
+        } else {
             lastWasOperator = false
             lastWasPercent = false
             hasDecimal = false
-         }
-    }
-
-    private fun preprocessExpression(expression: String): String {
-        var sb = StringBuilder(expression)
-        val percentPattern = Pattern.compile("(\\d*\\.?\\d+)%")
-        var matcher = percentPattern.matcher(sb)
-        var offset = 0
-
-        while (matcher.find(offset)) {
-            val percentNumberStr = matcher.group(1)
-            val start = matcher.start()
-            val end = matcher.end()
-
-            val prevIdx = start - 1
-            if (prevIdx >= 0 && (sb[prevIdx] == '+' || sb[prevIdx] == '-')) {
-                val baseExpression = sb.substring(0, prevIdx)
-                if (baseExpression.isNotEmpty()) {
-                    try {
-                        val baseValue = evaluateExpression(baseExpression)
-                        val percentNumber = percentNumberStr.toDouble()
-                        
-                        val replacement = "(($baseValue) * $percentNumber / 100.0)"
-                        
-                        sb.replace(start, end, replacement)
-                        offset = start + replacement.length
-                        matcher = percentPattern.matcher(sb)
-                        continue
-                    } catch (_: Exception) {}
-                }
-            }
-
-            val percentNumber = percentNumberStr.toDouble()
-            val replacement = "($percentNumber / 100.0)"
-            sb.replace(start, end, replacement)
-            offset = start + replacement.length
-            matcher = percentPattern.matcher(sb)
         }
-
-        return sb.toString()
     }
 
     private fun isOperator(char: String): Boolean {
-        return char == "+" || char == "-" || char == "*" || char == "/"
-    }
-
-    private fun isDigit(char: String): Boolean {
-        return char.matches(Regex("[0-9]"))
-    }
-
-    private fun evaluateExpression(expression: String): Double {
-        return try {
-            ExpressionBuilder(expression).build().evaluate()
-        } catch (_: Exception) {
-            expression.toDouble()
-        }
+        return char == "+" || char == "-" || char == "*" || char == "/" || char == "^"
     }
 
     @SuppressLint("DefaultLocale")
@@ -555,13 +729,7 @@ class MainActivity : BaseCalculatorActivity(), DialogActionsCallback, DialogUtil
 
         try {
             val cleanExpression = currentExpression.replace("*", "×")
-            var processedExpression = rawExpression.replace("×", "*")
-
-            if (processedExpression.contains("%")) {
-                processedExpression = preprocessExpression(processedExpression)
-            }
-
-            val result = ExpressionBuilder(processedExpression).build().evaluate()
+            val result = ScientificEvaluator.evaluate(rawExpression, isDegMode)
             val precision = prefs.getInt("precision", 3)
             val formattedResult = formatResult(result, precision)
 
