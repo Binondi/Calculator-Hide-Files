@@ -4,39 +4,52 @@
     android:id="@+id/main"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="?attr/colorSurface">
+    android:background="@color/black">
 
-    <com.google.android.material.appbar.MaterialToolbar
-        android:id="@+id/toolBar"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        app:navigationIcon="@drawable/ic_back"
-        app:title="@string/preview_file"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent" />
-
+    <!-- Edge-to-edge ViewPager2 for full screen media viewing -->
     <androidx.viewpager2.widget.ViewPager2
         android:id="@+id/viewPager"
-        android:layout_width="match_parent"
+        android:layout_width="0dp"
         android:layout_height="0dp"
-        app:layout_constraintTop_toBottomOf="@id/toolBar"
-        app:layout_constraintBottom_toTopOf="@+id/bottomBarCard"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent" />
 
-    <!-- Floating Modern Bottom Actions Bar -->
+    <!-- Transparent Toolbar with top scrim gradient -->
+    <FrameLayout
+        android:id="@+id/topBarContainer"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@drawable/scrim_gradient_top"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent">
+
+        <com.google.android.material.appbar.MaterialToolbar
+            android:id="@+id/toolBar"
+            android:layout_width="match_parent"
+            android:layout_height="?attr/actionBarSize"
+            android:background="@android:color/transparent"
+            app:navigationIcon="@drawable/ic_back"
+            app:navigationIconTint="@color/white"
+            app:titleTextColor="@color/white"
+            app:subtitleTextColor="#CCFFFFFF"
+            app:title="@string/preview_file" />
+    </FrameLayout>
+
+    <!-- Floating Translucent Bottom Actions Card -->
     <com.google.android.material.card.MaterialCardView
         android:id="@+id/bottomBarCard"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginHorizontal="16dp"
-        android:layout_marginBottom="16dp"
-        app:cardCornerRadius="20dp"
-        app:cardElevation="4dp"
+        android:layout_marginHorizontal="20dp"
+        android:layout_marginBottom="24dp"
+        app:cardCornerRadius="26dp"
+        app:cardElevation="8dp"
         app:strokeWidth="1dp"
-        app:strokeColor="?attr/colorOutlineVariant"
-        app:cardBackgroundColor="?attr/colorSurface"
+        app:strokeColor="#33FFFFFF"
+        app:cardBackgroundColor="#CC1C1C1E"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent">
@@ -51,12 +64,15 @@
                 android:id="@+id/unHide"
                 style="@style/Widget.Material3.Button.TonalButton"
                 android:layout_width="0dp"
-                android:layout_height="50dp"
+                android:layout_height="48dp"
                 android:layout_weight="1"
                 android:layout_marginEnd="6dp"
                 android:text="@string/un_hide"
                 android:textStyle="bold"
-                app:cornerRadius="14dp"
+                android:textColor="@color/white"
+                app:iconTint="@color/white"
+                app:backgroundTint="#33FFFFFF"
+                app:cornerRadius="20dp"
                 app:icon="@drawable/ic_privacy_tip"
                 app:iconGravity="textStart" />
 
@@ -64,15 +80,15 @@
                 android:id="@+id/delete"
                 style="@style/Widget.Material3.Button"
                 android:layout_width="0dp"
-                android:layout_height="50dp"
+                android:layout_height="48dp"
                 android:layout_weight="1"
                 android:layout_marginStart="6dp"
                 android:text="@string/delete"
                 android:textStyle="bold"
-                app:backgroundTint="?attr/colorError"
-                app:iconTint="?attr/colorOnError"
-                android:textColor="?attr/colorOnError"
-                app:cornerRadius="14dp"
+                android:textColor="@color/white"
+                app:iconTint="@color/white"
+                app:backgroundTint="#D32F2F"
+                app:cornerRadius="20dp"
                 app:icon="@drawable/ic_delete"
                 app:iconGravity="textStart" />
 

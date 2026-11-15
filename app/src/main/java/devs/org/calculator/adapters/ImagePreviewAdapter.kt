@@ -6,7 +6,9 @@ import android.net.Uri
 import android.os.Handler
 import android.os.Looper
 import android.util.Log
+import android.view.GestureDetector
 import android.view.LayoutInflater
+import android.view.MotionEvent
 import android.view.View
 import android.view.ViewGroup
 import android.widget.MediaController
@@ -28,7 +30,8 @@ import java.io.File
 class ImagePreviewAdapter(
     private val context: Context,
     private var lifecycleOwner: LifecycleOwner,
-    private val onFullscreenClick: () -> Unit
+    private val onToggleControls: () -> Unit,
+    private val onFullscreenClick: (() -> Unit)? = null
 ) : RecyclerView.Adapter<ImagePreviewAdapter.ImageViewHolder>() {
 
     private val differ = AsyncListDiffer(this, FileDiffCallback())
@@ -90,6 +93,39 @@ class ImagePreviewAdapter(
         private var isPlaying = false
         private var currentPosition = 0
         private var tempDecryptedFile: File? = null
+
+        private val gestureDetector = GestureDetector(context, object : GestureDetector.SimpleOnGestureListener() {
+            override fun onSingleTapConfirmed(e: MotionEvent): Boolean {
+                onToggleControls()
+                return true
+            }
+        })
+
+        init {
+            binding.root.setOnClickListener {
+                onToggleControls()
+            }
+
+            @android.annotation.SuppressLint("ClickableViewAccessibility")
+            binding.imageView.setOnTouchListener { _, event ->
+                gestureDetector.onTouchEvent(event)
+                false
+            }
+
+            @android.annotation.SuppressLint("ClickableViewAccessibility")
+            binding.videoView.setOnTouchListener { _, event ->
+                gestureDetector.onTouchEvent(event)
+                false
+            }
+
+            binding.audioBg.setOnClickListener {
+                onToggleControls()
+            }
+
+            binding.btnFullscreen.setOnClickListener {
+                onFullscreenClick?.invoke()
+            }
+        }
 
         fun bind(file: File, position: Int, decryptedFileType: FileManager.FileType) {
             currentPosition = position
@@ -159,7 +195,7 @@ class ImagePreviewAdapter(
                         binding.videoView.setMediaController(mediaController)
 
                         binding.btnFullscreen.setOnClickListener {
-                            onFullscreenClick()
+                            onFullscreenClick?.invoke()
                         }
 
                         mediaController.setPrevNextListeners(
