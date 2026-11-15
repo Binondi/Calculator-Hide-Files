@@ -13,17 +13,26 @@ import androidx.activity.OnBackPressedCallback
 import androidx.activity.enableEdgeToEdge
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
+import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.GridLayoutManager
+import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import devs.org.calculator.R
 import devs.org.calculator.adapters.FolderAdapter
 import devs.org.calculator.adapters.ListFolderAdapter
+import devs.org.calculator.database.AppDatabase
+import devs.org.calculator.database.HiddenFileRepository
 import devs.org.calculator.databinding.ActivityHiddenBinding
+import devs.org.calculator.databinding.MigrationProgressDialogBinding
 import devs.org.calculator.utils.DialogUtil
 import devs.org.calculator.utils.FileManager
 import devs.org.calculator.utils.FileManager.Companion.HIDDEN_DIR
 import devs.org.calculator.utils.FolderManager
 import devs.org.calculator.utils.PrefsUtil
+import devs.org.calculator.utils.SecurityUtils
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import java.io.File
 
 class HiddenActivity : BaseActivity() {
@@ -37,6 +46,7 @@ class HiddenActivity : BaseActivity() {
     private val hiddenDir = File(Environment.getExternalStorageDirectory(), HIDDEN_DIR)
 
     private val mainHandler = Handler(Looper.getMainLooper())
+    private var hasCheckedMigration = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -60,6 +70,31 @@ class HiddenActivity : BaseActivity() {
         fileManager.askPermission(this)
 
         refreshCurrentView()
+    }
+
+    override fun onResume() {
+        super.onResume()
+        checkAndPromptMigration()
+    }
+
+    private fun checkAndPromptMigration() {
+        if (hasCheckedMigration) return
+        hasCheckedMigration = true
+
+        lifecycleScope.launch(Dispatchers.IO) {
+            val legacyFiles = SecurityUtils.findLegacyFiles(hiddenDir)
+            if (legacyFiles.isNotEmpty()) {
+                withContext(Dispatchers.Main) {
+                    showMigrationBottomSheet(legacyFiles)
+                }
+            }
+        }
+    }
+
+    private fun showMigrationBottomSheet(legacyFiles: List<File>) {
+        SecurityUtils.showMigrationBottomSheet(this, legacyFiles) {
+            refreshCurrentView()
+        }
     }
 
     private fun setupToolbar() {
@@ -251,32 +286,28 @@ class HiddenActivity : BaseActivity() {
     }
 
     private fun createNewFolder() {
-        val dialogView = LayoutInflater.from(this).inflate(R.layout.dialog_input, null)
-        val inputEditText = dialogView.findViewById<EditText>(R.id.editText)
-
-        MaterialAlertDialogBuilder(this)
-            .setTitle(getString(R.string.enter_folder_name_to_create))
-            .setView(dialogView)
-            .setPositiveButton(getString(R.string.create)) { dialog, _ ->
-                val newName = inputEditText.text.toString().trim()
-                if (newName.isNotEmpty()) {
-                    try {
-                        folderManager.createFolder(hiddenDir, newName)
-                        refreshCurrentView()
-                    } catch (_: Exception) {
-                        Toast.makeText(
-                            this@HiddenActivity,
-                            getString(R.string.failed_to_create_folder),
-                            Toast.LENGTH_SHORT
-                        ).show()
+        dialogUtil.createInputDialog(
+            title = getString(R.string.enter_folder_name_to_create),
+            hint = getString(R.string.enter_folder_name_to_create),
+            positiveButtonText = getString(R.string.create),
+            callback = object : DialogUtil.InputDialogCallback {
+                override fun onPositiveButtonClicked(input: String) {
+                    val newName = input.trim()
+                    if (newName.isNotEmpty()) {
+                        try {
+                            folderManager.createFolder(hiddenDir, newName)
+                            refreshCurrentView()
+                        } catch (_: Exception) {
+                            Toast.makeText(
+                                this@HiddenActivity,
+                                getString(R.string.failed_to_create_folder),
+                                Toast.LENGTH_SHORT
+                            ).show()
+                        }
                     }
                 }
-                dialog.dismiss()
             }
-            .setNegativeButton(getString(R.string.cancel)) { dialog, _ ->
-                dialog.cancel()
-            }
-            .show()
+        )
     }
 
     private fun deleteSelectedItems() {
@@ -340,29 +371,24 @@ class HiddenActivity : BaseActivity() {
     }
 
     private fun showEditFolderDialog(folder: File) {
-        val dialogView = LayoutInflater.from(this).inflate(R.layout.dialog_input, null)
-        val inputEditText = dialogView.findViewById<EditText>(R.id.editText)
-        inputEditText.setText(folder.name)
-        inputEditText.selectAll()
-
-        MaterialAlertDialogBuilder(this)
-            .setTitle(getString(R.string.rename_folder))
-            .setView(dialogView)
-            .setPositiveButton(getString(R.string.rename)) { dialog, _ ->
-                val newName = inputEditText.text.toString().trim()
-                if (newName.isNotEmpty() && newName != folder.name) {
-                    if (isValidFolderName(newName)) {
-                        renameFolder(folder, newName)
-                    } else {
-                        Toast.makeText(this, getString(R.string.invalid_folder_name), Toast.LENGTH_SHORT).show()
+        dialogUtil.createInputDialog(
+            title = getString(R.string.rename_folder),
+            hint = getString(R.string.rename_folder),
+            initialText = folder.name,
+            positiveButtonText = getString(R.string.rename),
+            callback = object : DialogUtil.InputDialogCallback {
+                override fun onPositiveButtonClicked(input: String) {
+                    val newName = input.trim()
+                    if (newName.isNotEmpty() && newName != folder.name) {
+                        if (isValidFolderName(newName)) {
+                            renameFolder(folder, newName)
+                        } else {
+                            Toast.makeText(this@HiddenActivity, getString(R.string.invalid_folder_name), Toast.LENGTH_SHORT).show()
+                        }
                     }
                 }
-                dialog.dismiss()
             }
-            .setNegativeButton(getString(R.string.cancel)) { dialog, _ ->
-                dialog.cancel()
-            }
-            .show()
+        )
     }
 
     private fun isValidFolderName(folderName: String): Boolean {

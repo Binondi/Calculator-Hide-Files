@@ -46,17 +46,64 @@ The **Calculator Hide File App** is an innovative **Android file-hiding app** th
 > - Hide images, videos, documents & other files securely.  
 > - Works like a **real calculator** with hidden storage mode.  
 > - No one will suspect it’s a file vault!  
-> - **Encrypt** files with your **custom key** to secure your hidden files.
+> - **Military-Grade Encryption** - Encrypt files with your own **custom key** using **AES-256-GCM**.  
+> - **Disaster-Proof Recovery** - Encrypted files remain recoverable even after app uninstalls or device resets.
 ---
 
 ## Features
 
-- **Dual Functionality** - A working **calculator** & a **file vault** in one app.  
-- **Secret Passcode** - Unlock hidden files by entering a secret code.  
-- **Secure File Manager** - Hide/Unhide files easily.  
-- **Fast & Lightweight** - Smooth performance on all Android devices.  
-- **No Root Required** - Works without rooting your phone.  
-- **Security** - Encrypt & Decrypt files.
+- **Dual Functionality** - A fully working scientific/standard **calculator** and a stealth **file vault** in one app.  
+- **Secret Passcode Access** - Unlock your private vault by typing your secret passcode and pressing `=`.  
+- **Advanced AES-256-GCM Encryption** - Industry-standard authenticated encryption with custom key derivation.  
+- **Self-Contained File Metadata** - Original file names, extensions, and types are embedded directly inside the encrypted file header—no database dependency required for recovery.  
+- **Disaster-Proof Reinstall Recovery** - Reinstalling the app or wiping data won't lose your files; simply re-enter your encryption key to restore full access and previews.  
+- **Smart Migration Tool** - One-tap migration flow to automatically upgrade older encrypted files to the latest authenticated container format.  
+- **Modern Material 3 Bottom Sheets** - Seamless UI for file options, folder management, encryption setup, and permission requests.  
+- **Secure File Manager** - Hide, unhide, copy, move, and organize files into nested folders.  
+- **Fast & Lightweight** - Optimized memory footprint and fluid performance across all Android devices.  
+- **No Root Required** - Operates smoothly without rooting or custom system modifications.  
+
+---
+
+## 🔐 Advanced Encryption Architecture
+
+The app incorporates a state-of-the-art cryptographic architecture designed for maximum security, zero-knowledge privacy, and foolproof disaster recovery:
+
+### 1. Authenticated Encryption (AES-256-GCM)
+- Utilizes **AES-256 in Galois/Counter Mode (GCM)**, providing both military-grade **confidentiality** and authenticated **data integrity**.
+- Any tampering, byte corruption, or unauthorized alteration of encrypted files is detected and blocked before decryption.
+
+### 2. High-Strength Key Derivation (PBKDF2)
+- Encryption keys are derived from your custom passphrase using **PBKDF2WithHmacSHA256** with **100,000 iterations**.
+- Every single file generates its own unique **16-byte cryptographic salt** and **12-byte initialization vector (GCM nonce)**, ensuring identical files never produce identical ciphertexts.
+
+### 3. Self-Contained Binary Container (`CHFE`)
+Unlike traditional vaults that rely solely on an internal SQLite/Room database to remember original filenames and formats, every encrypted file is structured as a standalone, self-describing binary package:
+```text
++---------------------------------------------------------------------------------+
+| Magic ("CHFE") | Ver (0x01) | Salt (16B) | IV (12B) | Encrypted Payload + Tag   |
++---------------------------------------------------------------------------------+
+                                                       |
+                                                       v
+                                          +---------------------------------------+
+                                          | Metadata Length (4B) | JSON Metadata  |
+                                          | - Original Name & Extension           |
+                                          | - MIME Type & File Size               |
+                                          | - Timestamp                           |
+                                          +---------------------------------------+
+                                          | Plaintext File Data Content           |
+                                          +---------------------------------------+
+```
+- **Zero-Database Loss**: Even if the app is uninstalled, cache cleared, or the database corrupted, the file retains its original name, extension, and data securely inside the encrypted payload.
+- **Reinstall Recovery**: Upon reinstalling the app and entering your custom encryption key, all previews and file details are immediately restored.
+
+### 4. Smart Reinstall Banner & File Indicators
+- When encrypted files are present in a folder after reinstalling, the app prominently shows an alert banner below the toolbar: *"Set encryption key to see file previews"*.
+- File cards display encrypted status badges and tap-to-unlock prompts until your master key is configured.
+
+### 5. Safe & Atomic Legacy Migration
+- Built-in migration engine detects legacy files and safely converts them to the new authenticated `CHFE` format.
+- Uses atomic file operations (writes to `.tmp` first, verifies integrity, then replaces) to guarantee zero data loss even if the process is interrupted.
 ---
 
 ## Screenshots
@@ -124,9 +171,10 @@ git clone https://github.com/Binondi/Calculator-Hide-Files.git
 
 ## Technologies Used
 
-- **Programming Language**: Kotlin
-- **UI Framework**: XML
-- **File Storage**: Secure internal storage & MediaStore API  
+- **Programming Language**: Kotlin & Java
+- **UI Framework & Architecture**: Material Design 3, ViewBinding, Android Jetpack, Room Database, Coroutines
+- **Cryptography & Security**: AES-256-GCM, PBKDF2-HMAC-SHA256, Android KeyStore, Encrypted File Container (`CHFE`)
+- **File Storage**: Secure internal app storage & MediaStore API  
 
 ---
 

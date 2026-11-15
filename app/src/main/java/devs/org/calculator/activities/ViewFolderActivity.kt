@@ -38,6 +38,8 @@ import devs.org.calculator.adapters.FolderSelectionAdapter
 import devs.org.calculator.callbacks.FileProcessCallback
 import devs.org.calculator.database.HiddenFileEntity
 import devs.org.calculator.databinding.ActivityViewFolderBinding
+import devs.org.calculator.databinding.BottomSheetFileOptionsBinding
+import devs.org.calculator.databinding.BottomSheetFileTypeBinding
 import devs.org.calculator.databinding.EncryptionProgressDialogBinding
 import devs.org.calculator.databinding.ProccessingDialogBinding
 import devs.org.calculator.utils.DialogUtil
@@ -178,6 +180,25 @@ class ViewFolderActivity : BaseActivity() {
 
 
     private fun processSelectedFiles(uriList: List<Uri>) {
+        val wantsEncryption = prefs.getBoolean("encryption", false)
+        if (wantsEncryption && !SecurityUtils.hasCustomKey(this)) {
+            SecurityUtils.showSetKeyBottomSheet(
+                activity = this,
+                title = getString(R.string.encryption_key_required_title),
+                subtitle = getString(R.string.encryption_key_required_message),
+                onKeySet = {
+                    executeProcessSelectedFiles(uriList)
+                },
+                onDismissed = {
+                    Toast.makeText(this, getString(R.string.encryption_key_required_title), Toast.LENGTH_SHORT).show()
+                }
+            )
+            return
+        }
+        executeProcessSelectedFiles(uriList)
+    }
+
+    private fun executeProcessSelectedFiles(uriList: List<Uri>) {
         val targetFolder = currentFolder ?: hiddenDir
         if (!targetFolder.exists()) {
             targetFolder.mkdirs()
@@ -195,11 +216,16 @@ class ViewFolderActivity : BaseActivity() {
                                     val fileType = fileManager.getFileType(file)
                                     var finalFile = file
                                     val extension = ".${file.extension}"
-                                    val isEncrypted = prefs.getBoolean("encryption",false)
+                                    val isEncrypted = prefs.getBoolean("encryption", false) && SecurityUtils.hasCustomKey(this@ViewFolderActivity)
 
                                     if (isEncrypted) {
                                         val encryptedFile = SecurityUtils.changeFileExtension(file, ENCRYPTED_EXTENSION)
-                                        if (SecurityUtils.encryptFile(this@ViewFolderActivity, file, encryptedFile)) {
+                                        val meta = SecurityUtils.EncryptedFileMetadata(
+                                            originalFileName = file.name,
+                                            originalExtension = extension,
+                                            fileType = fileType
+                                        )
+                                        if (SecurityUtils.encryptFile(this@ViewFolderActivity, file, encryptedFile, meta)) {
                                             finalFile = encryptedFile
                                             file.delete()
                                         }
@@ -273,6 +299,7 @@ class ViewFolderActivity : BaseActivity() {
 
         val files = folderManager.getFilesInFolder(folder)
         binding.toolBar.title = folder.name
+        updateSetKeyBanner(files)
 
         if (files.isNotEmpty()) {
             showFileList(files, folder)
@@ -456,142 +483,138 @@ class ViewFolderActivity : BaseActivity() {
                 }
             }
 
-            val selectAllOption = if (fileAdapter?.isAllSelected() == true) {
-                getString(R.string.deselect_all)
-            } else {
-                getString(R.string.select_all)
+            val bottomSheet = BottomSheetDialog(this@ViewFolderActivity)
+            val sheetBinding = BottomSheetFileOptionsBinding.inflate(layoutInflater)
+            bottomSheet.setContentView(sheetBinding.root)
+
+            sheetBinding.tvFileOptionsCount.text = getString(R.string.hiding_count_files, selectedFiles.size).replace(getString(R.string.hiding_files), "${selectedFiles.size} items")
+
+            val isAllSelected = fileAdapter?.isAllSelected() == true
+            sheetBinding.tvSelectAll.text = if (isAllSelected) getString(R.string.deselect_all) else getString(R.string.select_all)
+            sheetBinding.ivSelectAll.setImageResource(if (isAllSelected) R.drawable.ic_deselect_all else R.drawable.ic_select_all)
+
+            sheetBinding.rowSelectAll.setOnClickListener {
+                bottomSheet.dismiss()
+                fileAdapter?.toggleSelectAll()
             }
 
-            val options = mutableListOf(
-                selectAllOption,
-                getString(R.string.un_hide),
-                getString(R.string.delete),
-                getString(R.string.copy_to_another_folder),
-                getString(R.string.move_to_another_folder)
-            )
+            sheetBinding.rowUnhide.setOnClickListener {
+                bottomSheet.dismiss()
+                unhideSelectedFiles(selectedFiles)
+            }
+
+            sheetBinding.rowDelete.setOnClickListener {
+                bottomSheet.dismiss()
+                deleteSelectedFiles(selectedFiles)
+            }
+
+            sheetBinding.rowCopy.setOnClickListener {
+                bottomSheet.dismiss()
+                copyToAnotherFolder(selectedFiles)
+            }
+
+            sheetBinding.rowMove.setOnClickListener {
+                bottomSheet.dismiss()
+                moveToAnotherFolder(selectedFiles)
+            }
 
             if (hasDecryptedFiles) {
-                options.add(getString(R.string.encrypt_file))
+                sheetBinding.rowEncrypt.visibility = View.VISIBLE
+                sheetBinding.rowEncrypt.setOnClickListener {
+                    bottomSheet.dismiss()
+                    fileAdapter?.encryptSelectedFiles()
+                }
+            } else {
+                sheetBinding.rowEncrypt.visibility = View.GONE
             }
+
             if (hasEncryptedFiles || hasEncFilesWithoutMetadata) {
-                options.add(getString(R.string.decrypt_file))
-            }
-
-
-            MaterialAlertDialogBuilder(this@ViewFolderActivity)
-                .setTitle(getString(R.string.file_options))
-                .setItems(options.toTypedArray()) { _, which ->
-                    val chosen = options[which]
-                    when (chosen) {
-                        getString(R.string.select_all), getString(R.string.deselect_all) -> {
-                            fileAdapter?.toggleSelectAll()
+                sheetBinding.rowDecrypt.visibility = View.VISIBLE
+                sheetBinding.rowDecrypt.setOnClickListener {
+                    bottomSheet.dismiss()
+                    lifecycleScope.launch {
+                        val legacyFiles = selectedFiles.filter { file ->
+                            file.name.endsWith(ENCRYPTED_EXTENSION) && !SecurityUtils.isNewFormat(file)
                         }
-                        getString(R.string.un_hide) -> unhideSelectedFiles(selectedFiles)
-                        getString(R.string.delete) -> deleteSelectedFiles(selectedFiles)
-                        getString(R.string.copy_to_another_folder) -> copyToAnotherFolder(selectedFiles)
-                        getString(R.string.move_to_another_folder) -> moveToAnotherFolder(selectedFiles)
-                        getString(R.string.encrypt_file) -> fileAdapter?.encryptSelectedFiles()
-                        getString(R.string.decrypt_file) -> {
-                            lifecycleScope.launch {
-                                val filesWithoutMetadata = selectedFiles.filter { file ->
-                                    file.name.endsWith(ENCRYPTED_EXTENSION) &&
-                                            fileAdapter?.hiddenFileRepository?.getHiddenFileByPath(file.absolutePath)?.isEncrypted != true
-                                }
 
-                                if (filesWithoutMetadata.isNotEmpty()) {
-                                    showDecryptionTypeDialog(filesWithoutMetadata)
-                                } else {
-                                    fileAdapter?.decryptSelectedFiles()
-                                }
+                        if (legacyFiles.isNotEmpty()) {
+                            SecurityUtils.showMigrationBottomSheet(this@ViewFolderActivity, legacyFiles) {
+                                refreshCurrentFolder()
+                                fileAdapter?.exitSelectionMode()
                             }
+                        } else {
+                            fileAdapter?.decryptSelectedFiles()
                         }
                     }
                 }
-                .show()
+            } else {
+                sheetBinding.rowDecrypt.visibility = View.GONE
+            }
+
+            bottomSheet.show()
         }
     }
 
     private fun showDecryptionTypeDialog(selectedFiles: List<File>) {
-        val dialogView = layoutInflater.inflate(R.layout.dialog_file_type_selection, null)
-        val imageCheckbox = dialogView.findViewById<CheckBox>(R.id.checkboxImage)
-        val videoCheckbox = dialogView.findViewById<CheckBox>(R.id.checkboxVideo)
-        val audioCheckbox = dialogView.findViewById<CheckBox>(R.id.checkboxAudio)
-        val otherCheckbox = dialogView.findViewById<CheckBox>(R.id.checkboxOther)
-        val otherLayer = dialogView.findViewById<LinearLayout>(R.id.otherLayer)
-        val edtExtension = dialogView.findViewById<TextInputEditText>(R.id.editExtension)
+        val bottomSheet = BottomSheetDialog(this)
+        val sheetBinding = BottomSheetFileTypeBinding.inflate(layoutInflater)
+        bottomSheet.setContentView(sheetBinding.root)
 
-        val checkboxes = listOf(imageCheckbox, videoCheckbox, audioCheckbox, otherCheckbox)
+        val checkboxes = listOf(
+            sheetBinding.checkboxImage,
+            sheetBinding.checkboxVideo,
+            sheetBinding.checkboxAudio,
+            sheetBinding.checkboxOther
+        )
 
         val mutualExclusiveListener = CompoundButton.OnCheckedChangeListener { button, isChecked ->
             if (isChecked) {
                 checkboxes.filter { it != button }.forEach { it.isChecked = false }
             }
-            otherLayer.visibility = if (otherCheckbox.isChecked) View.VISIBLE else View.GONE
+            sheetBinding.otherLayer.visibility = if (sheetBinding.checkboxOther.isChecked) View.VISIBLE else View.GONE
+            sheetBinding.btnConfirmDecrypt.isEnabled = checkboxes.any { it.isChecked }
         }
 
         checkboxes.forEach { it.setOnCheckedChangeListener(mutualExclusiveListener) }
 
-        val dialog = MaterialAlertDialogBuilder(this)
-            .setTitle(getString(R.string.select_file_type))
-            .setMessage(getString(R.string.please_select_the_type_of_file_to_decrypt))
-            .setView(dialogView)
-            .setNegativeButton(getString(R.string.cancel), null)
-            .setPositiveButton(getString(R.string.decrypt), null)
-            .create()
-
-        dialog.setOnShowListener {
-            val positiveButton = dialog.getButton(AlertDialog.BUTTON_POSITIVE)
-            val updatePositiveButton = {
-                positiveButton.isEnabled = checkboxes.any { it.isChecked }
-            }
-            checkboxes.forEach {
-                it.setOnCheckedChangeListener { button, isChecked ->
-                    mutualExclusiveListener.onCheckedChanged(button, isChecked)
-                    updatePositiveButton()
-                }
-            }
-
-            updatePositiveButton()
-        }
-
-        dialog.setOnDismissListener {
-            checkboxes.forEach { it.setOnCheckedChangeListener(null) }
-        }
-
-        dialog.show()
-        dialog.getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener {
-            if (otherCheckbox.isChecked) {
-                val extension = edtExtension.text.toString().trim()
+        sheetBinding.btnConfirmDecrypt.setOnClickListener {
+            if (sheetBinding.checkboxOther.isChecked) {
+                val extension = sheetBinding.editExtension.text?.toString()?.trim() ?: ""
                 if (extension.isEmpty()) {
-                    edtExtension.error = getString(R.string.please_enter_a_file_extension)
+                    sheetBinding.editExtension.error = getString(R.string.please_enter_a_file_extension)
                     return@setOnClickListener
                 }
                 val regex = Regex("""\.\w+""")
                 if (!regex.matches(extension)) {
-                    edtExtension.error = getString(R.string.invalid_extension_format)
+                    sheetBinding.editExtension.error = getString(R.string.invalid_extension_format)
                     return@setOnClickListener
                 }
             }
 
             val selectedType = when {
-                imageCheckbox.isChecked -> FileManager.FileType.IMAGE
-                videoCheckbox.isChecked -> FileManager.FileType.VIDEO
-                audioCheckbox.isChecked -> FileManager.FileType.AUDIO
-                otherCheckbox.isChecked -> FileManager.FileType.DOCUMENT
+                sheetBinding.checkboxImage.isChecked -> FileManager.FileType.IMAGE
+                sheetBinding.checkboxVideo.isChecked -> FileManager.FileType.VIDEO
+                sheetBinding.checkboxAudio.isChecked -> FileManager.FileType.AUDIO
+                sheetBinding.checkboxOther.isChecked -> FileManager.FileType.DOCUMENT
                 else -> return@setOnClickListener
             }
 
+            bottomSheet.dismiss()
             fileManager.performDecryption(
                 selectedFiles,
                 forcedType = selectedType,
-                forcedExtension = if (otherCheckbox.isChecked) edtExtension.text.toString().trim() else null
+                forcedExtension = if (sheetBinding.checkboxOther.isChecked) sheetBinding.editExtension.text?.toString()?.trim() else null
             ) {
                 refreshCurrentFolder()
                 fileAdapter?.exitSelectionMode()
             }
-            dialog.dismiss()
         }
 
+        sheetBinding.btnCancelDecrypt.setOnClickListener {
+            bottomSheet.dismiss()
+        }
+
+        bottomSheet.show()
     }
 
 
@@ -650,6 +673,7 @@ class ViewFolderActivity : BaseActivity() {
                 try {
                     val files = folderManager.getFilesInFolder(folder)
                     mainHandler.post {
+                        updateSetKeyBanner(files)
                         if (files.isNotEmpty()) {
                             binding.swipeLayout.visibility = View.VISIBLE
                             binding.noItems.visibility = View.GONE
@@ -681,6 +705,28 @@ class ViewFolderActivity : BaseActivity() {
                     }
                 }
             }
+        }
+    }
+
+    private fun updateSetKeyBanner(files: List<File>) {
+        val hasEncryptedFiles = files.any { it.name.endsWith(ENCRYPTED_EXTENSION) }
+        val hasKey = SecurityUtils.hasCustomKey(this)
+        val shouldShowBanner = hasEncryptedFiles && !hasKey
+
+        if (shouldShowBanner) {
+            binding.cardSetKeyBanner.visibility = View.VISIBLE
+            binding.cardSetKeyBanner.setOnClickListener {
+                SecurityUtils.showSetKeyBottomSheet(
+                    activity = this,
+                    title = getString(R.string.encryption_key_required_title),
+                    subtitle = getString(R.string.encryption_key_required_message),
+                    onKeySet = {
+                        refreshCurrentFolder()
+                    }
+                )
+            }
+        } else {
+            binding.cardSetKeyBanner.visibility = View.GONE
         }
     }
     private fun setupClickListeners() {
@@ -882,10 +928,19 @@ class ViewFolderActivity : BaseActivity() {
                 selectedFiles.forEach { file ->
                     try {
                         val hiddenFile = fileAdapter?.hiddenFileRepository?.getHiddenFileByPath(file.absolutePath)
+                        val headerMeta = if (file.name.endsWith(ENCRYPTED_EXTENSION)) {
+                            SecurityUtils.readMetadataFromEncryptedFile(this@ViewFolderActivity, file)
+                        } else null
+                        val isEncrypted = hiddenFile?.isEncrypted == true || file.name.endsWith(ENCRYPTED_EXTENSION)
 
-                        if (hiddenFile?.isEncrypted == true) {
-                            val originalExtension = hiddenFile.originalExtension
-                            val decryptedFile = SecurityUtils.changeFileExtension(file, originalExtension)
+                        if (isEncrypted) {
+                            val originalExtension = hiddenFile?.originalExtension ?: headerMeta?.originalExtension ?: ".jpg"
+                            val originalName = headerMeta?.originalFileName
+                            val decryptedFile = if (originalName != null && originalName.isNotEmpty()) {
+                                File(file.parentFile, originalName)
+                            } else {
+                                SecurityUtils.changeFileExtension(file, originalExtension)
+                            }
 
                             if (SecurityUtils.decryptFile(this@ViewFolderActivity, file, decryptedFile)) {
                                 if (decryptedFile.exists() && decryptedFile.length() > 0) {
@@ -893,7 +948,7 @@ class ViewFolderActivity : BaseActivity() {
                                     if (fileUri != null) {
                                         val result = fileManager.copyFileToNormalDir(fileUri)
                                         if (result != null) {
-                                            hiddenFile.let {
+                                            hiddenFile?.let {
                                                 fileAdapter?.hiddenFileRepository?.deleteHiddenFile(it)
                                             }
                                             file.delete()

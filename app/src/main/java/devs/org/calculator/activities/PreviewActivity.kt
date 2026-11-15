@@ -251,28 +251,33 @@ class PreviewActivity : BaseActivity() {
                         var allUnhidden = true
                         try {
                             val hiddenFile = hiddenFileRepository.getHiddenFileByPath(file.absolutePath)
-                            if (hiddenFile != null){
-                                if (hiddenFile.isEncrypted) {
-                                    val originalExtension = hiddenFile.originalExtension
-                                    val decryptedFile = SecurityUtils.changeFileExtension(file, originalExtension)
+                            val headerMeta = if (file.name.endsWith(FileManager.ENCRYPTED_EXTENSION)) {
+                                SecurityUtils.readMetadataFromEncryptedFile(this@PreviewActivity, file)
+                            } else null
+                            val isEncrypted = hiddenFile?.isEncrypted == true || file.name.endsWith(FileManager.ENCRYPTED_EXTENSION)
 
-                                    if (SecurityUtils.decryptFile(this@PreviewActivity, file, decryptedFile)) {
-                                        if (decryptedFile.exists() && decryptedFile.length() > 0) {
-                                            val fileUri = FileManager.FileManager()
-                                                .getContentUriImage(this@PreviewActivity, decryptedFile)
-                                            if (fileUri != null) {
-                                                val result = fileManager.copyFileToNormalDir(fileUri)
-                                                if (result != null) {
-                                                    hiddenFile.let {
-                                                        hiddenFileRepository.deleteHiddenFile(it)
-                                                    }
-                                                    file.delete()
-                                                    decryptedFile.delete()
-                                                    removeFileFromList(currentPosition)
-                                                } else {
-                                                    decryptedFile.delete()
-                                                    allUnhidden = false
+                            if (isEncrypted) {
+                                val originalExtension = hiddenFile?.originalExtension ?: headerMeta?.originalExtension ?: ".jpg"
+                                val originalName = headerMeta?.originalFileName
+                                val decryptedFile = if (originalName != null && originalName.isNotEmpty()) {
+                                    File(file.parentFile, originalName)
+                                } else {
+                                    SecurityUtils.changeFileExtension(file, originalExtension)
+                                }
+
+                                if (SecurityUtils.decryptFile(this@PreviewActivity, file, decryptedFile)) {
+                                    if (decryptedFile.exists() && decryptedFile.length() > 0) {
+                                        val fileUri = FileManager.FileManager()
+                                            .getContentUriImage(this@PreviewActivity, decryptedFile)
+                                        if (fileUri != null) {
+                                            val result = fileManager.copyFileToNormalDir(fileUri)
+                                            if (result != null) {
+                                                hiddenFile?.let {
+                                                    hiddenFileRepository.deleteHiddenFile(it)
                                                 }
+                                                file.delete()
+                                                decryptedFile.delete()
+                                                removeFileFromList(currentPosition)
                                             } else {
                                                 decryptedFile.delete()
                                                 allUnhidden = false
@@ -282,33 +287,23 @@ class PreviewActivity : BaseActivity() {
                                             allUnhidden = false
                                         }
                                     } else {
-                                        if (decryptedFile.exists()) {
-                                            decryptedFile.delete()
-                                        }
+                                        decryptedFile.delete()
                                         allUnhidden = false
                                     }
                                 } else {
-                                    val fileUri = FileManager.FileManager().getContentUriImage(this@PreviewActivity, file)
-                                    if (fileUri != null) {
-                                        val result = fileManager.copyFileToNormalDir(fileUri)
-                                        if (result != null) {
-                                            hiddenFile.let {
-                                                hiddenFileRepository.deleteHiddenFile(it)
-                                            }
-                                            file.delete()
-                                            removeFileFromList(currentPosition)
-                                        } else {
-                                            allUnhidden = false
-                                        }
-                                    } else {
-                                        allUnhidden = false
+                                    if (decryptedFile.exists()) {
+                                        decryptedFile.delete()
                                     }
+                                    allUnhidden = false
                                 }
-                            }else{
+                            } else {
                                 val fileUri = FileManager.FileManager().getContentUriImage(this@PreviewActivity, file)
                                 if (fileUri != null) {
                                     val result = fileManager.copyFileToNormalDir(fileUri)
                                     if (result != null) {
+                                        hiddenFile?.let {
+                                            hiddenFileRepository.deleteHiddenFile(it)
+                                        }
                                         file.delete()
                                         removeFileFromList(currentPosition)
                                     } else {
@@ -318,9 +313,7 @@ class PreviewActivity : BaseActivity() {
                                     allUnhidden = false
                                 }
                             }
-
                         } catch (_: Exception) {
-
                             allUnhidden = false
                         }
 

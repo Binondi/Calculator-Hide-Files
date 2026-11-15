@@ -286,17 +286,7 @@ class ImagePreviewAdapter(
         }
 
         private fun cleanupTempFile() {
-            tempDecryptedFile?.let {
-                if (it.exists()) {
-                    try {
-                        it.delete()
-                    } catch (e: Exception) {
-                        Log.e("ImagePreviewAdapter",
-                            context.getString(R.string.error_cleaning_up_temp_file_path, e.message))
-                    }
-                }
-                tempDecryptedFile = null
-            }
+            tempDecryptedFile = null
         }
 
         private fun resetAudioUI() {

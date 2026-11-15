@@ -12,11 +12,10 @@ import androidx.activity.OnBackPressedCallback
 import androidx.activity.enableEdgeToEdge
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
-import com.google.android.material.dialog.MaterialAlertDialogBuilder
-import com.google.android.material.textfield.TextInputEditText
 import devs.org.calculator.R
 import devs.org.calculator.databinding.ActivityChangePasswordBinding
 import devs.org.calculator.databinding.ActivitySetupPasswordBinding
+import devs.org.calculator.utils.DialogUtil
 
 class SetupPasswordActivity : BaseCalculatorActivity() {
     private var setupBinding: ActivitySetupPasswordBinding? = null
@@ -206,34 +205,36 @@ class SetupPasswordActivity : BaseCalculatorActivity() {
 
         val questionTextView: TextView = dialogView.findViewById(R.id.security_question)
         questionTextView.text = securityQuestion
+        val inputEditText = dialogView.findViewById<com.google.android.material.textfield.TextInputEditText>(R.id.text_input_edit_text)
 
-        MaterialAlertDialogBuilder(this)
-            .setTitle(getString(R.string.answer_the_security_question))
-            .setView(dialogView)
-            .setPositiveButton(getString(R.string.verify)) { dialog, _ ->
-                val inputEditText: TextInputEditText = dialogView.findViewById(R.id.text_input_edit_text)
-                val userAnswer = inputEditText.text.toString().trim()
+        DialogUtil(this).showMaterialDialog(
+            title = getString(R.string.answer_the_security_question),
+            message = "",
+            positiveButtonText = getString(R.string.verify),
+            negativeButtonText = getString(R.string.cancel),
+            view = dialogView,
+            callback = object : DialogUtil.DialogCallback {
+                override fun onPositiveButtonClicked() {
+                    val userAnswer = inputEditText.text?.toString()?.trim() ?: ""
 
-                if (userAnswer.isEmpty()) {
-                    Toast.makeText(this,
-                        getString(R.string.answer_cannot_be_empty), Toast.LENGTH_SHORT).show()
-                } else {
-                    if (prefs.validateSecurityAnswer(userAnswer)) {
-                        prefs.resetPassword()
-                        Toast.makeText(this,
-                            getString(R.string.password_successfully_reset), Toast.LENGTH_SHORT).show()
-                        dialog.dismiss()
-                        val intent = Intent(this, SetupPasswordActivity::class.java)
-                        startActivity(intent)
-                        finish()
+                    if (userAnswer.isEmpty()) {
+                        Toast.makeText(this@SetupPasswordActivity,
+                            getString(R.string.answer_cannot_be_empty), Toast.LENGTH_SHORT).show()
                     } else {
-                        Toast.makeText(this, getString(R.string.invalid_answer), Toast.LENGTH_SHORT).show()
+                        if (prefs.validateSecurityAnswer(userAnswer)) {
+                            prefs.resetPassword()
+                            Toast.makeText(this@SetupPasswordActivity,
+                                getString(R.string.password_successfully_reset), Toast.LENGTH_SHORT).show()
+                            val intent = Intent(this@SetupPasswordActivity, SetupPasswordActivity::class.java)
+                            startActivity(intent)
+                            finish()
+                        } else {
+                            Toast.makeText(this@SetupPasswordActivity, getString(R.string.invalid_answer), Toast.LENGTH_SHORT).show()
+                        }
                     }
                 }
+                override fun onNegativeButtonClicked() {}
             }
-            .setNegativeButton(getString(R.string.cancel)) { dialog, _ ->
-                dialog.dismiss()
-            }
-            .show()
+        )
     }
 }

@@ -7,11 +7,11 @@ import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
-import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import devs.org.calculator.R
 import devs.org.calculator.adapters.HistoryAdapter
 import devs.org.calculator.database.AppDatabase
 import devs.org.calculator.databinding.ActivityCalculationHistoryBinding
+import devs.org.calculator.utils.DialogUtil
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
@@ -76,15 +76,19 @@ class CalculationHistoryActivity : BaseCalculatorActivity() {
     }
 
     private fun showClearHistoryDialog() {
-        MaterialAlertDialogBuilder(this)
-            .setTitle(R.string.clear_history)
-            .setMessage(R.string.are_you_sure_you_want_to_clear_history)
-            .setPositiveButton(R.string.delete) { _, _ ->
-                lifecycleScope.launch(Dispatchers.IO) {
-                    historyDao.clearHistory()
+        DialogUtil(this).showMaterialDialog(
+            title = getString(R.string.clear_history),
+            message = getString(R.string.are_you_sure_you_want_to_clear_history),
+            positiveButtonText = getString(R.string.delete),
+            negativeButtonText = getString(R.string.cancel),
+            callback = object : DialogUtil.DialogCallback {
+                override fun onPositiveButtonClicked() {
+                    lifecycleScope.launch(Dispatchers.IO) {
+                        historyDao.clearHistory()
+                    }
                 }
+                override fun onNegativeButtonClicked() {}
             }
-            .setNegativeButton(R.string.cancel, null)
-            .show()
+        )
     }
 }

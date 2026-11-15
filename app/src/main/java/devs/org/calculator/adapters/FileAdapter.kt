@@ -1,6 +1,7 @@
 package devs.org.calculator.adapters
 
 import android.annotation.SuppressLint
+import android.app.Activity
 import android.content.Context
 import android.content.Intent
 import android.net.Uri
@@ -20,14 +21,16 @@ import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.bumptech.glide.load.engine.DiskCacheStrategy
-import com.google.android.material.dialog.MaterialAlertDialogBuilder
+import com.google.android.material.bottomsheet.BottomSheetDialog
 import devs.org.calculator.R
 import devs.org.calculator.activities.EditNotesActivity
 import devs.org.calculator.activities.PreviewActivity
 import devs.org.calculator.database.AppDatabase
 import devs.org.calculator.database.HiddenFileEntity
 import devs.org.calculator.database.HiddenFileRepository
+import devs.org.calculator.databinding.BottomSheetFileTypeBinding
 import devs.org.calculator.databinding.ListItemFileBinding
+import devs.org.calculator.utils.DialogUtil
 import devs.org.calculator.utils.FileManager
 import devs.org.calculator.utils.FolderManager
 import devs.org.calculator.utils.SecurityUtils
@@ -132,9 +135,31 @@ class FileAdapter(
             
             lifecycleOwner.lifecycleScope.launch(Dispatchers.Main) {
                 try {
-                    val currentFileData = withContext(Dispatchers.IO) {
+                    var currentFileData = withContext(Dispatchers.IO) {
                         hiddenFileRepository.getHiddenFileByPath(file.absolutePath)
                     }
+
+                    if (currentFileData == null && file.name.endsWith(FileManager.ENCRYPTED_EXTENSION)) {
+                        val headerMeta = withContext(Dispatchers.IO) {
+                            SecurityUtils.readMetadataFromEncryptedFile(context, file)
+                        }
+                        if (headerMeta != null) {
+                            val newEntity = HiddenFileEntity(
+                                filePath = file.absolutePath,
+                                fileName = headerMeta.originalFileName,
+                                encryptedFileName = file.name,
+                                fileType = headerMeta.fileType,
+                                originalExtension = headerMeta.originalExtension,
+                                isEncrypted = true
+                            )
+                            withContext(Dispatchers.IO) {
+                                hiddenFileRepository.insertHiddenFile(newEntity)
+                            }
+                            currentFileData = newEntity
+                        }
+                    }
+
+                    val isEncryptedFileWithoutKey = file.name.endsWith(FileManager.ENCRYPTED_EXTENSION) && !SecurityUtils.hasCustomKey(context)
 
                     val currentFileType = currentFileData?.fileType
                         ?: FileManager(context, lifecycleOwner).getFileType(file)
@@ -142,14 +167,19 @@ class FileAdapter(
                     val isCurrentFileEncrypted =
                         currentFileData?.isEncrypted ?: (file.extension == "enc")
 
-                    setupClickListeners(file, currentFileType)
-                    setupDisplay(file, currentFileType, isCurrentFileEncrypted, currentFileData)
+                    setupClickListeners(file, currentFileType, isEncryptedFileWithoutKey)
+                    setupDisplay(file, currentFileType, isCurrentFileEncrypted, currentFileData, isEncryptedFileWithoutKey)
 
-                    binding.fileNameTextView.text =
-                        if (isCurrentFileEncrypted) currentFileData?.fileName else file.name
+                    binding.fileNameTextView.text = if (isEncryptedFileWithoutKey) {
+                        context.getString(R.string.set_key_to_view_file)
+                    } else if (isCurrentFileEncrypted) {
+                        currentFileData?.fileName ?: file.name
+                    } else {
+                        file.name
+                    }
                     binding.fileNameTextView.visibility =
-                        if (showFileName) View.VISIBLE else View.GONE
-                    binding.shade.visibility = if (showFileName) View.VISIBLE else View.GONE
+                        if (showFileName || isEncryptedFileWithoutKey) View.VISIBLE else View.GONE
+                    binding.shade.visibility = if (showFileName || isEncryptedFileWithoutKey) View.VISIBLE else View.GONE
 
                     if (position != RecyclerView.NO_POSITION) {
                         updateSelectionUI(selectedItems.contains(position))
@@ -168,7 +198,16 @@ class FileAdapter(
             type: FileManager.FileType,
             isCurrentFileEncrypted: Boolean,
             metadata: HiddenFileEntity?,
+            isEncryptedFileWithoutKey: Boolean = false,
         ) {
+            if (isEncryptedFileWithoutKey) {
+                binding.loadingProgress.visibility = View.GONE
+                binding.videoPlay.visibility = View.GONE
+                binding.fileIconImageView.setPadding(28, 28, 28, 28)
+                binding.fileIconImageView.setImageResource(R.drawable.encrypted)
+                return
+            }
+
             when (type) {
                 FileManager.FileType.IMAGE, FileManager.FileType.VIDEO -> {
                     binding.videoPlay.visibility = if (type == FileManager.FileType.VIDEO) View.VISIBLE else View.GONE
@@ -288,8 +327,13 @@ class FileAdapter(
                             val hiddenFile =
                                 hiddenFileRepository.getHiddenFileByPath(file.absolutePath)
                             if (hiddenFile?.isEncrypted == true || file.extension == FileManager.ENCRYPTED_EXTENSION) {
-                                if (file.extension == FileManager.ENCRYPTED_EXTENSION && hiddenFile == null) {
-                                    showDecryptionTypeDialog(file)
+                                if (file.extension == FileManager.ENCRYPTED_EXTENSION && !SecurityUtils.isNewFormat(file)) {
+                                    val activity = (context as? Activity) ?: (lifecycleOwner as? Activity)
+                                    if (activity != null) {
+                                        SecurityUtils.showMigrationBottomSheet(activity, listOf(file)) {
+                                            notifyDataSetChanged()
+                                        }
+                                    }
                                 } else {
                                     // Use the cached preview if available
                                     val tempFile = withContext(Dispatchers.IO) {
@@ -332,23 +376,44 @@ class FileAdapter(
         }
 
         private fun showDecryptionTypeDialog(file: File) {
-            val options = arrayOf("Image", "Video", "Audio", "Note", "PDF")
-            MaterialAlertDialogBuilder(context)
-                .setTitle(R.string.select_file_type)
-                .setMessage(R.string.please_select_the_type_of_file_to_decrypt)
-                .setItems(options) { _, which ->
-                    val selectedType = when (which) {
-                        0 -> FileManager.FileType.IMAGE
-                        1 -> FileManager.FileType.VIDEO
-                        2 -> FileManager.FileType.AUDIO
-                        3 -> FileManager.FileType.NOTE
-                        4 -> FileManager.FileType.PDF
-                        else -> FileManager.FileType.DOCUMENT
-                    }
-                    performDecryptionWithType(file, selectedType)
+            val bottomSheet = BottomSheetDialog(context)
+            val sheetBinding = BottomSheetFileTypeBinding.inflate(LayoutInflater.from(context))
+            bottomSheet.setContentView(sheetBinding.root)
+
+            val checkboxes = listOf(
+                sheetBinding.checkboxImage,
+                sheetBinding.checkboxVideo,
+                sheetBinding.checkboxAudio,
+                sheetBinding.checkboxOther
+            )
+
+            val mutualExclusiveListener = android.widget.CompoundButton.OnCheckedChangeListener { button, isChecked ->
+                if (isChecked) {
+                    checkboxes.filter { it != button }.forEach { it.isChecked = false }
                 }
-                .setNegativeButton(R.string.cancel, null)
-                .show()
+                sheetBinding.otherLayer.visibility = if (sheetBinding.checkboxOther.isChecked) View.VISIBLE else View.GONE
+                sheetBinding.btnConfirmDecrypt.isEnabled = checkboxes.any { it.isChecked }
+            }
+
+            checkboxes.forEach { it.setOnCheckedChangeListener(mutualExclusiveListener) }
+
+            sheetBinding.btnConfirmDecrypt.setOnClickListener {
+                val selectedType = when {
+                    sheetBinding.checkboxImage.isChecked -> FileManager.FileType.IMAGE
+                    sheetBinding.checkboxVideo.isChecked -> FileManager.FileType.VIDEO
+                    sheetBinding.checkboxAudio.isChecked -> FileManager.FileType.AUDIO
+                    sheetBinding.checkboxOther.isChecked -> FileManager.FileType.DOCUMENT
+                    else -> return@setOnClickListener
+                }
+                bottomSheet.dismiss()
+                performDecryptionWithType(file, selectedType)
+            }
+
+            sheetBinding.btnCancelDecrypt.setOnClickListener {
+                bottomSheet.dismiss()
+            }
+
+            bottomSheet.show()
         }
 
         private fun openInPreview(fileType: FileManager.FileType) {
@@ -417,11 +482,31 @@ class FileAdapter(
             }
         }
 
-        private fun setupClickListeners(file: File, fileType: FileManager.FileType) {
+        private fun setupClickListeners(
+            file: File,
+            fileType: FileManager.FileType,
+            isEncryptedWithoutKey: Boolean = false,
+        ) {
             itemView.setOnClickListener {
                 val position = bindingAdapterPosition
                 if (position == RecyclerView.NO_POSITION) return@setOnClickListener
-                if (isSelectionMode) toggleSelection(position) else openFile(file, fileType)
+                if (isSelectionMode) {
+                    toggleSelection(position)
+                } else if (isEncryptedWithoutKey) {
+                    val activity = (context as? Activity) ?: (lifecycleOwner as? Activity)
+                    if (activity != null) {
+                        SecurityUtils.showSetKeyBottomSheet(
+                            activity = activity,
+                            title = context.getString(R.string.encryption_key_required_title),
+                            subtitle = context.getString(R.string.encryption_key_required_message),
+                            onKeySet = {
+                                notifyDataSetChanged()
+                            }
+                        )
+                    }
+                } else {
+                    openFile(file, fileType)
+                }
             }
 
             itemView.setOnLongClickListener {
@@ -596,32 +681,82 @@ class FileAdapter(
         val selectedFiles = getSelectedItems()
         if (selectedFiles.isEmpty()) return
 
-        MaterialAlertDialogBuilder(context)
-            .setTitle(context.getString(R.string.encrypt_files))
-            .setMessage(context.getString(R.string.encryption_disclaimer))
-            .setPositiveButton(context.getString(R.string.encrypt)) { _, _ ->
-                FileManager(context, lifecycleOwner).performEncryption(selectedFiles) {
-                    updateItemsAfterEncryption(it)
-                }
+        if (!SecurityUtils.hasCustomKey(context)) {
+            val activity = (context as? Activity) ?: (lifecycleOwner as? Activity)
+            if (activity != null) {
+                SecurityUtils.showSetKeyBottomSheet(
+                    activity = activity,
+                    title = context.getString(R.string.encryption_key_required_title),
+                    subtitle = context.getString(R.string.encryption_key_required_message),
+                    onKeySet = {
+                        encryptSelectedFiles()
+                    }
+                )
+                return
             }
-            .setNegativeButton(context.getString(R.string.cancel), null)
-            .show()
+        }
+
+        DialogUtil(context).showMaterialDialog(
+            title = context.getString(R.string.encrypt_files),
+            message = context.getString(R.string.encryption_disclaimer),
+            positiveButtonText = context.getString(R.string.encrypt),
+            negativeButtonText = context.getString(R.string.cancel),
+            callback = object : DialogUtil.DialogCallback {
+                override fun onPositiveButtonClicked() {
+                    FileManager(context, lifecycleOwner).performEncryption(selectedFiles) {
+                        updateItemsAfterEncryption(it)
+                    }
+                }
+                override fun onNegativeButtonClicked() {}
+            }
+        )
     }
 
     fun decryptSelectedFiles() {
         val selectedFiles = getSelectedItems()
         if (selectedFiles.isEmpty()) return
 
-        MaterialAlertDialogBuilder(context)
-            .setTitle(context.getString(R.string.decrypt_files))
-            .setMessage(context.getString(R.string.decryption_disclaimer))
-            .setPositiveButton(context.getString(R.string.decrypt)) { _, _ ->
-                FileManager(context, lifecycleOwner).performDecryption(selectedFiles) {
-                    updateItemsAfterDecryption(it)
-                }
+        val legacyFiles = selectedFiles.filter { it.name.endsWith(FileManager.ENCRYPTED_EXTENSION) && !SecurityUtils.isNewFormat(it) }
+        val activity = (context as? Activity) ?: (lifecycleOwner as? Activity)
+
+        if (legacyFiles.isNotEmpty() && activity != null) {
+            SecurityUtils.showMigrationBottomSheet(activity, legacyFiles) {
+                notifyDataSetChanged()
+                exitSelectionMode()
             }
-            .setNegativeButton(context.getString(R.string.cancel), null)
-            .show()
+            return
+        }
+
+        val hasEnc3Files = selectedFiles.any { SecurityUtils.isNewFormat(it) }
+        if (hasEnc3Files && !SecurityUtils.hasCustomKey(context)) {
+            val activity = (context as? Activity) ?: (lifecycleOwner as? Activity)
+            if (activity != null) {
+                SecurityUtils.showSetKeyBottomSheet(
+                    activity = activity,
+                    title = context.getString(R.string.encryption_key_required_title),
+                    subtitle = context.getString(R.string.encryption_key_required_message),
+                    onKeySet = {
+                        decryptSelectedFiles()
+                    }
+                )
+                return
+            }
+        }
+
+        DialogUtil(context).showMaterialDialog(
+            title = context.getString(R.string.decrypt_files),
+            message = context.getString(R.string.decryption_disclaimer),
+            positiveButtonText = context.getString(R.string.decrypt),
+            negativeButtonText = context.getString(R.string.cancel),
+            callback = object : DialogUtil.DialogCallback {
+                override fun onPositiveButtonClicked() {
+                    FileManager(context, lifecycleOwner).performDecryption(selectedFiles) {
+                        updateItemsAfterDecryption(it)
+                    }
+                }
+                override fun onNegativeButtonClicked() {}
+            }
+        )
     }
 
     fun updateItemsAfterEncryption(encryptedFiles: Map<File, File>) {

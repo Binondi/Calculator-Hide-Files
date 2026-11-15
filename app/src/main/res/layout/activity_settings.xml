@@ -192,7 +192,7 @@
                         android:layout_marginStart="68dp"
                         android:background="?attr/colorOutlineVariant" />
 
-                    <!-- Option 3: Custom Encryption Key -->
+                    <!-- Option 3: Encryption Key -->
                     <androidx.constraintlayout.widget.ConstraintLayout
                         android:id="@+id/customKeyStatusLayout"
                         style="@style/optionLayout"
@@ -216,7 +216,7 @@
                                 android:layout_height="22dp"
                                 android:layout_gravity="center"
                                 app:tint="?attr/colorOnSecondaryContainer"
-                                app:srcCompat="@drawable/ic_edit" />
+                                app:srcCompat="@drawable/ic_key" />
                         </com.google.android.material.card.MaterialCardView>
 
                         <TextView
@@ -226,9 +226,78 @@
                             android:layout_marginTop="0dp"
                             android:textSize="16sp"
                             android:textStyle="bold"
-                            android:text="@string/set_custom_encryption_key"
-                            app:layout_constraintEnd_toStartOf="@id/customKeyStatus"
+                            android:text="@string/encryption_key_title"
+                            app:layout_constraintEnd_toStartOf="@id/customKeyArrow"
                             app:layout_constraintStart_toEndOf="@id/customKeyIconBg"
+                            app:layout_constraintTop_toTopOf="parent" />
+
+                        <TextView
+                            android:id="@+id/customKeyDescriptionText"
+                            style="@style/optionDescriptionText"
+                            android:layout_marginStart="14dp"
+                            android:layout_marginTop="2dp"
+                            android:layout_marginBottom="0dp"
+                            android:textSize="13sp"
+                            android:text="@string/no_key_configured"
+                            app:layout_constraintBottom_toBottomOf="parent"
+                            app:layout_constraintEnd_toStartOf="@id/customKeyArrow"
+                            app:layout_constraintStart_toEndOf="@id/customKeyIconBg"
+                            app:layout_constraintTop_toBottomOf="@id/customKeyTitleText" />
+
+                        <androidx.appcompat.widget.AppCompatImageView
+                            android:id="@+id/customKeyArrow"
+                            android:layout_width="20dp"
+                            android:layout_height="20dp"
+                            app:layout_constraintBottom_toBottomOf="parent"
+                            app:layout_constraintEnd_toEndOf="parent"
+                            app:layout_constraintTop_toTopOf="parent"
+                            app:srcCompat="@drawable/ic_arrow_forward"
+                            app:tint="?attr/colorOutline" />
+                    </androidx.constraintlayout.widget.ConstraintLayout>
+
+                    <View
+                        android:layout_width="match_parent"
+                        android:layout_height="1dp"
+                        android:layout_marginStart="68dp"
+                        android:background="?attr/colorOutlineVariant" />
+
+                    <!-- Option 3b: Migrate Encryption -->
+                    <androidx.constraintlayout.widget.ConstraintLayout
+                        android:id="@+id/migrateEncryptionLayout"
+                        style="@style/optionLayout"
+                        android:padding="16dp">
+
+                        <com.google.android.material.card.MaterialCardView
+                            android:id="@+id/migrateIconBg"
+                            android:layout_width="40dp"
+                            android:layout_height="40dp"
+                            app:cardCornerRadius="20dp"
+                            app:cardElevation="0dp"
+                            app:strokeWidth="0dp"
+                            app:cardBackgroundColor="?attr/colorPrimaryContainer"
+                            app:layout_constraintBottom_toBottomOf="parent"
+                            app:layout_constraintStart_toStartOf="parent"
+                            app:layout_constraintTop_toTopOf="parent">
+
+                            <androidx.appcompat.widget.AppCompatImageView
+                                android:id="@+id/migrateImage"
+                                android:layout_width="22dp"
+                                android:layout_height="22dp"
+                                android:layout_gravity="center"
+                                app:tint="?attr/colorOnPrimaryContainer"
+                                app:srcCompat="@drawable/ic_privacy_tip" />
+                        </com.google.android.material.card.MaterialCardView>
+
+                        <TextView
+                            android:id="@+id/migrateTitleText"
+                            style="@style/optionTitleText"
+                            android:layout_marginStart="14dp"
+                            android:layout_marginTop="0dp"
+                            android:textSize="16sp"
+                            android:textStyle="bold"
+                            android:text="@string/migrate_encryption_title"
+                            app:layout_constraintEnd_toStartOf="@id/migrateArrow"
+                            app:layout_constraintStart_toEndOf="@id/migrateIconBg"
                             app:layout_constraintTop_toTopOf="parent" />
 
                         <TextView
@@ -237,17 +306,18 @@
                             android:layout_marginTop="2dp"
                             android:layout_marginBottom="0dp"
                             android:textSize="13sp"
-                            android:text="@string/use_your_own_key_for_extra_security"
+                            android:text="@string/migrate_encryption_summary"
                             app:layout_constraintBottom_toBottomOf="parent"
-                            app:layout_constraintEnd_toStartOf="@id/customKeyStatus"
-                            app:layout_constraintStart_toEndOf="@id/customKeyIconBg"
-                            app:layout_constraintTop_toBottomOf="@id/customKeyTitleText" />
+                            app:layout_constraintEnd_toStartOf="@id/migrateArrow"
+                            app:layout_constraintStart_toEndOf="@id/migrateIconBg"
+                            app:layout_constraintTop_toBottomOf="@id/migrateTitleText" />
 
-                        <com.google.android.material.materialswitch.MaterialSwitch
-                            android:id="@+id/customKeyStatus"
-                            style="@style/optionSwitch"
-                            android:clickable="false"
-                            android:focusable="false"
+                        <androidx.appcompat.widget.AppCompatImageView
+                            android:id="@+id/migrateArrow"
+                            android:layout_width="24dp"
+                            android:layout_height="24dp"
+                            app:tint="?attr/colorOnSurfaceVariant"
+                            app:srcCompat="@drawable/ic_arrow_forward"
                             app:layout_constraintBottom_toBottomOf="parent"
                             app:layout_constraintEnd_toEndOf="parent"
                             app:layout_constraintTop_toTopOf="parent" />

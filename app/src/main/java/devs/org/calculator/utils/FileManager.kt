@@ -380,7 +380,12 @@ class FileManager(private val context: Context, private val lifecycleOwner: Life
                     val originalExtension = ".${file.extension.lowercase()}"
                     val fileType = getFileType(file)
                     val encryptedFile = SecurityUtils.changeFileExtension(file, ENCRYPTED_EXTENSION)
-                    if (SecurityUtils.encryptFile(context, file, encryptedFile)) {
+                    val metadata = SecurityUtils.EncryptedFileMetadata(
+                        originalFileName = file.name,
+                        originalExtension = originalExtension,
+                        fileType = fileType
+                    )
+                    if (SecurityUtils.encryptFile(context, file, encryptedFile, metadata)) {
                         if (encryptedFile.exists()) {
                             if (hiddenFile == null){
                                 hiddenFileRepository.insertHiddenFile(
@@ -453,8 +458,11 @@ class FileManager(private val context: Context, private val lifecycleOwner: Life
             for (file in selectedFiles) {
                 try {
                     val hiddenFile = hiddenFileRepository.getHiddenFileByPath(file.absolutePath)
+                    val headerMeta = if (file.name.endsWith(ENCRYPTED_EXTENSION)) {
+                        SecurityUtils.readMetadataFromEncryptedFile(context, file)
+                    } else null
                     
-                    val extension = hiddenFile?.originalExtension ?: forcedExtension ?: when (forcedType) {
+                    val extension = hiddenFile?.originalExtension ?: headerMeta?.originalExtension ?: forcedExtension ?: when (forcedType) {
                         FileType.IMAGE -> ".jpg"
                         FileType.VIDEO -> ".mp4"
                         FileType.AUDIO -> ".mp3"
@@ -462,10 +470,15 @@ class FileManager(private val context: Context, private val lifecycleOwner: Life
                         FileType.NOTE -> ".txt"
                         else -> ".txt"
                     }
-                    val typeToUse = hiddenFile?.fileType ?: forcedType ?: FileType.DOCUMENT
+                    val typeToUse = hiddenFile?.fileType ?: headerMeta?.fileType ?: forcedType ?: FileType.DOCUMENT
+                    val targetName = headerMeta?.originalFileName
 
                     if (hiddenFile?.isEncrypted == true || (file.name.endsWith(ENCRYPTED_EXTENSION) && hiddenFile == null)) {
-                        val decryptedFile = SecurityUtils.changeFileExtension(file, extension)
+                        val decryptedFile = if (targetName != null && targetName.isNotEmpty()) {
+                            File(file.parentFile ?: file.parent?.let { File(it) }, targetName)
+                        } else {
+                            SecurityUtils.changeFileExtension(file, extension)
+                        }
                         if (SecurityUtils.decryptFile(context, file, decryptedFile)) {
                             if (decryptedFile.exists() && decryptedFile.length() > 0) {
                                 if (hiddenFile != null) {

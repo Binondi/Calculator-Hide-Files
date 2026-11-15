@@ -2,16 +2,26 @@ package devs.org.calculator.activities
 
 import android.content.Intent
 import android.os.Bundle
+import android.os.Environment
 import android.view.WindowManager
 import android.widget.EditText
 import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
+import androidx.lifecycle.lifecycleScope
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import devs.org.calculator.R
+import devs.org.calculator.database.AppDatabase
+import devs.org.calculator.database.HiddenFileRepository
 import devs.org.calculator.databinding.ActivitySettingsBinding
+import devs.org.calculator.databinding.MigrationProgressDialogBinding
+import devs.org.calculator.utils.FileManager
 import devs.org.calculator.utils.SecurityUtils
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+import java.io.File
 
 class SettingsActivity : BaseActivity() {
 
@@ -44,18 +54,49 @@ class SettingsActivity : BaseActivity() {
 
 
     private fun loadSettings() {
-
-        val isUsingCustomKey = SecurityUtils.isUsingCustomKey(this)
-        binding.customKeyStatus.isChecked = isUsingCustomKey
+        val hasKey = SecurityUtils.hasCustomKey(this)
+        binding.customKeyTitleText.text = if (hasKey) {
+            getString(R.string.change_encryption_key)
+        } else {
+            getString(R.string.set_custom_encryption_key)
+        }
+        binding.customKeyDescriptionText.text = if (hasKey) {
+            getString(R.string.key_configured_subtitle)
+        } else {
+            getString(R.string.no_key_configured)
+        }
         binding.screenshotRestrictionSwitch.isChecked = prefs.getBoolean("screenshot_restriction", true)
-        binding.encryptionSwitch.isChecked = prefs.getBoolean("encryption", false)
+        binding.encryptionSwitch.isChecked = prefs.getBoolean("encryption", false) && hasKey
         binding.gotomain.isChecked = prefs.getBoolean("is_vault_enabled", true)
     }
 
     private fun setupListeners() {
-        
-        binding.encryptionSwitch.setOnCheckedChangeListener { _, isChecked ->
-            prefs.setBoolean("encryption", isChecked)
+        binding.encryptionSwitch.setOnClickListener {
+            val isChecked = binding.encryptionSwitch.isChecked
+            if (isChecked) {
+                if (!SecurityUtils.hasCustomKey(this)) {
+                    binding.encryptionSwitch.isChecked = false
+                    SecurityUtils.showSetKeyBottomSheet(
+                        activity = this,
+                        title = getString(R.string.encryption_key_required_title),
+                        subtitle = getString(R.string.encryption_key_required_message),
+                        onKeySet = {
+                            binding.encryptionSwitch.isChecked = true
+                            prefs.setBoolean("encryption", true)
+                            updateUI()
+                        },
+                        onDismissed = {
+                            binding.encryptionSwitch.isChecked = false
+                            prefs.setBoolean("encryption", false)
+                            updateUI()
+                        }
+                    )
+                } else {
+                    prefs.setBoolean("encryption", true)
+                }
+            } else {
+                prefs.setBoolean("encryption", false)
+            }
         }
         binding.changePassLayout.setOnClickListener {
             startActivity(Intent(this, SetupPasswordActivity::class.java))
@@ -74,7 +115,29 @@ class SettingsActivity : BaseActivity() {
         }
 
         binding.customKeyStatusLayout.setOnClickListener {
-            showCustomKeyDialog()
+            SecurityUtils.showSetKeyBottomSheet(
+                activity = this,
+                onKeySet = {
+                    updateUI()
+                },
+                onDismissed = {
+                    updateUI()
+                }
+            )
+        }
+
+        binding.migrateEncryptionLayout.setOnClickListener {
+            val hiddenDir = File(Environment.getExternalStorageDirectory(), FileManager.HIDDEN_DIR)
+            lifecycleScope.launch(Dispatchers.IO) {
+                val legacyFiles = SecurityUtils.findLegacyFiles(hiddenDir)
+                withContext(Dispatchers.Main) {
+                    if (legacyFiles.isEmpty()) {
+                        Toast.makeText(this@SettingsActivity, getString(R.string.no_legacy_files_to_migrate), Toast.LENGTH_SHORT).show()
+                    } else {
+                        SecurityUtils.showMigrationBottomSheet(this@SettingsActivity, legacyFiles)
+                    }
+                }
+            }
         }
     }
 
@@ -89,57 +152,18 @@ class SettingsActivity : BaseActivity() {
         window.clearFlags(WindowManager.LayoutParams.FLAG_SECURE)
     }
 
-    private fun showCustomKeyDialog() {
-        val dialogView = layoutInflater.inflate(R.layout.dialog_custom_key, null)
-        val keyInput = dialogView.findViewById<EditText>(R.id.keyInput)
-        val confirmKeyInput = dialogView.findViewById<EditText>(R.id.confirmKeyInput)
-
-        MaterialAlertDialogBuilder(this)
-            .setTitle(getString(R.string.set_custom_encryption_key))
-            .setView(dialogView)
-            .setPositiveButton(getString(R.string.set)) { _, _ ->
-                val key = keyInput.text.toString()
-                val confirmKey = confirmKeyInput.text.toString()
-
-                if (key.isEmpty()) {
-                    Toast.makeText(this, getString(R.string.key_cannot_be_empty), Toast.LENGTH_SHORT).show()
-                    updateUI()
-                    return@setPositiveButton
-                }
-
-                if (key != confirmKey) {
-                    Toast.makeText(this, getString(R.string.keys_do_not_match), Toast.LENGTH_SHORT).show()
-                    updateUI()
-                    return@setPositiveButton
-                }
-
-                if (SecurityUtils.setCustomKey(this, key)) {
-                    Toast.makeText(this,
-                        getString(R.string.custom_key_set_successfully), Toast.LENGTH_SHORT).show()
-                    updateUI()
-                } else {
-                    Toast.makeText(this,
-                        getString(R.string.failed_to_set_custom_key), Toast.LENGTH_SHORT).show()
-                    updateUI()
-                }
-            }
-            .setNegativeButton(getString(R.string.cancel)){ _, _ ->
-                updateUI()
-            }
-            .setNeutralButton(getString(R.string.delete_key)) { _, _ ->
-                SecurityUtils.clearCustomKey(this)
-                Toast.makeText(this,
-                    getString(R.string.custom_encryption_key_cleared), Toast.LENGTH_SHORT).show()
-                updateUI()
-            }
-            .show()
-    }
-
     private fun updateUI() {
-        binding.encryptionSwitch.isChecked = prefs.getBoolean("encryption", false)
-        val isUsingCustomKey = SecurityUtils.isUsingCustomKey(this)
-        binding.customKeyStatus.isChecked = isUsingCustomKey
+        val hasKey = SecurityUtils.hasCustomKey(this)
+        binding.customKeyTitleText.text = if (hasKey) {
+            getString(R.string.change_encryption_key)
+        } else {
+            getString(R.string.set_custom_encryption_key)
+        }
+        binding.encryptionSwitch.isChecked = prefs.getBoolean("encryption", false) && hasKey
+        binding.customKeyDescriptionText.text = if (hasKey) {
+            getString(R.string.key_configured_subtitle)
+        } else {
+            getString(R.string.no_key_configured)
+        }
     }
-
-
 }

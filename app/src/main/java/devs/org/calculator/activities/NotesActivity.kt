@@ -11,10 +11,10 @@ import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import devs.org.calculator.R
 import devs.org.calculator.databinding.ActivityNotesBinding
 import devs.org.calculator.databinding.ItemNoteBinding
+import devs.org.calculator.utils.DialogUtil
 import devs.org.calculator.utils.FileManager
 import java.io.File
 import java.text.SimpleDateFormat
@@ -88,15 +88,19 @@ class NotesActivity : BaseActivity() {
     }
 
     private fun showDeleteConfirmDialog(file: File) {
-        MaterialAlertDialogBuilder(this)
-            .setTitle(getString(R.string.delete_note))
-            .setMessage(getString(R.string.are_you_sure_you_want_to_delete_this_secret_note))
-            .setPositiveButton(R.string.delete) { _, _ ->
-                file.delete()
-                refreshNotes()
+        DialogUtil(this).showMaterialDialog(
+            title = getString(R.string.delete_note),
+            message = getString(R.string.are_you_sure_you_want_to_delete_this_secret_note),
+            positiveButtonText = getString(R.string.delete),
+            negativeButtonText = getString(R.string.cancel),
+            callback = object : DialogUtil.DialogCallback {
+                override fun onPositiveButtonClicked() {
+                    file.delete()
+                    refreshNotes()
+                }
+                override fun onNegativeButtonClicked() {}
             }
-            .setNegativeButton(R.string.cancel, null)
-            .show()
+        )
     }
 
     inner class NotesAdapter(

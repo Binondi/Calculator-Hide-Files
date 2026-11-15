@@ -1,17 +1,20 @@
 package devs.org.calculator.utils
 
 import android.app.Activity
+import android.app.Dialog
 import android.content.Context
+import android.content.res.ColorStateList
+import android.util.TypedValue
 import android.view.LayoutInflater
 import android.view.View
-import android.widget.EditText
-import androidx.appcompat.app.AlertDialog
-import com.google.android.material.dialog.MaterialAlertDialogBuilder
+import com.google.android.material.bottomsheet.BottomSheetDialog
 import devs.org.calculator.R
+import devs.org.calculator.databinding.BottomSheetConfirmationBinding
+import devs.org.calculator.databinding.BottomSheetInputBinding
 
 class DialogUtil(private val context: Context) {
 
-    private var activeDialog: AlertDialog? = null
+    private var activeDialog: Dialog? = null
 
     fun showMaterialDialog(
         title: String,
@@ -20,68 +23,118 @@ class DialogUtil(private val context: Context) {
         negativeButtonText: String,
         callback: DialogCallback,
         view: View? = null
-    ): AlertDialog? {
+    ): Dialog? {
         if (context is Activity && (context.isFinishing || context.isDestroyed)) {
             return null
         }
 
         dismissActiveDialog()
 
-        val builder = MaterialAlertDialogBuilder(context)
-            .setTitle(title)
-            .setMessage(message)
-            .setPositiveButton(positiveButtonText) { _, _ -> callback.onPositiveButtonClicked() }
-            .setNegativeButton(negativeButtonText) { _, _ -> callback.onNegativeButtonClicked() }
+        val bottomSheet = BottomSheetDialog(context)
+        val binding = BottomSheetConfirmationBinding.inflate(LayoutInflater.from(context))
+        bottomSheet.setContentView(binding.root)
 
-        if (view != null) {
-            builder.setView(view)
+        binding.tvDialogTitle.text = title
+        if (message.isBlank()) {
+            binding.tvDialogMessage.visibility = View.GONE
+        } else {
+            binding.tvDialogMessage.text = message
+            binding.tvDialogMessage.visibility = View.VISIBLE
         }
 
-        val dialog = builder.create()
-        dialog.setOnDismissListener {
-            if (activeDialog == dialog) {
+        if (view != null) {
+            binding.customViewContainer.visibility = View.VISIBLE
+            binding.customViewContainer.addView(view)
+        } else {
+            binding.customViewContainer.visibility = View.GONE
+        }
+
+        val isDestructive = title.contains("delete", ignoreCase = true) ||
+                positiveButtonText.contains("delete", ignoreCase = true) ||
+                title.contains("clear", ignoreCase = true)
+
+        if (isDestructive) {
+            binding.dialogIcon.setImageResource(R.drawable.ic_delete)
+            val errorColor = androidx.core.content.ContextCompat.getColor(context, R.color.md_theme_error)
+            val errorContainerColor = androidx.core.content.ContextCompat.getColor(context, R.color.md_theme_errorContainer)
+            binding.dialogIcon.imageTintList = ColorStateList.valueOf(errorColor)
+            binding.dialogIconCard.setCardBackgroundColor(errorContainerColor)
+            binding.btnPositive.backgroundTintList = ColorStateList.valueOf(errorColor)
+        } else if (title.contains("permission", ignoreCase = true) || message.contains("permission", ignoreCase = true)) {
+            binding.dialogIcon.setImageResource(R.drawable.ic_privacy_tip)
+        } else if (title.contains("un-hide", ignoreCase = true) || title.contains("unhide", ignoreCase = true)) {
+            binding.dialogIcon.setImageResource(R.drawable.ic_redo)
+        }
+
+        binding.btnPositive.text = positiveButtonText
+        binding.btnPositive.setOnClickListener {
+            bottomSheet.dismiss()
+            callback.onPositiveButtonClicked()
+        }
+
+        binding.btnNegative.text = negativeButtonText
+        binding.btnNegative.setOnClickListener {
+            bottomSheet.dismiss()
+            callback.onNegativeButtonClicked()
+        }
+
+        bottomSheet.setOnDismissListener {
+            if (activeDialog == bottomSheet) {
                 activeDialog = null
             }
         }
-        activeDialog = dialog
-        dialog.show()
-        return dialog
+
+        activeDialog = bottomSheet
+        bottomSheet.show()
+        return bottomSheet
     }
 
     fun createInputDialog(
         title: String,
         hint: String,
+        initialText: String = "",
+        positiveButtonText: String = context.getString(R.string.create),
         callback: InputDialogCallback
-    ): AlertDialog? {
+    ): Dialog? {
         if (context is Activity && (context.isFinishing || context.isDestroyed)) {
             return null
         }
 
         dismissActiveDialog()
 
-        val dialogView = LayoutInflater.from(context).inflate(R.layout.dialog_input, null)
-        val editText = dialogView.findViewById<EditText>(R.id.editText)
-        editText.hint = hint
+        val bottomSheet = BottomSheetDialog(context)
+        val binding = BottomSheetInputBinding.inflate(LayoutInflater.from(context))
+        bottomSheet.setContentView(binding.root)
 
-        val dialog = MaterialAlertDialogBuilder(context)
-            .setTitle(title)
-            .setView(dialogView)
-            .setPositiveButton(R.string.create) { _, _ ->
-                callback.onPositiveButtonClicked(editText.text.toString())
-            }
-            .setNegativeButton(R.string.cancel) { d, _ ->
-                d.dismiss()
-            }
-            .create()
+        binding.tvInputTitle.text = title
+        binding.tilInputField.hint = hint
+        if (initialText.isNotEmpty()) {
+            binding.etInputField.setText(initialText)
+            binding.etInputField.selectAll()
+        }
+        binding.btnPositiveInput.text = positiveButtonText
 
-        dialog.setOnDismissListener {
-            if (activeDialog == dialog) {
+        binding.btnPositiveInput.setOnClickListener {
+            val text = binding.etInputField.text?.toString()?.trim() ?: ""
+            if (text.isNotEmpty()) {
+                bottomSheet.dismiss()
+                callback.onPositiveButtonClicked(text)
+            }
+        }
+
+        binding.btnNegativeInput.setOnClickListener {
+            bottomSheet.dismiss()
+        }
+
+        bottomSheet.setOnDismissListener {
+            if (activeDialog == bottomSheet) {
                 activeDialog = null
             }
         }
-        activeDialog = dialog
-        dialog.show()
-        return dialog
+
+        activeDialog = bottomSheet
+        bottomSheet.show()
+        return bottomSheet
     }
 
     fun dismissActiveDialog() {
@@ -98,7 +151,7 @@ class DialogUtil(private val context: Context) {
     interface DialogCallback {
         fun onPositiveButtonClicked()
         fun onNegativeButtonClicked()
-        fun onNaturalButtonClicked()
+        fun onNaturalButtonClicked() {}
     }
 
     interface InputDialogCallback {
