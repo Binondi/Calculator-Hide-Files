@@ -47,6 +47,7 @@ class HiddenActivity : BaseActivity() {
 
     private val mainHandler = Handler(Looper.getMainLooper())
     private var hasCheckedMigration = false
+    private var hasCheckedDonate = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -87,6 +88,10 @@ class HiddenActivity : BaseActivity() {
                 withContext(Dispatchers.Main) {
                     showMigrationBottomSheet(legacyFiles)
                 }
+            } else {
+                withContext(Dispatchers.Main) {
+                    checkAndPromptDonate()
+                }
             }
         }
     }
@@ -94,6 +99,21 @@ class HiddenActivity : BaseActivity() {
     private fun showMigrationBottomSheet(legacyFiles: List<File>) {
         SecurityUtils.showMigrationBottomSheet(this, legacyFiles) {
             refreshCurrentView()
+            checkAndPromptDonate()
+        }
+    }
+
+    private fun checkAndPromptDonate() {
+        if (hasCheckedDonate) return
+        hasCheckedDonate = true
+
+        val prefs = PrefsUtil(this)
+        if (prefs.shouldShowDonateOnVaultOpen()) {
+            mainHandler.postDelayed({
+                if (!isFinishing && !isDestroyed) {
+                    dialogUtil.showDonateBottomSheet()
+                }
+            }, 500)
         }
     }
 

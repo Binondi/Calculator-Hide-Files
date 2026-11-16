@@ -2,14 +2,20 @@ package devs.org.calculator.utils
 
 import android.app.Activity
 import android.app.Dialog
+import android.content.ClipData
+import android.content.ClipboardManager
 import android.content.Context
+import android.content.Intent
 import android.content.res.ColorStateList
+import android.net.Uri
 import android.util.TypedValue
 import android.view.LayoutInflater
 import android.view.View
+import android.widget.Toast
 import com.google.android.material.bottomsheet.BottomSheetDialog
 import devs.org.calculator.R
 import devs.org.calculator.databinding.BottomSheetConfirmationBinding
+import devs.org.calculator.databinding.BottomSheetDonateBinding
 import devs.org.calculator.databinding.BottomSheetInputBinding
 
 class DialogUtil(private val context: Context) {
@@ -148,6 +154,10 @@ class DialogUtil(private val context: Context) {
         activeDialog = null
     }
 
+    fun showDonateBottomSheet(onDismiss: (() -> Unit)? = null): BottomSheetDialog? {
+        return Companion.showDonateBottomSheet(context, onDismiss)
+    }
+
     interface DialogCallback {
         fun onPositiveButtonClicked()
         fun onNegativeButtonClicked()
@@ -156,5 +166,84 @@ class DialogUtil(private val context: Context) {
 
     interface InputDialogCallback {
         fun onPositiveButtonClicked(input: String)
+    }
+
+    companion object {
+        fun showDonateBottomSheet(context: Context, onDismiss: (() -> Unit)? = null): BottomSheetDialog? {
+            if (context is Activity && (context.isFinishing || context.isDestroyed)) {
+                return null
+            }
+
+            val prefsUtil = PrefsUtil(context)
+            val bottomSheet = BottomSheetDialog(context)
+            val binding = BottomSheetDonateBinding.inflate(LayoutInflater.from(context))
+            bottomSheet.setContentView(binding.root)
+
+            prefsUtil.setDonateShown()
+
+            val openUrl = { url: String ->
+                prefsUtil.setDonateNeverShowAgain(true)
+                try {
+                    val intent = Intent(Intent.ACTION_VIEW, Uri.parse(url))
+                    context.startActivity(intent)
+                } catch (_: Exception) {
+                    Toast.makeText(context, "Could not open link", Toast.LENGTH_SHORT).show()
+                }
+            }
+
+            binding.cardGitHubSponsors.setOnClickListener {
+                openUrl(context.getString(R.string.github_sponsors_url))
+            }
+
+            binding.cardBuyMeACoffee.setOnClickListener {
+                openUrl(context.getString(R.string.coffee_url))
+            }
+
+            binding.cardPayPal.setOnClickListener {
+                openUrl(context.getString(R.string.paypal_url))
+            }
+
+            binding.cardKofi.setOnClickListener {
+                openUrl(context.getString(R.string.ko_fi_url))
+            }
+
+            binding.cardUpi.setOnClickListener {
+                prefsUtil.setDonateNeverShowAgain(true)
+                val upiId = context.getString(R.string.upi_id)
+                val clipboard = context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
+                val clip = ClipData.newPlainText("UPI ID", upiId)
+                clipboard.setPrimaryClip(clip)
+                Toast.makeText(context, context.getString(R.string.upi_copied_toast), Toast.LENGTH_SHORT).show()
+
+                try {
+                    val upiUri = Uri.parse("upi://pay?pa=$upiId&pn=Binondi%20Borthakur&cu=INR")
+                    val intent = Intent(Intent.ACTION_VIEW, upiUri)
+                    context.startActivity(intent)
+                } catch (_: Exception) {
+                    // Handled: clipboard copy is sufficient
+                }
+            }
+
+            binding.cbNeverShowAgain.setOnCheckedChangeListener { _, isChecked ->
+                prefsUtil.setDonateNeverShowAgain(isChecked)
+            }
+
+            binding.btnMaybeLater.setOnClickListener {
+                if (binding.cbNeverShowAgain.isChecked) {
+                    prefsUtil.setDonateNeverShowAgain(true)
+                }
+                bottomSheet.dismiss()
+            }
+
+            bottomSheet.setOnDismissListener {
+                if (binding.cbNeverShowAgain.isChecked) {
+                    prefsUtil.setDonateNeverShowAgain(true)
+                }
+                onDismiss?.invoke()
+            }
+
+            bottomSheet.show()
+            return bottomSheet
+        }
     }
 }

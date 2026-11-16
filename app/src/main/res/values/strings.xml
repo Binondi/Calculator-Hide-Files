@@ -383,4 +383,19 @@
     <string name="migrate_encryption_title">Migrate Encryption</string>
     <string name="migrate_encryption_summary">Upgrade legacy encrypted files to the new secure format</string>
     <string name="no_legacy_files_to_migrate">All encrypted files are already on the latest encryption format.</string>
+
+    <!-- Donation Bottom Sheet -->
+    <string name="donate_title">Support the Project ❤️</string>
+    <string name="donate_subtitle">Calculator Vault is 100% free, open-source, and private with no ads. Your support helps keep development active and new features coming!</string>
+    <string name="github_sponsors">GitHub Sponsors</string>
+    <string name="github_sponsors_subtitle">Sponsor on GitHub</string>
+    <string name="github_sponsors_url" translatable="false">https://github.com/sponsors/Binondi</string>
+    <string name="paypal_url" translatable="false">https://paypal.me/BinondiBorthakur56</string>
+    <string name="paypal_subtitle">paypal.me/BinondiBorthakur56</string>
+    <string name="coffee_subtitle">buymeacoffee.com/binondi</string>
+    <string name="kofi_subtitle">ko-fi.com/binondi</string>
+    <string name="upi_subtitle">Q249290610@ybl (Tap to copy/pay)</string>
+    <string name="upi_copied_toast">UPI ID copied to clipboard!</string>
+    <string name="never_show_again">Never show again</string>
+    <string name="maybe_later">Maybe Later</string>
 </resources>
