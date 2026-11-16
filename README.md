@@ -13,7 +13,7 @@
 </a>
 
 <a href="LICENSE">
-  <img alt="Custom Source-Available License" src="https://img.shields.io/badge/License-Custom%20(Source--Available)-blue?logo=github&style=for-the-badge">
+  <img alt="GNU GPL v3.0 License" src="https://img.shields.io/badge/License-GPL--3.0-blue?logo=gnu&style=for-the-badge">
 </a>
 
 
@@ -219,12 +219,11 @@ We welcome contributions! To contribute:
 
 ## License
 
-This project is licensed under a **Custom Source-Available License**.  
-- **Public & Transparent**: The source code is publicly viewable for privacy transparency and security auditing.  
-- **Personal Use & Modification**: You are free to view, compile, and modify the app for your own private, personal use.  
-- **No Unauthorized Distribution**: You may not publish, re-publish, or distribute the app (e.g. on app stores, websites, or APK download sites) without prior written permission from the author.  
-- **No Commercial Use or Monetization**: Selling, renting, monetizing, or placing ads in the app or its code is strictly prohibited without authorization.  
-- **Attribution & Feature Credit**: If you use any feature, algorithm, or portion of this project in another project, you must give prominent credit: *"This feature is implemented from Calculator Hide Files by Binondi Borthakur"*.
+This project is licensed under the **GNU General Public License v3.0 (GPL-3.0)**.  
+- **Free & Open Source**: You are free to run, study, modify, and redistribute the software under the terms of the GNU General Public License v3.0.  
+- **Copyleft Enforcement**: Any modified versions or derivative works distributed must also be released under the GNU GPL v3.0 with complete source code provided.  
+- **Attribution & Copyright Preservation**: Original copyright notices and author credits must be retained in all copies or modified versions.  
+- **Trademark & Branding Rights Reserved**: The name *"Calculator Hide Files"*, logos, and app icons are proprietary trademarks of Binondi Borthakur and are not covered under the GPLv3 source code license.
 
 See the full license terms in the [LICENSE](LICENSE) file.  
 

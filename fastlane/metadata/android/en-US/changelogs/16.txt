@@ -1,0 +1,5 @@
+- F-Droid & IzzyOnDroid release compatibility update
+- Updated to open-source GNU General Public License v3.0 (GPL-3.0)
+- Upgraded build configuration to Java 17 & Kotlin Symbol Processing (KSP)
+- Reinforced AES-256-GCM file container encryption security
+- Performance optimizations & UI bottom sheet fixes
