@@ -1,0 +1,8 @@
+- New: Shake to Close - instantly lock the vault and return to the calculator by shaking your phone
+- Added customizable shake sensitivity slider and haptic vibration feedback in Settings
+- New swipeable onboarding walkthrough explaining features and encryption
+- Enhanced stealth mode: moved repository links and guide into vault settings
+- Full-screen bottom sheets: dialogs now open fully expanded without cutoffs
+- Updated donation and support options
+- UI polish and performance improvements
+
