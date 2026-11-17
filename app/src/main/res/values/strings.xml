@@ -478,4 +478,17 @@
     <string name="enable_shake_to_close">Enable Shake to Close</string>
     <string name="shake_enabled_toast">Shake to close enabled! You can customize sensitivity in Settings.</string>
     <string name="shake_announcement_hint">You can adjust sensitivity and haptic vibration anytime in Vault Settings.</string>
+
+    <!-- Password Backup Confirmation -->
+    <string name="backup_encryption_password_title">Save Your Encryption Password</string>
+    <string name="backup_encryption_password_desc">Copy or share your encryption password somewhere safe. If you forget your password, your files will be locked forever and cannot be recovered.</string>
+    <string name="backup_vault_password_title">Save Your Vault Password</string>
+    <string name="backup_vault_password_desc">Copy or share your vault password somewhere safe. If you forget your password, your files will be locked forever.</string>
+    <string name="copy_password">Copy</string>
+    <string name="share_password">Share</string>
+    <string name="password_copied_toast">Password copied to clipboard</string>
+    <string name="share_password_subject">My Calculator Vault Password</string>
+    <string name="share_password_template">My Calculator Vault Password: %1$s\n\nKeep this somewhere safe! If this password is lost, your encrypted files cannot be recovered.</string>
+    <string name="backup_warning_note">Zero-knowledge security: This password is never sent to any server. If you forget it, your encrypted files cannot be recovered by anyone.</string>
+    <string name="i_have_saved_password">I Have Saved My Password</string>
 </resources>

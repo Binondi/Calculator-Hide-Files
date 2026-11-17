@@ -813,9 +813,17 @@ object SecurityUtils {
 
             if (setCustomKey(activity, key)) {
                 keyWasSaved = true
-                Toast.makeText(activity, activity.getString(R.string.custom_key_set_successfully), Toast.LENGTH_SHORT).show()
                 bottomSheet.dismiss()
-                onKeySet(key)
+                DialogUtil.showPasswordBackupBottomSheet(
+                    activity = activity,
+                    password = key,
+                    title = activity.getString(R.string.backup_encryption_password_title),
+                    message = activity.getString(R.string.backup_encryption_password_desc),
+                    onConfirmed = {
+                        Toast.makeText(activity, activity.getString(R.string.custom_key_set_successfully), Toast.LENGTH_SHORT).show()
+                        onKeySet(key)
+                    }
+                )
             } else {
                 Toast.makeText(activity, activity.getString(R.string.failed_to_set_custom_key), Toast.LENGTH_SHORT).show()
             }

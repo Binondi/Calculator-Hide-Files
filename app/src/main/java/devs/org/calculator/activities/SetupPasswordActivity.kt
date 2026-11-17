@@ -151,8 +151,16 @@ class SetupPasswordActivity : BaseCalculatorActivity() {
             }
             prefs.savePassword(password)
             prefs.saveSecurityQA(securityQuestion, securityAnswer)
-            Toast.makeText(this, getString(R.string.password_set_successfully), Toast.LENGTH_SHORT).show()
-            finish()
+            DialogUtil.showPasswordBackupBottomSheet(
+                activity = this,
+                password = password,
+                title = getString(R.string.backup_vault_password_title),
+                message = getString(R.string.backup_vault_password_desc),
+                onConfirmed = {
+                    Toast.makeText(this, getString(R.string.password_set_successfully), Toast.LENGTH_SHORT).show()
+                    finish()
+                }
+            )
         }
         binding.toolbar.setNavigationOnClickListener {
             finishAffinity()
@@ -175,9 +183,17 @@ class SetupPasswordActivity : BaseCalculatorActivity() {
             if (prefs.validatePassword(oldPassword)) {
                 if (oldPassword != newPassword) {
                     prefs.savePassword(newPassword)
-                    Toast.makeText(this,
-                        getString(R.string.password_reset_successfully), Toast.LENGTH_SHORT).show()
-                    finish()
+                    DialogUtil.showPasswordBackupBottomSheet(
+                        activity = this,
+                        password = newPassword,
+                        title = getString(R.string.backup_vault_password_title),
+                        message = getString(R.string.backup_vault_password_desc),
+                        onConfirmed = {
+                            Toast.makeText(this,
+                                getString(R.string.password_reset_successfully), Toast.LENGTH_SHORT).show()
+                            finish()
+                        }
+                    )
                 } else {
                     Toast.makeText(this,
                         getString(R.string.old_password_and_new_password_not_be_same), Toast.LENGTH_SHORT).show()

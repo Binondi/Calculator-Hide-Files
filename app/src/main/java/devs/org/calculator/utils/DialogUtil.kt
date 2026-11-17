@@ -19,6 +19,7 @@ import devs.org.calculator.R
 import devs.org.calculator.databinding.BottomSheetConfirmationBinding
 import devs.org.calculator.databinding.BottomSheetDonateBinding
 import devs.org.calculator.databinding.BottomSheetInputBinding
+import devs.org.calculator.databinding.BottomSheetPasswordBackupBinding
 import devs.org.calculator.databinding.BottomSheetShakeFeatureBinding
 
 class DialogUtil(private val context: Context) {
@@ -277,6 +278,72 @@ class DialogUtil(private val context: Context) {
             bottomSheet.setOnDismissListener {
                 prefsUtil.setSeenShakeAnnouncement(true)
                 onDismiss?.invoke()
+            }
+
+            bottomSheet.show()
+            return bottomSheet
+        }
+
+        fun showPasswordBackupBottomSheet(
+            activity: Activity,
+            password: String,
+            title: String? = null,
+            message: String? = null,
+            onConfirmed: () -> Unit = {}
+        ): BottomSheetDialog? {
+            if (activity.isFinishing || activity.isDestroyed) {
+                return null
+            }
+
+            val bottomSheet = BottomSheetDialog(activity)
+            bottomSheet.expandFully()
+            val binding = BottomSheetPasswordBackupBinding.inflate(activity.layoutInflater)
+            bottomSheet.setContentView(binding.root)
+
+            if (title != null) {
+                binding.tvBackupTitle.text = title
+            }
+            if (message != null) {
+                binding.tvBackupSubtitle.text = message
+            }
+
+            var isPasswordVisible = true
+            binding.tvPasswordValue.text = password
+
+            binding.btnToggleVisibility.setOnClickListener {
+                isPasswordVisible = !isPasswordVisible
+                if (isPasswordVisible) {
+                    binding.tvPasswordValue.text = password
+                    binding.btnToggleVisibility.setImageResource(R.drawable.ic_visibility)
+                } else {
+                    binding.tvPasswordValue.text = "•".repeat(password.length.coerceAtLeast(6))
+                    binding.btnToggleVisibility.setImageResource(R.drawable.ic_visibility_off)
+                }
+            }
+
+            binding.btnCopyPassword.setOnClickListener {
+                val clipboard = activity.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
+                val clip = ClipData.newPlainText("Password", password)
+                clipboard.setPrimaryClip(clip)
+                Toast.makeText(activity, activity.getString(R.string.password_copied_toast), Toast.LENGTH_SHORT).show()
+            }
+
+            binding.btnSharePassword.setOnClickListener {
+                val shareText = activity.getString(R.string.share_password_template, password)
+                val intent = Intent(Intent.ACTION_SEND).apply {
+                    type = "text/plain"
+                    putExtra(Intent.EXTRA_SUBJECT, activity.getString(R.string.share_password_subject))
+                    putExtra(Intent.EXTRA_TEXT, shareText)
+                }
+                activity.startActivity(Intent.createChooser(intent, activity.getString(R.string.share_password)))
+            }
+
+            binding.btnConfirmSaved.setOnClickListener {
+                bottomSheet.dismiss()
+            }
+
+            bottomSheet.setOnDismissListener {
+                onConfirmed()
             }
 
             bottomSheet.show()
