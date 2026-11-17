@@ -119,12 +119,6 @@
                         android:layout_marginStart="68dp"
                         android:background="?attr/colorOutlineVariant" />
 
-                    <View
-                        android:layout_width="match_parent"
-                        android:layout_height="1dp"
-                        android:layout_marginStart="68dp"
-                        android:background="?attr/colorOutlineVariant" />
-
                     <!-- Option 2: AES Encryption -->
                     <androidx.constraintlayout.widget.ConstraintLayout
                         style="@style/optionLayout"
