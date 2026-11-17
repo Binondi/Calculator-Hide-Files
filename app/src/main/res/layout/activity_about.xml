@@ -132,11 +132,6 @@
                     android:orientation="vertical">
 
                     <include android:id="@+id/developerItem" layout="@layout/layout_about_item" />
-                    <com.google.android.material.divider.MaterialDivider
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:layout_marginStart="72dp" />
-                    <include android:id="@+id/sourceCodeItem" layout="@layout/layout_about_item" />
 
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>

@@ -5,6 +5,7 @@ import android.app.Dialog
 import android.content.ClipData
 import android.content.ClipboardManager
 import android.content.Context
+import android.content.DialogInterface
 import android.content.Intent
 import android.content.res.ColorStateList
 import android.net.Uri
@@ -12,11 +13,13 @@ import android.util.TypedValue
 import android.view.LayoutInflater
 import android.view.View
 import android.widget.Toast
+import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.bottomsheet.BottomSheetDialog
 import devs.org.calculator.R
 import devs.org.calculator.databinding.BottomSheetConfirmationBinding
 import devs.org.calculator.databinding.BottomSheetDonateBinding
 import devs.org.calculator.databinding.BottomSheetInputBinding
+import devs.org.calculator.databinding.BottomSheetShakeFeatureBinding
 
 class DialogUtil(private val context: Context) {
 
@@ -37,6 +40,7 @@ class DialogUtil(private val context: Context) {
         dismissActiveDialog()
 
         val bottomSheet = BottomSheetDialog(context)
+        bottomSheet.expandFully()
         val binding = BottomSheetConfirmationBinding.inflate(LayoutInflater.from(context))
         bottomSheet.setContentView(binding.root)
 
@@ -109,6 +113,7 @@ class DialogUtil(private val context: Context) {
         dismissActiveDialog()
 
         val bottomSheet = BottomSheetDialog(context)
+        bottomSheet.expandFully()
         val binding = BottomSheetInputBinding.inflate(LayoutInflater.from(context))
         bottomSheet.setContentView(binding.root)
 
@@ -176,6 +181,7 @@ class DialogUtil(private val context: Context) {
 
             val prefsUtil = PrefsUtil(context)
             val bottomSheet = BottomSheetDialog(context)
+            bottomSheet.expandFully()
             val binding = BottomSheetDonateBinding.inflate(LayoutInflater.from(context))
             bottomSheet.setContentView(binding.root)
 
@@ -224,26 +230,75 @@ class DialogUtil(private val context: Context) {
                 }
             }
 
+            val currentNeverShow = prefsUtil.getBoolean(PrefsUtil.PREF_DONATE_NEVER_SHOW_AGAIN, false)
+            binding.cbNeverShowAgain.isChecked = currentNeverShow
+
             binding.cbNeverShowAgain.setOnCheckedChangeListener { _, isChecked ->
                 prefsUtil.setDonateNeverShowAgain(isChecked)
             }
 
             binding.btnMaybeLater.setOnClickListener {
-                if (binding.cbNeverShowAgain.isChecked) {
-                    prefsUtil.setDonateNeverShowAgain(true)
-                }
+                prefsUtil.setDonateNeverShowAgain(binding.cbNeverShowAgain.isChecked)
                 bottomSheet.dismiss()
             }
 
             bottomSheet.setOnDismissListener {
-                if (binding.cbNeverShowAgain.isChecked) {
-                    prefsUtil.setDonateNeverShowAgain(true)
-                }
+                prefsUtil.setDonateNeverShowAgain(binding.cbNeverShowAgain.isChecked)
                 onDismiss?.invoke()
             }
 
             bottomSheet.show()
             return bottomSheet
         }
+
+        fun showShakeFeatureAnnouncement(context: Context, onDismiss: (() -> Unit)? = null): BottomSheetDialog? {
+            if (context is Activity && (context.isFinishing || context.isDestroyed)) {
+                return null
+            }
+
+            val prefsUtil = PrefsUtil(context)
+            val bottomSheet = BottomSheetDialog(context)
+            bottomSheet.expandFully()
+            val binding = BottomSheetShakeFeatureBinding.inflate(LayoutInflater.from(context))
+            bottomSheet.setContentView(binding.root)
+
+            binding.btnEnableShake.setOnClickListener {
+                prefsUtil.setShakeToCloseEnabled(true)
+                prefsUtil.setSeenShakeAnnouncement(true)
+                Toast.makeText(context, context.getString(R.string.shake_enabled_toast), Toast.LENGTH_LONG).show()
+                bottomSheet.dismiss()
+            }
+
+            binding.btnMaybeLater.setOnClickListener {
+                prefsUtil.setSeenShakeAnnouncement(true)
+                bottomSheet.dismiss()
+            }
+
+            bottomSheet.setOnDismissListener {
+                prefsUtil.setSeenShakeAnnouncement(true)
+                onDismiss?.invoke()
+            }
+
+            bottomSheet.show()
+            return bottomSheet
+        }
+    }
+}
+
+fun BottomSheetDialog.expandFully(onShow: ((DialogInterface) -> Unit)? = null) {
+    behavior.state = BottomSheetBehavior.STATE_EXPANDED
+    behavior.skipCollapsed = true
+    behavior.isFitToContents = true
+
+    setOnShowListener { dialog ->
+        val d = dialog as? BottomSheetDialog ?: return@setOnShowListener
+        val bottomSheetInternal = d.findViewById<View>(com.google.android.material.R.id.design_bottom_sheet)
+        if (bottomSheetInternal != null) {
+            val b = BottomSheetBehavior.from(bottomSheetInternal)
+            b.state = BottomSheetBehavior.STATE_EXPANDED
+            b.skipCollapsed = true
+            b.isFitToContents = true
+        }
+        onShow?.invoke(dialog)
     }
 }

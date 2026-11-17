@@ -35,6 +35,9 @@
         android:theme="@style/Theme.Calculator"
         tools:targetApi="31">
         <activity
+            android:name=".activities.OnboardingActivity"
+            android:exported="false" />
+        <activity
             android:name=".activities.CalculationHistoryActivity"
             android:exported="false" />
         <activity

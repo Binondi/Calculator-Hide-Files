@@ -8,12 +8,14 @@ import androidx.appcompat.app.AppCompatDelegate
 import com.google.android.material.color.DynamicColors
 import devs.org.calculator.CalculatorApp
 import devs.org.calculator.utils.PrefsUtil
+import devs.org.calculator.utils.ShakeDetector
 
 abstract class BaseActivity : AppCompatActivity() {
 
     protected val prefs: PrefsUtil by lazy { PrefsUtil(this) }
     private var isDynamicThemeEnabledAtStart = true
     private var currentThemeModeAtStart = AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM
+    private var shakeDetector: ShakeDetector? = null
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -36,6 +38,7 @@ abstract class BaseActivity : AppCompatActivity() {
             recreate()
         }
         setupFlagSecure()
+        setupShakeDetector()
         val app = application as CalculatorApp
         if (!app.isVaultSessionActive && prefs.getBoolean("is_vault_enabled", true)) {
             val intent = Intent(this, MainActivity::class.java)
@@ -45,6 +48,40 @@ abstract class BaseActivity : AppCompatActivity() {
             )
             startActivity(intent)
             finish()
+        }
+    }
+
+    override fun onPause() {
+        super.onPause()
+        shakeDetector?.stop()
+    }
+
+    private fun setupShakeDetector() {
+        if (prefs.isShakeToCloseEnabled()) {
+            if (shakeDetector == null) {
+                shakeDetector = ShakeDetector(this) {
+                    onShakeDetected()
+                }
+            }
+            shakeDetector?.setSensitivity(prefs.getShakeSensitivity())
+            shakeDetector?.start()
+        } else {
+            shakeDetector?.stop()
+        }
+    }
+
+    private fun onShakeDetected() {
+        if (!isFinishing && !isDestroyed) {
+            if (prefs.isShakeVibrateEnabled()) {
+                ShakeDetector.vibrate(this)
+            }
+            val app = application as CalculatorApp
+            app.isVaultSessionActive = false
+            val intent = Intent(this, MainActivity::class.java).apply {
+                flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+            }
+            startActivity(intent)
+            finishAffinity()
         }
     }
 

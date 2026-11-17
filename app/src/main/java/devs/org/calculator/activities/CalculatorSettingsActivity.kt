@@ -89,10 +89,6 @@ class CalculatorSettingsActivity : BaseCalculatorActivity() {
 
     private fun setupListeners() {
 
-        binding.githubButton.setOnClickListener {
-            openUrl(GITHUB_URL)
-        }
-
         binding.aboutButton.setOnClickListener {
             startActivity(Intent(this, AboutActivity::class.java))
         }

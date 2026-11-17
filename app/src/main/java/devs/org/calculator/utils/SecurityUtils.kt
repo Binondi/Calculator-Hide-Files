@@ -722,6 +722,7 @@ object SecurityUtils {
         onDismissed: () -> Unit = {}
     ) {
         val bottomSheet = BottomSheetDialog(activity)
+        bottomSheet.expandFully()
         val binding = BottomSheetEncryptionInfoBinding.inflate(activity.layoutInflater)
         bottomSheet.setContentView(binding.root)
 
@@ -754,6 +755,7 @@ object SecurityUtils {
         onDismissed: () -> Unit = {}
     ) {
         val bottomSheet = BottomSheetDialog(activity)
+        bottomSheet.expandFully()
         val binding = BottomSheetSetKeyBinding.inflate(activity.layoutInflater)
         bottomSheet.setContentView(binding.root)
 
@@ -844,6 +846,7 @@ object SecurityUtils {
         if (activity.isFinishing || activity.isDestroyed || legacyFiles.isEmpty()) return
 
         val bottomSheet = BottomSheetDialog(activity)
+        bottomSheet.expandFully()
         val view = activity.layoutInflater.inflate(R.layout.bottom_sheet_migration, null)
         bottomSheet.setContentView(view)
 

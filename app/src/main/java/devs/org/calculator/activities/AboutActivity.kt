@@ -52,12 +52,8 @@ class AboutActivity : AppCompatActivity() {
 
     private fun setupItems() {
         DEV_GITHUB_URL = getString(R.string.github_profile)
-        GITHUB_URL = getString(R.string.calculator_hide_files, DEV_GITHUB_URL)
         setupItem(binding.developerItem, R.drawable.ic_info, getString(R.string.developer_details), getString(R.string.dev_name)) {
             openUrl(DEV_GITHUB_URL)
-        }
-        setupItem(binding.sourceCodeItem, R.drawable.ic_github, getString(R.string.view_source_code), getString(R.string.view_the_source_code_of_the_app)) {
-            openUrl(GITHUB_URL)
         }
         setupItem(binding.bmcItem, R.drawable.buy_me_a_coffee, getString(R.string.buy_me_a_coffee), getString(R.string.coffee_url)) {
             openUrl(COFFEE_URL)

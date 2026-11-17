@@ -38,6 +38,7 @@ import devs.org.calculator.adapters.FolderSelectionAdapter
 import devs.org.calculator.callbacks.FileProcessCallback
 import devs.org.calculator.database.HiddenFileEntity
 import devs.org.calculator.databinding.ActivityViewFolderBinding
+import devs.org.calculator.utils.expandFully
 import devs.org.calculator.databinding.BottomSheetFileOptionsBinding
 import devs.org.calculator.databinding.BottomSheetFileTypeBinding
 import devs.org.calculator.databinding.EncryptionProgressDialogBinding
@@ -319,6 +320,7 @@ class ViewFolderActivity : BaseActivity() {
 
     private fun showViewSettingsDialog() {
         val bottomSheetDialog = BottomSheetDialog(this)
+        bottomSheetDialog.expandFully()
         val view = layoutInflater.inflate(R.layout.bottom_sheet_view_settings, null)
         bottomSheetDialog.setContentView(view)
 
@@ -484,6 +486,7 @@ class ViewFolderActivity : BaseActivity() {
             }
 
             val bottomSheet = BottomSheetDialog(this@ViewFolderActivity)
+            bottomSheet.expandFully()
             val sheetBinding = BottomSheetFileOptionsBinding.inflate(layoutInflater)
             bottomSheet.setContentView(sheetBinding.root)
 
@@ -557,6 +560,7 @@ class ViewFolderActivity : BaseActivity() {
 
     private fun showDecryptionTypeDialog(selectedFiles: List<File>) {
         val bottomSheet = BottomSheetDialog(this)
+        bottomSheet.expandFully()
         val sheetBinding = BottomSheetFileTypeBinding.inflate(layoutInflater)
         bottomSheet.setContentView(sheetBinding.root)
 
@@ -1170,6 +1174,7 @@ class ViewFolderActivity : BaseActivity() {
         val recyclerView = bottomSheetView.findViewById<RecyclerView>(R.id.folderRecyclerView)
 
         val bottomSheetDialog = BottomSheetDialog(this)
+        bottomSheetDialog.expandFully()
         bottomSheetDialog.setContentView(bottomSheetView)
 
         recyclerView.layoutManager = LinearLayoutManager(this)

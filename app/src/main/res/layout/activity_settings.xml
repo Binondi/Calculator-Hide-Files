@@ -13,20 +13,11 @@
         android:layout_height="wrap_content"
         android:background="@android:color/transparent">
 
-        <com.google.android.material.appbar.CollapsingToolbarLayout
-            style="?attr/collapsingToolbarLayoutLargeStyle"
-            android:layout_width="match_parent"
-            android:layout_height="?attr/collapsingToolbarLayoutLargeSize"
+        <com.google.android.material.appbar.MaterialToolbar
+            android:id="@+id/topAppBar"
             app:contentScrim="?attr/colorSurface"
-            app:layout_scrollFlags="scroll|exitUntilCollapsed"
-            app:titleCollapseMode="scale">
-
-            <com.google.android.material.appbar.MaterialToolbar
-                android:id="@+id/topAppBar"
-                style="@style/appBar_settings"
-                app:title="@string/settings" />
-
-        </com.google.android.material.appbar.CollapsingToolbarLayout>
+            style="@style/appBar_settings"
+            app:title="@string/settings" />
 
     </com.google.android.material.appbar.AppBarLayout>
 
@@ -121,6 +112,12 @@
                             app:layout_constraintEnd_toEndOf="parent"
                             app:layout_constraintTop_toTopOf="parent" />
                     </androidx.constraintlayout.widget.ConstraintLayout>
+
+                    <View
+                        android:layout_width="match_parent"
+                        android:layout_height="1dp"
+                        android:layout_marginStart="68dp"
+                        android:background="?attr/colorOutlineVariant" />
 
                     <View
                         android:layout_width="match_parent"
@@ -414,6 +411,11 @@
                 app:strokeColor="?attr/colorOutlineVariant"
                 app:cardBackgroundColor="?attr/colorSurface">
 
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical">
+
                 <!-- Option: Go to Calculator -->
                 <androidx.constraintlayout.widget.ConstraintLayout
                     style="@style/optionLayout"
@@ -472,6 +474,466 @@
                         app:layout_constraintTop_toTopOf="parent" />
                 </androidx.constraintlayout.widget.ConstraintLayout>
 
+                <View
+                    android:layout_width="match_parent"
+                    android:layout_height="1dp"
+                    android:layout_marginStart="68dp"
+                    android:background="?attr/colorOutlineVariant" />
+
+                <androidx.constraintlayout.widget.ConstraintLayout
+                    android:id="@+id/shakeToCloseLayout"
+                    style="@style/optionLayout"
+                    android:padding="16dp">
+
+                    <com.google.android.material.card.MaterialCardView
+                        android:id="@+id/shakeIconBg"
+                        android:layout_width="40dp"
+                        android:layout_height="40dp"
+                        app:cardCornerRadius="20dp"
+                        app:cardElevation="0dp"
+                        app:strokeWidth="0dp"
+                        app:cardBackgroundColor="?attr/colorPrimaryContainer"
+                        app:layout_constraintBottom_toBottomOf="parent"
+                        app:layout_constraintStart_toStartOf="parent"
+                        app:layout_constraintTop_toTopOf="parent">
+
+                        <androidx.appcompat.widget.AppCompatImageView
+                            android:id="@+id/shakeImage"
+                            android:layout_width="22dp"
+                            android:layout_height="22dp"
+                            android:layout_gravity="center"
+                            app:tint="?attr/colorOnPrimaryContainer"
+                            app:srcCompat="@drawable/ic_mobile_vibrate" />
+                    </com.google.android.material.card.MaterialCardView>
+
+                    <TextView
+                        android:id="@+id/shakeTitleText"
+                        style="@style/optionTitleText"
+                        android:layout_marginStart="14dp"
+                        android:layout_marginTop="0dp"
+                        android:textSize="16sp"
+                        android:textStyle="bold"
+                        android:text="@string/shake_to_close_title"
+                        app:layout_constraintEnd_toStartOf="@id/shakeToCloseSwitch"
+                        app:layout_constraintStart_toEndOf="@id/shakeIconBg"
+                        app:layout_constraintTop_toTopOf="parent" />
+
+                    <TextView
+                        style="@style/optionDescriptionText"
+                        android:layout_marginStart="14dp"
+                        android:layout_marginTop="2dp"
+                        android:layout_marginBottom="0dp"
+                        android:textSize="13sp"
+                        android:text="@string/shake_to_close_summary"
+                        app:layout_constraintBottom_toBottomOf="parent"
+                        app:layout_constraintEnd_toStartOf="@id/shakeToCloseSwitch"
+                        app:layout_constraintStart_toEndOf="@id/shakeIconBg"
+                        app:layout_constraintTop_toBottomOf="@id/shakeTitleText" />
+
+                    <com.google.android.material.materialswitch.MaterialSwitch
+                        android:id="@+id/shakeToCloseSwitch"
+                        style="@style/optionSwitch"
+                        app:layout_constraintBottom_toBottomOf="parent"
+                        app:layout_constraintEnd_toEndOf="parent"
+                        app:layout_constraintTop_toTopOf="parent" />
+                </androidx.constraintlayout.widget.ConstraintLayout>
+
+                <LinearLayout
+                    android:id="@+id/shakeOptionsContainer"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:visibility="visible">
+
+                    <View
+                        android:layout_width="match_parent"
+                        android:layout_height="1dp"
+                        android:layout_marginStart="68dp"
+                        android:background="?attr/colorOutlineVariant" />
+
+                    <!-- Sensitivity Sub-Option -->
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical"
+                        android:padding="16dp">
+
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:gravity="center_vertical"
+                            android:orientation="horizontal">
+
+                            <com.google.android.material.card.MaterialCardView
+                                android:id="@+id/shakeSensitivityIconBg"
+                                android:layout_width="40dp"
+                                android:layout_height="40dp"
+                                app:cardCornerRadius="20dp"
+                                app:cardElevation="0dp"
+                                app:strokeWidth="0dp"
+                                app:cardBackgroundColor="?attr/colorPrimaryContainer">
+
+                                <androidx.appcompat.widget.AppCompatImageView
+                                    android:id="@+id/shakeSensitivityImage"
+                                    android:layout_width="22dp"
+                                    android:layout_height="22dp"
+                                    android:layout_gravity="center"
+                                    app:tint="?attr/colorOnPrimaryContainer"
+                                    app:srcCompat="@drawable/ic_tune" />
+                            </com.google.android.material.card.MaterialCardView>
+
+                            <LinearLayout
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_weight="1"
+                                android:orientation="vertical">
+
+                                <TextView
+                                    style="@style/optionTitleText"
+                                    android:layout_marginStart="14dp"
+                                    android:layout_width="match_parent"
+                                    android:layout_height="wrap_content"
+                                    android:text="@string/shake_sensitivity_title"
+                                    android:textSize="16sp"
+                                    android:textStyle="bold" />
+
+                                <TextView
+                                    android:id="@+id/tvShakeSensitivityValue"
+                                    style="@style/optionDescriptionText"
+                                    android:layout_marginStart="14dp"
+                                    android:layout_width="match_parent"
+                                    android:layout_height="wrap_content"
+                                    android:layout_marginTop="2dp"
+                                    android:textColor="?attr/colorPrimary"
+                                    android:textSize="13sp"
+                                    android:textStyle="bold" />
+                            </LinearLayout>
+                        </LinearLayout>
+
+                        <!-- Slider Row with start and end icons -->
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:gravity="center_vertical"
+                            android:orientation="horizontal">
+
+                            <com.google.android.material.slider.Slider
+                                android:id="@+id/shakeSensitivitySlider"
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_marginHorizontal="8dp"
+                                android:layout_weight="1"
+                                android:stepSize="1.0"
+                                android:value="3.0"
+                                android:valueFrom="1.0"
+                                android:valueTo="5.0" />
+
+                        </LinearLayout>
+                    </LinearLayout>
+
+                    <View
+                        android:layout_width="match_parent"
+                        android:layout_height="1dp"
+                        android:layout_marginStart="68dp"
+                        android:background="?attr/colorOutlineVariant" />
+
+                    <!-- Vibration Sub-Option -->
+                    <androidx.constraintlayout.widget.ConstraintLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        style="@style/optionLayout"
+                        android:padding="16dp">
+
+                        <com.google.android.material.card.MaterialCardView
+                            android:id="@+id/shakeVibrateIconBg"
+                            android:layout_width="40dp"
+                            android:layout_height="40dp"
+                            app:cardCornerRadius="20dp"
+                            app:cardElevation="0dp"
+                            app:strokeWidth="0dp"
+                            app:cardBackgroundColor="?attr/colorPrimaryContainer"
+                            app:layout_constraintBottom_toBottomOf="parent"
+                            app:layout_constraintStart_toStartOf="parent"
+                            app:layout_constraintTop_toTopOf="parent">
+
+                            <androidx.appcompat.widget.AppCompatImageView
+                                android:id="@+id/shakeVibrateImage"
+                                android:layout_width="22dp"
+                                android:layout_height="22dp"
+                                android:layout_gravity="center"
+                                app:tint="?attr/colorOnPrimaryContainer"
+                                app:srcCompat="@drawable/ic_vibration" />
+                        </com.google.android.material.card.MaterialCardView>
+
+                        <TextView
+                            android:id="@+id/tvShakeVibrateTitle"
+                            style="@style/optionTitleText"
+                            android:layout_marginStart="14dp"
+                            android:layout_marginTop="0dp"
+                            android:textSize="16sp"
+                            android:textStyle="bold"
+                            android:text="@string/shake_vibrate_title"
+                            app:layout_constraintEnd_toStartOf="@id/shakeVibrateSwitch"
+                            app:layout_constraintStart_toEndOf="@id/shakeVibrateIconBg"
+                            app:layout_constraintTop_toTopOf="parent" />
+
+                        <TextView
+                            style="@style/optionDescriptionText"
+                            android:layout_marginStart="14dp"
+                            android:layout_marginTop="2dp"
+                            android:layout_marginBottom="0dp"
+                            android:textSize="13sp"
+                            android:text="@string/shake_vibrate_summary"
+                            app:layout_constraintBottom_toBottomOf="parent"
+                            app:layout_constraintEnd_toStartOf="@id/shakeVibrateSwitch"
+                            app:layout_constraintStart_toEndOf="@id/shakeVibrateIconBg"
+                            app:layout_constraintTop_toBottomOf="@id/tvShakeVibrateTitle" />
+
+                        <com.google.android.material.materialswitch.MaterialSwitch
+                            android:id="@+id/shakeVibrateSwitch"
+                            style="@style/optionSwitch"
+                            app:layout_constraintBottom_toBottomOf="parent"
+                            app:layout_constraintEnd_toEndOf="parent"
+                            app:layout_constraintTop_toTopOf="parent" />
+                    </androidx.constraintlayout.widget.ConstraintLayout>
+                </LinearLayout>
+
+                </LinearLayout>
+
+            </com.google.android.material.card.MaterialCardView>
+
+            <!-- Section 3: About & Guide -->
+            <TextView
+                style="@style/sectionText"
+                android:layout_marginStart="8dp"
+                android:layout_marginTop="24dp"
+                android:text="@string/about" />
+
+            <com.google.android.material.card.MaterialCardView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                app:cardCornerRadius="18dp"
+                app:cardElevation="0dp"
+                app:strokeWidth="1dp"
+                app:strokeColor="?attr/colorOutlineVariant"
+                app:cardBackgroundColor="?attr/colorSurface">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical">
+
+                    <!-- Option 1: How It Works -->
+                    <androidx.constraintlayout.widget.ConstraintLayout
+                        android:id="@+id/layoutHowItWorks"
+                        style="@style/optionLayout"
+                        android:background="?attr/selectableItemBackground"
+                        android:clickable="true"
+                        android:focusable="true"
+                        android:padding="16dp">
+
+                        <com.google.android.material.card.MaterialCardView
+                            android:id="@+id/howItWorksIconBg"
+                            android:layout_width="40dp"
+                            android:layout_height="40dp"
+                            app:cardCornerRadius="20dp"
+                            app:cardElevation="0dp"
+                            app:strokeWidth="0dp"
+                            app:cardBackgroundColor="?attr/colorPrimaryContainer"
+                            app:layout_constraintBottom_toBottomOf="parent"
+                            app:layout_constraintStart_toStartOf="parent"
+                            app:layout_constraintTop_toTopOf="parent">
+
+                            <androidx.appcompat.widget.AppCompatImageView
+                                android:layout_width="22dp"
+                                android:layout_height="22dp"
+                                android:layout_gravity="center"
+                                app:tint="?attr/colorOnPrimaryContainer"
+                                app:srcCompat="@drawable/ic_info" />
+                        </com.google.android.material.card.MaterialCardView>
+
+                        <TextView
+                            android:id="@+id/howItWorksTitleText"
+                            style="@style/optionTitleText"
+                            android:layout_marginStart="14dp"
+                            android:layout_marginTop="0dp"
+                            android:textSize="16sp"
+                            android:textStyle="bold"
+                            android:text="@string/instructions_title"
+                            app:layout_constraintEnd_toStartOf="@id/howItWorksChevron"
+                            app:layout_constraintStart_toEndOf="@id/howItWorksIconBg"
+                            app:layout_constraintTop_toTopOf="parent" />
+
+                        <TextView
+                            style="@style/optionDescriptionText"
+                            android:layout_marginStart="14dp"
+                            android:layout_marginTop="2dp"
+                            android:layout_marginBottom="0dp"
+                            android:textSize="13sp"
+                            android:text="@string/instructions_summary"
+                            app:layout_constraintBottom_toBottomOf="parent"
+                            app:layout_constraintEnd_toStartOf="@id/howItWorksChevron"
+                            app:layout_constraintStart_toEndOf="@id/howItWorksIconBg"
+                            app:layout_constraintTop_toBottomOf="@id/howItWorksTitleText" />
+
+                        <ImageView
+                            android:id="@+id/howItWorksChevron"
+                            android:layout_width="20dp"
+                            android:layout_height="20dp"
+                            android:alpha="0.4"
+                            android:src="@drawable/ic_arrow_forward"
+                            app:tint="?attr/colorOnSurface"
+                            app:layout_constraintBottom_toBottomOf="parent"
+                            app:layout_constraintEnd_toEndOf="parent"
+                            app:layout_constraintTop_toTopOf="parent" />
+                    </androidx.constraintlayout.widget.ConstraintLayout>
+
+                    <!-- Divider -->
+                    <com.google.android.material.divider.MaterialDivider
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="70dp" />
+
+                    <!-- Option 2: View Source Code (GitHub) -->
+                    <androidx.constraintlayout.widget.ConstraintLayout
+                        android:id="@+id/layoutSourceCode"
+                        style="@style/optionLayout"
+                        android:background="?attr/selectableItemBackground"
+                        android:clickable="true"
+                        android:focusable="true"
+                        android:padding="16dp">
+
+                        <com.google.android.material.card.MaterialCardView
+                            android:id="@+id/sourceCodeIconBg"
+                            android:layout_width="40dp"
+                            android:layout_height="40dp"
+                            app:cardCornerRadius="20dp"
+                            app:cardElevation="0dp"
+                            app:strokeWidth="0dp"
+                            app:cardBackgroundColor="?attr/colorPrimaryContainer"
+                            app:layout_constraintBottom_toBottomOf="parent"
+                            app:layout_constraintStart_toStartOf="parent"
+                            app:layout_constraintTop_toTopOf="parent">
+
+                            <androidx.appcompat.widget.AppCompatImageView
+                                android:layout_width="22dp"
+                                android:layout_height="22dp"
+                                android:layout_gravity="center"
+                                app:tint="?attr/colorOnPrimaryContainer"
+                                app:srcCompat="@drawable/ic_github" />
+                        </com.google.android.material.card.MaterialCardView>
+
+                        <TextView
+                            android:id="@+id/sourceCodeTitleText"
+                            style="@style/optionTitleText"
+                            android:layout_marginStart="14dp"
+                            android:layout_marginTop="0dp"
+                            android:textSize="16sp"
+                            android:textStyle="bold"
+                            android:text="@string/view_source_code"
+                            app:layout_constraintEnd_toStartOf="@id/sourceCodeChevron"
+                            app:layout_constraintStart_toEndOf="@id/sourceCodeIconBg"
+                            app:layout_constraintTop_toTopOf="parent" />
+
+                        <TextView
+                            style="@style/optionDescriptionText"
+                            android:layout_marginStart="14dp"
+                            android:layout_marginTop="2dp"
+                            android:layout_marginBottom="0dp"
+                            android:textSize="13sp"
+                            android:text="@string/view_the_source_code_of_the_app"
+                            app:layout_constraintBottom_toBottomOf="parent"
+                            app:layout_constraintEnd_toStartOf="@id/sourceCodeChevron"
+                            app:layout_constraintStart_toEndOf="@id/sourceCodeIconBg"
+                            app:layout_constraintTop_toBottomOf="@id/sourceCodeTitleText" />
+
+                        <ImageView
+                            android:id="@+id/sourceCodeChevron"
+                            android:layout_width="20dp"
+                            android:layout_height="20dp"
+                            android:alpha="0.4"
+                            android:src="@drawable/ic_arrow_forward"
+                            app:tint="?attr/colorOnSurface"
+                            app:layout_constraintBottom_toBottomOf="parent"
+                            app:layout_constraintEnd_toEndOf="parent"
+                            app:layout_constraintTop_toTopOf="parent" />
+                    </androidx.constraintlayout.widget.ConstraintLayout>
+
+                    <!-- Divider -->
+                    <com.google.android.material.divider.MaterialDivider
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="70dp" />
+
+                    <!-- Option 3: Support the Project / Donate -->
+                    <androidx.constraintlayout.widget.ConstraintLayout
+                        android:id="@+id/layoutDonate"
+                        style="@style/optionLayout"
+                        android:background="?attr/selectableItemBackground"
+                        android:clickable="true"
+                        android:focusable="true"
+                        android:padding="16dp">
+
+                        <com.google.android.material.card.MaterialCardView
+                            android:id="@+id/donateIconBg"
+                            android:layout_width="40dp"
+                            android:layout_height="40dp"
+                            app:cardCornerRadius="20dp"
+                            app:cardElevation="0dp"
+                            app:strokeWidth="0dp"
+                            app:cardBackgroundColor="?attr/colorPrimaryContainer"
+                            app:layout_constraintBottom_toBottomOf="parent"
+                            app:layout_constraintStart_toStartOf="parent"
+                            app:layout_constraintTop_toTopOf="parent">
+
+                            <androidx.appcompat.widget.AppCompatImageView
+                                android:layout_width="22dp"
+                                android:layout_height="22dp"
+                                android:layout_gravity="center"
+                                app:tint="?attr/colorOnPrimaryContainer"
+                                app:srcCompat="@drawable/ic_heart" />
+                        </com.google.android.material.card.MaterialCardView>
+
+                        <TextView
+                            android:id="@+id/donateTitleText"
+                            style="@style/optionTitleText"
+                            android:layout_marginStart="14dp"
+                            android:layout_marginTop="0dp"
+                            android:textSize="16sp"
+                            android:textStyle="bold"
+                            android:text="@string/donate"
+                            app:layout_constraintEnd_toStartOf="@id/donateChevron"
+                            app:layout_constraintStart_toEndOf="@id/donateIconBg"
+                            app:layout_constraintTop_toTopOf="parent" />
+
+                        <TextView
+                            style="@style/optionDescriptionText"
+                            android:layout_marginStart="14dp"
+                            android:layout_marginTop="2dp"
+                            android:layout_marginBottom="0dp"
+                            android:textSize="13sp"
+                            android:text="@string/donate_subtitle"
+                            android:maxLines="2"
+                            android:ellipsize="end"
+                            app:layout_constraintBottom_toBottomOf="parent"
+                            app:layout_constraintEnd_toStartOf="@id/donateChevron"
+                            app:layout_constraintStart_toEndOf="@id/donateIconBg"
+                            app:layout_constraintTop_toBottomOf="@id/donateTitleText" />
+
+                        <ImageView
+                            android:id="@+id/donateChevron"
+                            android:layout_width="20dp"
+                            android:layout_height="20dp"
+                            android:alpha="0.4"
+                            android:src="@drawable/ic_arrow_forward"
+                            app:tint="?attr/colorOnSurface"
+                            app:layout_constraintBottom_toBottomOf="parent"
+                            app:layout_constraintEnd_toEndOf="parent"
+                            app:layout_constraintTop_toTopOf="parent" />
+                    </androidx.constraintlayout.widget.ConstraintLayout>
+
+                </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
 
         </LinearLayout>

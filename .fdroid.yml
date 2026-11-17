@@ -9,22 +9,6 @@ SourceCode: https://github.com/Binondi/Calculator-Hide-Files
 IssueTracker: https://github.com/Binondi/Calculator-Hide-Files/issues
 Donate: https://buymeacoffee.com/binondi
 
-Summary: Encrypted file vault disguised as a scientific calculator
-
-Description: |-
-  Calculator Hide Files is an encrypted file vault that disguises itself
-  as a fully functional scientific calculator. Protect your private photos,
-  videos, audio, and documents behind a secret passcode and industry-standard
-  AES-256-GCM authenticated encryption.
-
-  Features:
-  - Dual Functionality: Fully functional calculator + hidden file vault.
-  - Passcode Access: Enter secret passcode followed by '=' to unlock.
-  - AES-256-GCM Encryption: Authenticated encryption with PBKDF2 key derivation.
-  - Standalone CHFE Containers: Self-contained file metadata ensures zero data loss on reinstall.
-  - Nested Folders: Organize files securely in custom directories.
-  - Material Design 3 Interface with Dark/Light mode support.
-
 RepoType: git
 Repo: https://github.com/Binondi/Calculator-Hide-Files.git
 

@@ -75,20 +75,7 @@ class PrefsUtil(context: Context) {
     }
 
     fun shouldShowDonateOnVaultOpen(): Boolean {
-        if (getBoolean(PREF_DONATE_NEVER_SHOW_AGAIN, false)) {
-            return false
-        }
-        val hasShownFirst = getBoolean(PREF_DONATE_SHOWN_FIRST_TIME, false)
-        if (!hasShownFirst) {
-            return true
-        }
-        val openCount = getInt(PREF_DONATE_VAULT_OPEN_COUNT, 0) + 1
-        setInt(PREF_DONATE_VAULT_OPEN_COUNT, openCount)
-        if (openCount >= 15) {
-            setInt(PREF_DONATE_VAULT_OPEN_COUNT, 0)
-            return true
-        }
-        return false
+        return !getBoolean(PREF_DONATE_NEVER_SHOW_AGAIN, false)
     }
 
     fun setDonateShown() {
@@ -99,9 +86,54 @@ class PrefsUtil(context: Context) {
         setBoolean(PREF_DONATE_NEVER_SHOW_AGAIN, neverShow)
     }
 
+    fun hasSeenOnboarding(): Boolean {
+        return getBoolean(PREF_HAS_SEEN_ONBOARDING, false)
+    }
+
+    fun setSeenOnboarding(seen: Boolean) {
+        setBoolean(PREF_HAS_SEEN_ONBOARDING, seen)
+    }
+
+    fun isShakeToCloseEnabled(): Boolean {
+        return getBoolean(PREF_SHAKE_TO_CLOSE, false)
+    }
+
+    fun setShakeToCloseEnabled(enabled: Boolean) {
+        setBoolean(PREF_SHAKE_TO_CLOSE, enabled)
+    }
+
+    fun getShakeSensitivity(): Int {
+        return getInt(PREF_SHAKE_SENSITIVITY, 3)
+    }
+
+    fun setShakeSensitivity(sensitivity: Int) {
+        setInt(PREF_SHAKE_SENSITIVITY, sensitivity.coerceIn(1, 5))
+    }
+
+    fun isShakeVibrateEnabled(): Boolean {
+        return getBoolean(PREF_SHAKE_VIBRATE, true)
+    }
+
+    fun setShakeVibrateEnabled(enabled: Boolean) {
+        setBoolean(PREF_SHAKE_VIBRATE, enabled)
+    }
+
+    fun hasSeenShakeAnnouncement(): Boolean {
+        return getBoolean(PREF_SEEN_SHAKE_ANNOUNCEMENT, false)
+    }
+
+    fun setSeenShakeAnnouncement(seen: Boolean) {
+        setBoolean(PREF_SEEN_SHAKE_ANNOUNCEMENT, seen)
+    }
+
     companion object {
+        const val PREF_HAS_SEEN_ONBOARDING = "has_seen_onboarding"
         const val PREF_DONATE_NEVER_SHOW_AGAIN = "donate_never_show_again"
         const val PREF_DONATE_SHOWN_FIRST_TIME = "donate_shown_first_time"
         const val PREF_DONATE_VAULT_OPEN_COUNT = "donate_vault_open_count"
+        const val PREF_SHAKE_TO_CLOSE = "shake_to_close"
+        const val PREF_SHAKE_SENSITIVITY = "shake_sensitivity"
+        const val PREF_SHAKE_VIBRATE = "shake_vibrate"
+        const val PREF_SEEN_SHAKE_ANNOUNCEMENT = "seen_shake_announcement"
     }
 }

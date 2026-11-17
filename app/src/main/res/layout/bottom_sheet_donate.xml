@@ -152,6 +152,7 @@
                     android:layout_width="32dp"
                     android:layout_height="32dp"
                     android:contentDescription="@null"
+                    app:tint="?attr/colorOnSurface"
                     android:src="@drawable/buy_me_a_coffee" />
 
                 <LinearLayout
@@ -213,6 +214,7 @@
                     android:layout_width="32dp"
                     android:layout_height="32dp"
                     android:contentDescription="@null"
+                    app:tint="?attr/colorOnSurface"
                     android:src="@drawable/paypal" />
 
                 <LinearLayout
@@ -274,6 +276,7 @@
                     android:layout_width="32dp"
                     android:layout_height="32dp"
                     android:contentDescription="@null"
+                    app:tint="?attr/colorOnSurface"
                     android:src="@drawable/kofi" />
 
                 <LinearLayout
@@ -335,6 +338,7 @@
                     android:layout_width="32dp"
                     android:layout_height="32dp"
                     android:contentDescription="@null"
+                    app:tint="?attr/colorOnSurface"
                     android:src="@drawable/upi_pay" />
 
                 <LinearLayout

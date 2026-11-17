@@ -90,7 +90,7 @@ class HiddenActivity : BaseActivity() {
                 }
             } else {
                 withContext(Dispatchers.Main) {
-                    checkAndPromptDonate()
+                    checkAndPromptPrompts()
                 }
             }
         }
@@ -99,6 +99,21 @@ class HiddenActivity : BaseActivity() {
     private fun showMigrationBottomSheet(legacyFiles: List<File>) {
         SecurityUtils.showMigrationBottomSheet(this, legacyFiles) {
             refreshCurrentView()
+            checkAndPromptPrompts()
+        }
+    }
+
+    private fun checkAndPromptPrompts() {
+        val prefs = PrefsUtil(this)
+        if (!prefs.hasSeenShakeAnnouncement()) {
+            mainHandler.postDelayed({
+                if (!isFinishing && !isDestroyed) {
+                    DialogUtil.showShakeFeatureAnnouncement(this) {
+                        checkAndPromptDonate()
+                    }
+                }
+            }, 400)
+        } else {
             checkAndPromptDonate()
         }
     }

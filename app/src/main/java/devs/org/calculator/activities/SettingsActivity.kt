@@ -1,8 +1,10 @@
 package devs.org.calculator.activities
 
 import android.content.Intent
+import android.net.Uri
 import android.os.Bundle
 import android.os.Environment
+import android.view.View
 import android.view.WindowManager
 import android.widget.EditText
 import android.widget.Toast
@@ -16,6 +18,7 @@ import devs.org.calculator.database.AppDatabase
 import devs.org.calculator.database.HiddenFileRepository
 import devs.org.calculator.databinding.ActivitySettingsBinding
 import devs.org.calculator.databinding.MigrationProgressDialogBinding
+import devs.org.calculator.utils.DialogUtil
 import devs.org.calculator.utils.FileManager
 import devs.org.calculator.utils.SecurityUtils
 import kotlinx.coroutines.Dispatchers
@@ -68,6 +71,28 @@ class SettingsActivity : BaseActivity() {
         binding.screenshotRestrictionSwitch.isChecked = prefs.getBoolean("screenshot_restriction", true)
         binding.encryptionSwitch.isChecked = prefs.getBoolean("encryption", false) && hasKey
         binding.gotomain.isChecked = prefs.getBoolean("is_vault_enabled", true)
+
+        val isShakeEnabled = prefs.isShakeToCloseEnabled()
+        binding.shakeToCloseSwitch.isChecked = isShakeEnabled
+        binding.shakeOptionsContainer.visibility = if (isShakeEnabled) View.VISIBLE else View.GONE
+
+        val sensitivity = prefs.getShakeSensitivity()
+        binding.shakeSensitivitySlider.value = sensitivity.toFloat()
+        updateShakeSensitivityLabel(sensitivity)
+
+        binding.shakeVibrateSwitch.isChecked = prefs.isShakeVibrateEnabled()
+    }
+
+    private fun updateShakeSensitivityLabel(level: Int) {
+        val label = when (level) {
+            1 -> getString(R.string.shake_sensitivity_hard)
+            2 -> getString(R.string.shake_sensitivity_firm)
+            3 -> getString(R.string.shake_sensitivity_normal)
+            4 -> getString(R.string.shake_sensitivity_gentle)
+            5 -> getString(R.string.shake_sensitivity_light)
+            else -> getString(R.string.shake_sensitivity_normal)
+        }
+        binding.tvShakeSensitivityValue.text = label
     }
 
     private fun setupListeners() {
@@ -110,6 +135,23 @@ class SettingsActivity : BaseActivity() {
                 disableScreenshotRestriction()
             }
         }
+
+        binding.shakeToCloseSwitch.setOnCheckedChangeListener { _, isChecked ->
+            prefs.setShakeToCloseEnabled(isChecked)
+            binding.shakeOptionsContainer.visibility = if (isChecked) View.VISIBLE else View.GONE
+        }
+
+        binding.shakeSensitivitySlider.addOnChangeListener { _, value, fromUser ->
+            if (fromUser) {
+                val level = value.toInt()
+                prefs.setShakeSensitivity(level)
+                updateShakeSensitivityLabel(level)
+            }
+        }
+
+        binding.shakeVibrateSwitch.setOnCheckedChangeListener { _, isChecked ->
+            prefs.setShakeVibrateEnabled(isChecked)
+        }
         binding.gotomain.setOnCheckedChangeListener { _, isChecked ->
             prefs.setBoolean("is_vault_enabled", isChecked)
         }
@@ -138,6 +180,26 @@ class SettingsActivity : BaseActivity() {
                     }
                 }
             }
+        }
+
+        binding.layoutHowItWorks.setOnClickListener {
+            val intent = Intent(this, OnboardingActivity::class.java)
+            intent.putExtra(OnboardingActivity.EXTRA_FROM_SETTINGS, true)
+            startActivity(intent)
+        }
+
+        binding.layoutSourceCode.setOnClickListener {
+            DEV_GITHUB_URL = getString(R.string.github_profile)
+            GITHUB_URL = getString(R.string.calculator_hide_files, DEV_GITHUB_URL)
+            try {
+                startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(GITHUB_URL)))
+            } catch (_: Exception) {
+                Toast.makeText(this, "Could not open browser", Toast.LENGTH_SHORT).show()
+            }
+        }
+
+        binding.layoutDonate.setOnClickListener {
+            DialogUtil.showDonateBottomSheet(this)
         }
     }
 

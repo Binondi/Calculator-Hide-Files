@@ -73,7 +73,13 @@ class MainActivity : BaseCalculatorActivity(), DialogActionsCallback, DialogUtil
     @SuppressLint("ClickableViewAccessibility")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        if (!prefs.hasPassword()) {
+        if (!prefs.hasSeenOnboarding()) {
+            if (prefs.hasPassword()) {
+                prefs.setSeenOnboarding(true)
+            } else {
+                startActivity(Intent(this, OnboardingActivity::class.java))
+            }
+        } else if (!prefs.hasPassword()) {
             startActivity(Intent(this, SetupPasswordActivity::class.java))
         }
         binding = ActivityMainBinding.inflate(layoutInflater)

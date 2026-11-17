@@ -385,8 +385,8 @@
     <string name="no_legacy_files_to_migrate">All encrypted files are already on the latest encryption format.</string>
 
     <!-- Donation Bottom Sheet -->
-    <string name="donate_title">Support the Project ❤️</string>
-    <string name="donate_subtitle">Calculator Vault is 100% free, open-source, and private with no ads. Your support helps keep development active and new features coming!</string>
+    <string name="donate_title">Built for Your Privacy &amp; Security</string>
+    <string name="donate_subtitle">This vault is developed solely for your privacy and security — 100% offline, zero data collection, and completely ad-free. As an independent developer, your support helps sustain this project, cover development efforts, and bring powerful new features in the future.</string>
     <string name="github_sponsors">GitHub Sponsors</string>
     <string name="github_sponsors_subtitle">Sponsor on GitHub</string>
     <string name="github_sponsors_url" translatable="false">https://github.com/sponsors/Binondi</string>
@@ -398,4 +398,84 @@
     <string name="upi_copied_toast">UPI ID copied to clipboard!</string>
     <string name="never_show_again">Never show again</string>
     <string name="maybe_later">Maybe Later</string>
+
+    <!-- Onboarding / Instructions -->
+    <string name="welcome_to_app">Welcome to Calculator Vault</string>
+    <string name="onboarding_subtitle">Stealth privacy powered by military-grade encryption</string>
+    <string name="onboarding_how_it_works">How It Works</string>
+    <string name="onboarding_feat_calc_title">Full Scientific Calculator</string>
+    <string name="onboarding_feat_calc_desc">Works seamlessly as a standard and scientific calculator for everyday use. No one will suspect it is a secret vault.</string>
+    <string name="onboarding_feat_vault_title">Secret Passcode Access</string>
+    <string name="onboarding_feat_vault_desc">Type your secret numeric PIN on the calculator and tap \'=\' to instantly unlock your private files.</string>
+    <string name="onboarding_why_better">Why We Are Better</string>
+    <string name="onboarding_better_encryption_title">True AES-256-GCM Encryption</string>
+    <string name="onboarding_better_encryption_desc">Industry-standard authenticated encryption with 100,000 PBKDF2 iterations. Ensures both confidentiality and tamper protection.</string>
+    <string name="onboarding_better_recovery_title">Disaster-Proof Recovery (CHFE)</string>
+    <string name="onboarding_better_recovery_desc">Unlike other apps that rely on databases that get wiped on uninstall, our standalone containers preserve file names, extensions, and previews across reinstalls.</string>
+    <string name="onboarding_better_privacy_title">100% Free, Private &amp; Ad-Free</string>
+    <string name="onboarding_better_privacy_desc">Completely open-source with zero trackers, no intrusive video ads, no paywalls, and no internet permissions required.</string>
+    <string name="get_started">Get Started</string>
+    <string name="instructions_title">How It Works</string>
+    <string name="instructions_summary">Learn how the vault works and its security advantages</string>
+    <string name="got_it">Got it</string>
+    <string name="skip">Skip</string>
+    <string name="next">Next</string>
+    <string name="previous">Previous</string>
+
+    <!-- Onboarding Slides -->
+    <string name="onboarding_page1_tag">Stealth Disguise</string>
+    <string name="onboarding_page1_title">A Real Calculator on the Surface</string>
+    <string name="onboarding_page1_desc">Works as a fully functional standard and scientific calculator for everyday calculations. No one will ever suspect it is a hidden vault.</string>
+    <string name="onboarding_page1_h1">Real calculation engine with history support</string>
+    <string name="onboarding_page1_h2">Standard &amp; scientific calculator modes</string>
+    <string name="onboarding_page1_h3">Complete stealth—no vault traces on home screen</string>
+
+    <string name="onboarding_page2_tag">Passcode Protection</string>
+    <string name="onboarding_page2_title">Unlock with Secret Passcode</string>
+    <string name="onboarding_page2_desc">Your private files are locked behind a numeric PIN that only you know. Simply enter your PIN on the calculator and tap \'=\' to reveal your vault.</string>
+    <string name="onboarding_page2_h1">Type your secret PIN and press \'=\' to unlock</string>
+    <string name="onboarding_page2_h2">Built-in security question for emergency recovery</string>
+    <string name="onboarding_page2_h3">Automatic instant relock when leaving the app</string>
+
+    <string name="onboarding_page3_tag">Authenticated Cipher</string>
+    <string name="onboarding_page3_title">Military-Grade Encryption</string>
+    <string name="onboarding_page3_desc">Your files are protected with industry-standard AES-256-GCM encryption. Keys are derived using 100,000 rounds of PBKDF2 with unique cryptographic salts.</string>
+    <string name="onboarding_page3_h1">Authenticated Galois/Counter Mode (AES-256-GCM)</string>
+    <string name="onboarding_page3_h2">Tamper-proof: automatically detects any corrupted files</string>
+    <string name="onboarding_page3_h3">Custom user key derivation—zero backdoor access</string>
+
+    <string name="onboarding_page4_tag">Zero-Database Loss</string>
+    <string name="onboarding_page4_title">Disaster-Proof File Containers</string>
+    <string name="onboarding_page4_desc">Traditional vaults store file names and extensions in a database that gets destroyed if you uninstall the app. Our standalone CHFE container embeds file metadata directly inside ciphertext.</string>
+    <string name="onboarding_page4_h1">Reinstall the app anytime without losing file names</string>
+    <string name="onboarding_page4_h2">Re-enter your key to restore file previews instantly</string>
+    <string name="onboarding_page4_h3">One-tap migration tool to upgrade older legacy files</string>
+
+    <string name="onboarding_page5_tag">No Trackers • No Ads</string>
+    <string name="onboarding_page5_title">100% Free, Private &amp; Open Source</string>
+    <string name="onboarding_page5_desc">We believe your private files should stay truly private. Calculator Vault is completely open-source, contains zero trackers, displays no full-screen video ads, and requires no internet access.</string>
+    <string name="onboarding_page5_h1">Full transparency under GNU General Public License v3</string>
+    <string name="onboarding_page5_h2">No paywalls, subscription fees, or feature locks</string>
+    <string name="onboarding_page5_h3">Operates completely offline for maximum security</string>
+
+    <!-- Shake to Close Feature -->
+    <string name="shake_to_close_title">Shake to Close</string>
+    <string name="shake_to_close_summary">Instantly lock vault and switch to calculator when device is shaken</string>
+    <string name="shake_sensitivity_title">Shake Sensitivity</string>
+    <string name="shake_sensitivity_light">Light Shake (High Sensitivity)</string>
+    <string name="shake_sensitivity_gentle">Gentle Shake</string>
+    <string name="shake_sensitivity_normal">Normal Shake (Recommended)</string>
+    <string name="shake_sensitivity_firm">Firm Shake</string>
+    <string name="shake_sensitivity_hard">Hard Shake (Low Sensitivity)</string>
+    <string name="shake_vibrate_title">Vibrate on Shake Lock</string>
+    <string name="shake_vibrate_summary">Subtle haptic feedback when the vault locks</string>
+    <string name="shake_announcement_badge">NEW FEATURE</string>
+    <string name="shake_announcement_title">Shake to Close Vault</string>
+    <string name="shake_announcement_desc">Instantly lock your vault and switch back to the calculator simply by shaking your phone. Perfect for quick privacy when you need it!</string>
+    <string name="shake_point_1">Instantly locks vault with a quick natural shake motion</string>
+    <string name="shake_point_2">Returns directly to the calculator screen with no trace</string>
+    <string name="shake_point_3">Customizable sensitivity and haptic vibration feedback</string>
+    <string name="enable_shake_to_close">Enable Shake to Close</string>
+    <string name="shake_enabled_toast">Shake to close enabled! You can customize sensitivity in Settings.</string>
+    <string name="shake_announcement_hint">You can adjust sensitivity and haptic vibration anytime in Vault Settings.</string>
 </resources>

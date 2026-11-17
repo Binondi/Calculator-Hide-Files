@@ -36,6 +36,7 @@ import devs.org.calculator.utils.FolderManager
 import devs.org.calculator.utils.SecurityUtils
 import devs.org.calculator.utils.SecurityUtils.getDecryptedPreviewFile
 import devs.org.calculator.utils.SecurityUtils.getUriForPreviewFile
+import devs.org.calculator.utils.expandFully
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -377,6 +378,7 @@ class FileAdapter(
 
         private fun showDecryptionTypeDialog(file: File) {
             val bottomSheet = BottomSheetDialog(context)
+            bottomSheet.expandFully()
             val sheetBinding = BottomSheetFileTypeBinding.inflate(LayoutInflater.from(context))
             bottomSheet.setContentView(sheetBinding.root)
 
