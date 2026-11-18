@@ -84,13 +84,8 @@ object SecurityUtils {
         return if (!customKey.isNullOrBlank()) customKey else null
     }
 
-    fun getMasterKeyString(context: Context): String {
-        val customKey = getCustomKey(context)
-        if (!customKey.isNullOrEmpty()) {
-            return customKey
-        }
-
-        @SuppressLint("HardwareIds")
+    @SuppressLint("HardwareIds")
+    fun getDeviceMasterKeyString(context: Context): String {
         val androidId = Secure.getString(
             context.contentResolver,
             Secure.ANDROID_ID
@@ -99,8 +94,20 @@ object SecurityUtils {
         return "${context.packageName}:$androidId:$DEFAULT_KEY"
     }
 
-    private fun derivePbkdf2Key(context: Context, salt: ByteArray): SecretKey {
-        val password = getMasterKeyString(context)
+    fun getMasterKeyString(context: Context): String {
+        val customKey = getCustomKey(context)
+        if (!customKey.isNullOrEmpty()) {
+            return customKey
+        }
+        return getDeviceMasterKeyString(context)
+    }
+
+    private fun derivePbkdf2Key(
+        context: Context,
+        salt: ByteArray,
+        keyOverride: String? = null
+    ): SecretKey {
+        val password = keyOverride ?: getMasterKeyString(context)
         val spec = PBEKeySpec(password.toCharArray(), salt, PBKDF2_ITERATIONS, KEY_LENGTH_BITS)
         val factory = SecretKeyFactory.getInstance("PBKDF2WithHmacSHA256")
         val keyBytes = factory.generateSecret(spec).encoded
@@ -108,7 +115,20 @@ object SecurityUtils {
     }
 
     @SuppressLint("HardwareIds")
-    private fun deriveLegacyKey(context: Context): SecretKey {
+    fun deriveLegacyDeviceKey(context: Context): SecretKey {
+        val androidId = Secure.getString(
+            context.contentResolver,
+            Secure.ANDROID_ID
+        ) ?: "fallback_id"
+
+        val rawMaterial = "${context.packageName}:$androidId:$DEFAULT_KEY"
+        val digest = MessageDigest.getInstance("SHA-256")
+        val keyBytes = digest.digest(rawMaterial.toByteArray(Charsets.UTF_8))
+        return SecretKeySpec(keyBytes, LEGACY_ALGORITHM)
+    }
+
+    @SuppressLint("HardwareIds")
+    fun deriveLegacyKey(context: Context): SecretKey {
         val keyStore = context.getSharedPreferences("keystore", Context.MODE_PRIVATE)
         if (keyStore.getBoolean("use_custom_key", false)) {
             val customKey = keyStore.getString("custom_key", null)
@@ -123,19 +143,6 @@ object SecurityUtils {
             }
         }
         return deriveLegacyDeviceKey(context)
-    }
-
-    @SuppressLint("HardwareIds")
-    private fun deriveLegacyDeviceKey(context: Context): SecretKey {
-        val androidId = Secure.getString(
-            context.contentResolver,
-            Secure.ANDROID_ID
-        ) ?: "fallback_id"
-
-        val rawMaterial = "${context.packageName}:$androidId:$DEFAULT_KEY"
-        val digest = MessageDigest.getInstance("SHA-256")
-        val keyBytes = digest.digest(rawMaterial.toByteArray(Charsets.UTF_8))
-        return SecretKeySpec(keyBytes, LEGACY_ALGORITHM)
     }
 
     // ==========================================
@@ -160,6 +167,17 @@ object SecurityUtils {
     // ==========================================
 
     fun readMetadataFromEncryptedFile(context: Context, file: File): EncryptedFileMetadata? {
+        val meta = attemptReadMetadata(context, file, getMasterKeyString(context))
+        if (meta != null) return meta
+
+        if (hasCustomKey(context)) {
+            val fallbackKey = getDeviceMasterKeyString(context)
+            return attemptReadMetadata(context, file, fallbackKey)
+        }
+        return null
+    }
+
+    private fun attemptReadMetadata(context: Context, file: File, masterKey: String): EncryptedFileMetadata? {
         if (!file.exists() || file.length() < (4 + 1 + SALT_LENGTH_BYTES + GCM_IV_LENGTH_BYTES + 4)) {
             return null
         }
@@ -186,7 +204,7 @@ object SecurityUtils {
                 val encMeta = ByteArray(metaLen)
                 dis.readFully(encMeta)
 
-                val secretKey = derivePbkdf2Key(context, salt)
+                val secretKey = derivePbkdf2Key(context, salt, masterKey)
                 val metaCipher = Cipher.getInstance("AES/GCM/NoPadding")
                 metaCipher.init(Cipher.DECRYPT_MODE, secretKey, GCMParameterSpec(GCM_TAG_LENGTH_BITS, metaIv))
                 val plainMetaBytes = metaCipher.doFinal(encMeta)
@@ -203,8 +221,7 @@ object SecurityUtils {
 
                 EncryptedFileMetadata(name, ext, fileType)
             }
-        } catch (e: Exception) {
-            Log.e("SecurityUtils", "Failed to read metadata from ${file.name}: ${e.message}")
+        } catch (_: Exception) {
             null
         }
     }
@@ -220,11 +237,6 @@ object SecurityUtils {
         metadata: EncryptedFileMetadata? = null
     ): Boolean {
         if (!inputFile.exists() || inputFile.length() == 0L) {
-            return false
-        }
-
-        if (!hasCustomKey(context)) {
-            Log.e("SecurityUtils", "Cannot encrypt file: No encryption key is set.")
             return false
         }
 
@@ -329,6 +341,24 @@ object SecurityUtils {
     }
 
     private fun decryptNewFormat(context: Context, inputFile: File, outputFile: File): Boolean {
+        if (attemptDecryptNewFormat(context, inputFile, outputFile, getMasterKeyString(context))) {
+            return true
+        }
+        if (hasCustomKey(context)) {
+            val fallbackKey = getDeviceMasterKeyString(context)
+            if (attemptDecryptNewFormat(context, inputFile, outputFile, fallbackKey)) {
+                return true
+            }
+        }
+        return false
+    }
+
+    private fun attemptDecryptNewFormat(
+        context: Context,
+        inputFile: File,
+        outputFile: File,
+        masterKey: String
+    ): Boolean {
         val parentDir = outputFile.parentFile ?: inputFile.parentFile ?: context.cacheDir
         val tempOutputFile = File(parentDir, "${outputFile.name}.tmp_${System.currentTimeMillis()}")
 
@@ -352,14 +382,14 @@ object SecurityUtils {
                 val metaLen = dis.readInt()
                 if (metaLen <= 0 || metaLen > 64 * 1024) return false
 
-                // Skip or read metadata bytes
+                // Skip metadata bytes
                 val encMeta = ByteArray(metaLen)
                 dis.readFully(encMeta)
 
                 val payloadIv = ByteArray(GCM_IV_LENGTH_BYTES)
                 dis.readFully(payloadIv)
 
-                val secretKey = derivePbkdf2Key(context, salt)
+                val secretKey = derivePbkdf2Key(context, salt, masterKey)
                 val payloadCipher = Cipher.getInstance("AES/GCM/NoPadding")
                 payloadCipher.init(Cipher.DECRYPT_MODE, secretKey, GCMParameterSpec(GCM_TAG_LENGTH_BITS, payloadIv))
 
@@ -395,7 +425,7 @@ object SecurityUtils {
             }
             true
         } catch (e: Exception) {
-            Log.e("SecurityUtils", "New format decryption failed: ${e.message}")
+            Log.w("SecurityUtils", "attemptDecryptNewFormat failed: ${e.message}")
             if (tempOutputFile.exists()) {
                 tempOutputFile.delete()
             }
@@ -404,13 +434,32 @@ object SecurityUtils {
     }
 
     private fun decryptLegacyFile(context: Context, inputFile: File, outputFile: File): Boolean {
-        val parentDir = outputFile.parentFile ?: inputFile.parentFile ?: context.cacheDir
+        // 1. Try with primary legacy key (custom key if set, device key otherwise)
+        val primaryKey = deriveLegacyKey(context)
+        if (attemptDecryptLegacy(inputFile, outputFile, primaryKey)) {
+            return true
+        }
+
+        // 2. If primary key failed and a custom key is active, fallback to default legacy device key
+        if (hasCustomKey(context) || context.getSharedPreferences("keystore", Context.MODE_PRIVATE).getBoolean("use_custom_key", false)) {
+            val fallbackKey = deriveLegacyDeviceKey(context)
+            if (fallbackKey != primaryKey) {
+                Log.d("SecurityUtils", "Legacy decryption with primary key failed. Retrying with legacy device key fallback...")
+                if (attemptDecryptLegacy(inputFile, outputFile, fallbackKey)) {
+                    return true
+                }
+            }
+        }
+
+        return false
+    }
+
+    private fun attemptDecryptLegacy(inputFile: File, outputFile: File, secretKey: SecretKey): Boolean {
+        val parentDir = outputFile.parentFile ?: inputFile.parentFile ?: return false
         val tempOutputFile = File(parentDir, "${outputFile.name}.tmp_${System.currentTimeMillis()}")
 
         return try {
-            val secretKey = deriveLegacyKey(context)
             val cipher = Cipher.getInstance(LEGACY_TRANSFORMATION)
-
             FileInputStream(inputFile).use { input ->
                 val iv = ByteArray(16)
                 val bytesRead = input.read(iv)
@@ -420,14 +469,19 @@ object SecurityUtils {
                 cipher.init(Cipher.DECRYPT_MODE, secretKey, IvParameterSpec(iv))
 
                 FileOutputStream(tempOutputFile).use { output ->
-                    CipherInputStream(input, cipher).use { cipherInput ->
-                        val buffer = ByteArray(BUFFER_SIZE)
-                        var bytesReadInner: Int
-                        while (cipherInput.read(buffer).also { bytesReadInner = it } != -1) {
-                            output.write(buffer, 0, bytesReadInner)
+                    val buffer = ByteArray(BUFFER_SIZE)
+                    var bytesReadInner: Int
+                    while (input.read(buffer).also { bytesReadInner = it } != -1) {
+                        val outBuf = cipher.update(buffer, 0, bytesReadInner)
+                        if (outBuf != null && outBuf.isNotEmpty()) {
+                            output.write(outBuf)
                         }
-                        output.flush()
                     }
+                    val finalBuf = cipher.doFinal()
+                    if (finalBuf != null && finalBuf.isNotEmpty()) {
+                        output.write(finalBuf)
+                    }
+                    output.flush()
                 }
             }
 
@@ -446,7 +500,7 @@ object SecurityUtils {
             }
             true
         } catch (e: Exception) {
-            Log.e("SecurityUtils", "Legacy decryption failed: ${e.message}")
+            Log.w("SecurityUtils", "attemptDecryptLegacy failed: ${e.message}")
             if (tempOutputFile.exists()) {
                 tempOutputFile.delete()
             }
@@ -860,18 +914,7 @@ object SecurityUtils {
 
         view.findViewById<View>(R.id.btnMigrateNow).setOnClickListener {
             bottomSheet.dismiss()
-            if (!hasCustomKey(activity)) {
-                showSetKeyBottomSheet(
-                    activity = activity,
-                    title = activity.getString(R.string.encryption_key_required_title),
-                    subtitle = activity.getString(R.string.encryption_key_required_message),
-                    onKeySet = {
-                        startMigration(activity, legacyFiles, onMigrationComplete)
-                    }
-                )
-            } else {
-                startMigration(activity, legacyFiles, onMigrationComplete)
-            }
+            startMigration(activity, legacyFiles, onMigrationComplete)
         }
 
         view.findViewById<View>(R.id.btnLater).setOnClickListener {

@@ -160,7 +160,15 @@ class FileAdapter(
                         }
                     }
 
-                    val isEncryptedFileWithoutKey = file.name.endsWith(FileManager.ENCRYPTED_EXTENSION) && !SecurityUtils.hasCustomKey(context)
+                    val isEncryptedFileWithoutKey = if (file.name.endsWith(FileManager.ENCRYPTED_EXTENSION)) {
+                        if (SecurityUtils.isNewFormat(file)) {
+                            SecurityUtils.readMetadataFromEncryptedFile(context, file) == null
+                        } else {
+                            false
+                        }
+                    } else {
+                        false
+                    }
 
                     val currentFileType = currentFileData?.fileType
                         ?: FileManager(context, lifecycleOwner).getFileType(file)
@@ -729,8 +737,10 @@ class FileAdapter(
             return
         }
 
-        val hasEnc3Files = selectedFiles.any { SecurityUtils.isNewFormat(it) }
-        if (hasEnc3Files && !SecurityUtils.hasCustomKey(context)) {
+        val hasLockedEnc3Files = selectedFiles.any {
+            SecurityUtils.isNewFormat(it) && SecurityUtils.readMetadataFromEncryptedFile(context, it) == null
+        }
+        if (hasLockedEnc3Files && !SecurityUtils.hasCustomKey(context)) {
             val activity = (context as? Activity) ?: (lifecycleOwner as? Activity)
             if (activity != null) {
                 SecurityUtils.showSetKeyBottomSheet(

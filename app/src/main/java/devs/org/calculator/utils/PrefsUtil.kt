@@ -126,6 +126,14 @@ class PrefsUtil(context: Context) {
         setBoolean(PREF_SEEN_SHAKE_ANNOUNCEMENT, seen)
     }
 
+    fun hasSeenCalenVaultPromoNeverShowAgain(): Boolean {
+        return getBoolean(PREF_CALENVAULT_PROMO_NEVER_SHOW_AGAIN, false)
+    }
+
+    fun setCalenVaultPromoNeverShowAgain(neverShow: Boolean) {
+        setBoolean(PREF_CALENVAULT_PROMO_NEVER_SHOW_AGAIN, neverShow)
+    }
+
     companion object {
         const val PREF_HAS_SEEN_ONBOARDING = "has_seen_onboarding"
         const val PREF_DONATE_NEVER_SHOW_AGAIN = "donate_never_show_again"
@@ -135,5 +143,6 @@ class PrefsUtil(context: Context) {
         const val PREF_SHAKE_SENSITIVITY = "shake_sensitivity"
         const val PREF_SHAKE_VIBRATE = "shake_vibrate"
         const val PREF_SEEN_SHAKE_ANNOUNCEMENT = "seen_shake_announcement"
+        const val PREF_CALENVAULT_PROMO_NEVER_SHOW_AGAIN = "calenvault_promo_never_show_again"
     }
 }

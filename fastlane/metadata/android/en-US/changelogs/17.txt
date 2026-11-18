@@ -2,5 +2,5 @@
 - Added sensitivity slider & vibration feedback in Settings
 - Backup bottom sheet when setting encryption password
 - Interactive onboarding guide for features & encryption
-- Enhanced stealth mode: moved repo links into vault settings
 - Full-screen bottom sheets: no more dialog cutoff
+- Fixed legacy file decryption & migration compatibility

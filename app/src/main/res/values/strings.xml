@@ -489,4 +489,20 @@
     <string name="share_password_template">My Calculator Vault Encryption Password: %1$s\n\nKeep this somewhere safe! If this password is lost, your encrypted files cannot be recovered.</string>
     <string name="backup_warning_note">Zero-knowledge security: This password is never sent to any server. If you forget it, your encrypted files cannot be recovered by anyone.</string>
     <string name="i_have_saved_password">I Have Saved My Password</string>
+    <string name="camera_permission_required">Camera Permission Required</string>
+    <string name="camera_permission_desc">To capture photos and encrypt them directly into your secret vault, please allow camera access. Your photos remain 100% offline and encrypted.</string>
+    <string name="camera_permission_denied">Camera permission is required to take photos.</string>
+    <string name="camera_permission_settings_desc">Camera permission is disabled. Please enable it in Settings to capture photos directly into the vault.</string>
+    <string name="unable_to_open_camera">Unable to launch camera app</string>
+    <string name="unable_to_create_temp_file">Could not create temporary photo file</string>
+    <string name="calenvault_badge">NEW APP</string>
+    <string name="calenvault_promo_title">Try Our New App: CalenVault</string>
+    <string name="calenvault_promo_desc">Keep your files even more private with our new secret vault disguised as a modern, functional calendar!</string>
+    <string name="calenvault_point_1">Stealth Calendar: Real event scheduler on the surface, secret vault underneath</string>
+    <string name="calenvault_point_2">3 Covert Triggers: Unlock via search bar PIN, title long-press, or tapping Today 4x</string>
+    <string name="calenvault_point_3">100% Offline &amp; Private: AES-256-GCM encryption with zero internet permissions</string>
+    <string name="view_calenvault_app">Explore CalenVault on GitHub</string>
+    <string name="calenvault_settings_title">Try Our New App: CalenVault</string>
+    <string name="calenvault_settings_summary">Next-gen vault disguised as a functional calendar</string>
+    <string name="calenvault_github_url">https://github.com/Binondi/CalenVault</string>
 </resources>

@@ -17,6 +17,7 @@ import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.bottomsheet.BottomSheetDialog
 import devs.org.calculator.R
 import devs.org.calculator.databinding.BottomSheetConfirmationBinding
+import devs.org.calculator.databinding.BottomSheetCalenvaultPromoBinding
 import devs.org.calculator.databinding.BottomSheetDonateBinding
 import devs.org.calculator.databinding.BottomSheetInputBinding
 import devs.org.calculator.databinding.BottomSheetPasswordBackupBinding
@@ -277,6 +278,63 @@ class DialogUtil(private val context: Context) {
 
             bottomSheet.setOnDismissListener {
                 prefsUtil.setSeenShakeAnnouncement(true)
+                onDismiss?.invoke()
+            }
+
+            bottomSheet.show()
+            return bottomSheet
+        }
+
+        fun showCalenVaultPromoBottomSheet(
+            context: Context,
+            showNeverShowAgain: Boolean = true,
+            onDismiss: (() -> Unit)? = null
+        ): BottomSheetDialog? {
+            if (context is Activity && (context.isFinishing || context.isDestroyed)) {
+                return null
+            }
+
+            val prefsUtil = PrefsUtil(context)
+            val bottomSheet = BottomSheetDialog(context)
+            bottomSheet.expandFully()
+            val binding = BottomSheetCalenvaultPromoBinding.inflate(LayoutInflater.from(context))
+            bottomSheet.setContentView(binding.root)
+
+            if (!showNeverShowAgain) {
+                binding.cbNeverShowAgain.visibility = View.GONE
+            } else {
+                binding.cbNeverShowAgain.visibility = View.VISIBLE
+                binding.cbNeverShowAgain.isChecked = prefsUtil.hasSeenCalenVaultPromoNeverShowAgain()
+                binding.cbNeverShowAgain.setOnCheckedChangeListener { _, isChecked ->
+                    prefsUtil.setCalenVaultPromoNeverShowAgain(isChecked)
+                }
+            }
+
+            binding.btnViewCalenVault.setOnClickListener {
+                if (showNeverShowAgain && binding.cbNeverShowAgain.isChecked) {
+                    prefsUtil.setCalenVaultPromoNeverShowAgain(true)
+                }
+                val url = context.getString(R.string.calenvault_github_url)
+                try {
+                    val intent = Intent(Intent.ACTION_VIEW, Uri.parse(url))
+                    context.startActivity(intent)
+                } catch (_: Exception) {
+                    Toast.makeText(context, "Could not open browser", Toast.LENGTH_SHORT).show()
+                }
+                bottomSheet.dismiss()
+            }
+
+            binding.btnMaybeLater.setOnClickListener {
+                if (showNeverShowAgain && binding.cbNeverShowAgain.isChecked) {
+                    prefsUtil.setCalenVaultPromoNeverShowAgain(true)
+                }
+                bottomSheet.dismiss()
+            }
+
+            bottomSheet.setOnDismissListener {
+                if (showNeverShowAgain && binding.cbNeverShowAgain.isChecked) {
+                    prefsUtil.setCalenVaultPromoNeverShowAgain(true)
+                }
                 onDismiss?.invoke()
             }
 

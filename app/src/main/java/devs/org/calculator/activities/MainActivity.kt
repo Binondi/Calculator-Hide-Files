@@ -252,6 +252,18 @@ class MainActivity : BaseCalculatorActivity(), DialogActionsCallback, DialogUtil
             binding.tabLayout.getTabAt(0)?.select()
             showStandardKeypad(savePref = false)
         }
+
+        checkAndPromptCalenVaultPromo()
+    }
+
+    private fun checkAndPromptCalenVaultPromo() {
+        if (!prefs.hasSeenCalenVaultPromoNeverShowAgain() && prefs.hasPassword()) {
+            Handler(Looper.getMainLooper()).postDelayed({
+                if (!isFinishing && !isDestroyed && !prefs.hasSeenCalenVaultPromoNeverShowAgain()) {
+                    DialogUtil.showCalenVaultPromoBottomSheet(this, showNeverShowAgain = true)
+                }
+            }, 800)
+        }
     }
 
     private fun showStandardKeypad(savePref: Boolean = true) {

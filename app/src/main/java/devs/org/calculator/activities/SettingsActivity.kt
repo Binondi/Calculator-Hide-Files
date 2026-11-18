@@ -201,6 +201,10 @@ class SettingsActivity : BaseActivity() {
         binding.layoutDonate.setOnClickListener {
             DialogUtil.showDonateBottomSheet(this)
         }
+
+        binding.layoutCalenVault.setOnClickListener {
+            DialogUtil.showCalenVaultPromoBottomSheet(this, showNeverShowAgain = false)
+        }
     }
 
     private fun enableScreenshotRestriction() {

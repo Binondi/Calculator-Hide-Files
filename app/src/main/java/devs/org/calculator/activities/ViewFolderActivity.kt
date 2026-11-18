@@ -29,6 +29,11 @@ import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.textfield.TextInputEditText
+import android.Manifest
+import android.content.pm.PackageManager
+import android.provider.Settings
+import androidx.core.content.ContextCompat
+import devs.org.calculator.databinding.BottomSheetConfirmationBinding
 import android.provider.MediaStore
 import androidx.core.content.FileProvider
 import devs.org.calculator.CalculatorApp
@@ -69,6 +74,7 @@ class ViewFolderActivity : BaseActivity() {
     private val hiddenDir = File(Environment.getExternalStorageDirectory(), HIDDEN_DIR)
     private lateinit var pickImageLauncher: ActivityResultLauncher<Intent>
     private lateinit var takePhotoLauncher: ActivityResultLauncher<Intent>
+    private lateinit var cameraPermissionLauncher: ActivityResultLauncher<String>
     private var tempPhotoFile: File? = null
 
     private var customDialog: androidx.appcompat.app.AlertDialog? = null
@@ -119,6 +125,17 @@ class ViewFolderActivity : BaseActivity() {
         takePhotoLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
             if (result.resultCode == RESULT_OK) {
                 handleCameraResult()
+            }
+        }
+        cameraPermissionLauncher = registerForActivityResult(ActivityResultContracts.RequestPermission()) { isGranted ->
+            if (isGranted) {
+                openCamera()
+            } else {
+                if (!shouldShowRequestPermissionRationale(Manifest.permission.CAMERA)) {
+                    showCameraSettingsBottomSheet()
+                } else {
+                    Toast.makeText(this, getString(R.string.camera_permission_denied), Toast.LENGTH_SHORT).show()
+                }
             }
         }
     }
@@ -713,9 +730,12 @@ class ViewFolderActivity : BaseActivity() {
     }
 
     private fun updateSetKeyBanner(files: List<File>) {
-        val hasEncryptedFiles = files.any { it.name.endsWith(ENCRYPTED_EXTENSION) }
-        val hasKey = SecurityUtils.hasCustomKey(this)
-        val shouldShowBanner = hasEncryptedFiles && !hasKey
+        val hasLockedFiles = files.any {
+            it.name.endsWith(ENCRYPTED_EXTENSION) &&
+                SecurityUtils.isNewFormat(it) &&
+                SecurityUtils.readMetadataFromEncryptedFile(this, it) == null
+        }
+        val shouldShowBanner = hasLockedFiles && !SecurityUtils.hasCustomKey(this)
 
         if (shouldShowBanner) {
             binding.cardSetKeyBanner.visibility = View.VISIBLE
@@ -745,11 +765,71 @@ class ViewFolderActivity : BaseActivity() {
             openFolder(currentFolder!!)
         }
 
-        binding.takePhoto.setOnClickListener { openCamera() }
+        binding.takePhoto.setOnClickListener { checkCameraPermissionAndOpen() }
         binding.addImage.setOnClickListener { openFilePicker("image/*") }
         binding.addVideo.setOnClickListener { openFilePicker("video/*") }
         binding.addAudio.setOnClickListener { openFilePicker("audio/*") }
         binding.addDocument.setOnClickListener { openFilePicker("*/*") }
+    }
+
+    private fun checkCameraPermissionAndOpen() {
+        closeFabs()
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA) == PackageManager.PERMISSION_GRANTED) {
+            openCamera()
+        } else {
+            showCameraPermissionBottomSheet()
+        }
+    }
+
+    private fun showCameraPermissionBottomSheet() {
+        val bottomSheet = BottomSheetDialog(this)
+        bottomSheet.expandFully()
+        val sheetBinding = BottomSheetConfirmationBinding.inflate(layoutInflater)
+        bottomSheet.setContentView(sheetBinding.root)
+
+        sheetBinding.dialogIcon.setImageResource(R.drawable.ic_camera)
+        sheetBinding.tvDialogTitle.text = getString(R.string.camera_permission_required)
+        sheetBinding.tvDialogMessage.text = getString(R.string.camera_permission_desc)
+        sheetBinding.btnPositive.text = getString(R.string.grant_permission)
+        sheetBinding.btnNegative.text = getString(R.string.cancel)
+
+        sheetBinding.btnPositive.setOnClickListener {
+            bottomSheet.dismiss()
+            cameraPermissionLauncher.launch(Manifest.permission.CAMERA)
+        }
+
+        sheetBinding.btnNegative.setOnClickListener {
+            bottomSheet.dismiss()
+        }
+
+        bottomSheet.show()
+    }
+
+    private fun showCameraSettingsBottomSheet() {
+        val bottomSheet = BottomSheetDialog(this)
+        bottomSheet.expandFully()
+        val sheetBinding = BottomSheetConfirmationBinding.inflate(layoutInflater)
+        bottomSheet.setContentView(sheetBinding.root)
+
+        sheetBinding.dialogIcon.setImageResource(R.drawable.ic_settings)
+        sheetBinding.tvDialogTitle.text = getString(R.string.camera_permission_required)
+        sheetBinding.tvDialogMessage.text = getString(R.string.camera_permission_settings_desc)
+        sheetBinding.btnPositive.text = getString(R.string.settings)
+        sheetBinding.btnNegative.text = getString(R.string.cancel)
+
+        sheetBinding.btnPositive.setOnClickListener {
+            bottomSheet.dismiss()
+            val intent = Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS).apply {
+                data = Uri.fromParts("package", packageName, null)
+            }
+            startActivity(intent)
+        }
+
+        sheetBinding.btnNegative.setOnClickListener {
+            bottomSheet.dismiss()
+        }
+
+        bottomSheet.show()
     }
 
     private fun setupAnimations() {
@@ -782,17 +862,25 @@ class ViewFolderActivity : BaseActivity() {
         }
 
         photoFile?.also {
-            val photoURI: Uri = FileProvider.getUriForFile(
-                this,
-                "devs.org.calculator.fileprovider",
-                it
-            )
-            val takePictureIntent = Intent(MediaStore.ACTION_IMAGE_CAPTURE).apply {
-                putExtra(MediaStore.EXTRA_OUTPUT, photoURI)
+            try {
+                val photoURI: Uri = FileProvider.getUriForFile(
+                    this,
+                    "devs.org.calculator.fileprovider",
+                    it
+                )
+                val takePictureIntent = Intent(MediaStore.ACTION_IMAGE_CAPTURE).apply {
+                    putExtra(MediaStore.EXTRA_OUTPUT, photoURI)
+                    addFlags(Intent.FLAG_GRANT_WRITE_URI_PERMISSION or Intent.FLAG_GRANT_READ_URI_PERMISSION)
+                }
+                closeFabs()
+                (application as CalculatorApp).isWaitingForResult = true
+                takePhotoLauncher.launch(takePictureIntent)
+            } catch (e: Exception) {
+                (application as CalculatorApp).isWaitingForResult = false
+                Toast.makeText(this, getString(R.string.unable_to_open_camera), Toast.LENGTH_SHORT).show()
             }
-            closeFabs()
-            (application as CalculatorApp).isWaitingForResult = true
-            takePhotoLauncher.launch(takePictureIntent)
+        } ?: run {
+            Toast.makeText(this, getString(R.string.unable_to_create_temp_file), Toast.LENGTH_SHORT).show()
         }
     }
 
