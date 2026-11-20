@@ -4,6 +4,7 @@ import android.annotation.SuppressLint
 import android.app.Activity
 import android.content.Context
 import android.net.Uri
+import android.os.Environment
 import android.provider.Settings.Secure
 import android.util.Log
 import android.view.View
@@ -129,17 +130,14 @@ object SecurityUtils {
 
     @SuppressLint("HardwareIds")
     fun deriveLegacyKey(context: Context): SecretKey {
-        val keyStore = context.getSharedPreferences("keystore", Context.MODE_PRIVATE)
-        if (keyStore.getBoolean("use_custom_key", false)) {
-            val customKey = keyStore.getString("custom_key", null)
-            if (!customKey.isNullOrEmpty()) {
-                return try {
-                    val digest = MessageDigest.getInstance("SHA-256")
-                    val keyBytes = digest.digest(customKey.toByteArray(Charsets.UTF_8))
-                    SecretKeySpec(keyBytes, LEGACY_ALGORITHM)
-                } catch (_: Exception) {
-                    deriveLegacyDeviceKey(context)
-                }
+        val customKey = getCustomKey(context)
+        if (!customKey.isNullOrEmpty()) {
+            return try {
+                val digest = MessageDigest.getInstance("SHA-256")
+                val keyBytes = digest.digest(customKey.toByteArray(Charsets.UTF_8))
+                SecretKeySpec(keyBytes, LEGACY_ALGORITHM)
+            } catch (_: Exception) {
+                deriveLegacyDeviceKey(context)
             }
         }
         return deriveLegacyDeviceKey(context)
@@ -237,6 +235,11 @@ object SecurityUtils {
         metadata: EncryptedFileMetadata? = null
     ): Boolean {
         if (!inputFile.exists() || inputFile.length() == 0L) {
+            return false
+        }
+
+        if (!hasCustomKey(context)) {
+            Log.e("SecurityUtils", "Cannot encrypt file: No custom encryption key is set.")
             return false
         }
 
@@ -434,20 +437,18 @@ object SecurityUtils {
     }
 
     private fun decryptLegacyFile(context: Context, inputFile: File, outputFile: File): Boolean {
-        // 1. Try with primary legacy key (custom key if set, device key otherwise)
+        // 1. Try with primary legacy key (new custom key if set, device key otherwise)
         val primaryKey = deriveLegacyKey(context)
         if (attemptDecryptLegacy(inputFile, outputFile, primaryKey)) {
             return true
         }
 
-        // 2. If primary key failed and a custom key is active, fallback to default legacy device key
-        if (hasCustomKey(context) || context.getSharedPreferences("keystore", Context.MODE_PRIVATE).getBoolean("use_custom_key", false)) {
-            val fallbackKey = deriveLegacyDeviceKey(context)
-            if (fallbackKey != primaryKey) {
-                Log.d("SecurityUtils", "Legacy decryption with primary key failed. Retrying with legacy device key fallback...")
-                if (attemptDecryptLegacy(inputFile, outputFile, fallbackKey)) {
-                    return true
-                }
+        // 2. If primary key failed, fallback to default legacy device key
+        val defaultDeviceKey = deriveLegacyDeviceKey(context)
+        if (defaultDeviceKey != primaryKey) {
+            Log.d("SecurityUtils", "Legacy decryption with primary key failed. Retrying with legacy device key fallback...")
+            if (attemptDecryptLegacy(inputFile, outputFile, defaultDeviceKey)) {
+                return true
             }
         }
 
@@ -752,9 +753,36 @@ object SecurityUtils {
         activity: Activity,
         title: String? = null,
         subtitle: String? = null,
+        isForMigration: Boolean = false,
         onKeySet: (String) -> Unit = {},
         onDismissed: () -> Unit = {}
     ) {
+        if (activity.isFinishing || activity.isDestroyed) return
+
+        if (!isForMigration) {
+            val hiddenDir = File(Environment.getExternalStorageDirectory(), FileManager.HIDDEN_DIR)
+            val legacyFiles = findLegacyFiles(hiddenDir)
+
+            if (legacyFiles.isNotEmpty()) {
+                MaterialAlertDialogBuilder(activity)
+                    .setTitle(activity.getString(R.string.migration_required_before_key_title))
+                    .setMessage(activity.getString(R.string.migration_required_before_key_desc))
+                    .setPositiveButton(activity.getString(R.string.migrate_old_files_now)) { _, _ ->
+                        showMigrationBottomSheet(activity, legacyFiles) {
+                            showSetKeyBottomSheet(activity, title, subtitle, isForMigration = false, onKeySet = onKeySet, onDismissed = onDismissed)
+                        }
+                    }
+                    .setNegativeButton(activity.getString(R.string.cancel)) { _, _ ->
+                        onDismissed()
+                    }
+                    .setOnCancelListener {
+                        onDismissed()
+                    }
+                    .show()
+                return
+            }
+        }
+
         if (!hasCustomKey(activity)) {
             // First time setting key: show educational info sheet first!
             showEncryptionInfoBottomSheet(
@@ -914,7 +942,22 @@ object SecurityUtils {
 
         view.findViewById<View>(R.id.btnMigrateNow).setOnClickListener {
             bottomSheet.dismiss()
-            startMigration(activity, legacyFiles, onMigrationComplete)
+            if (!hasCustomKey(activity)) {
+                showSetKeyBottomSheet(
+                    activity = activity,
+                    title = activity.getString(R.string.encryption_key_required_title),
+                    subtitle = activity.getString(R.string.encryption_key_required_message),
+                    isForMigration = true,
+                    onKeySet = {
+                        startMigration(activity, legacyFiles, onMigrationComplete)
+                    },
+                    onDismissed = {
+                        onMigrationComplete()
+                    }
+                )
+            } else {
+                startMigration(activity, legacyFiles, onMigrationComplete)
+            }
         }
 
         view.findViewById<View>(R.id.btnLater).setOnClickListener {

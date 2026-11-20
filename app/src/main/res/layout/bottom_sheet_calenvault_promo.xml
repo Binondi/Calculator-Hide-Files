@@ -37,7 +37,7 @@
                 android:layout_height="32dp"
                 android:layout_gravity="center"
                 android:contentDescription="@null"
-                android:src="@drawable/ic_calendar"
+                android:src="@drawable/ic_calenvault_logo"
                 app:tint="?attr/colorOnPrimaryContainer" />
         </com.google.android.material.card.MaterialCardView>
 

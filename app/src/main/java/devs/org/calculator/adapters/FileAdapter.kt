@@ -39,6 +39,7 @@ import devs.org.calculator.utils.SecurityUtils.getUriForPreviewFile
 import devs.org.calculator.utils.expandFully
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
 import java.io.File
 import java.lang.ref.WeakReference
@@ -326,6 +327,23 @@ class FileAdapter(
                 return
             }
 
+            if (file.name.endsWith(FileManager.ENCRYPTED_EXTENSION) && !SecurityUtils.isNewFormat(file)) {
+                lifecycleOwner.lifecycleScope.launch {
+                    val hiddenFile = hiddenFileRepository.getHiddenFileByPath(file.absolutePath)
+                    if (hiddenFile == null) {
+                        showDecryptionTypeDialog(file)
+                        return@launch
+                    }
+                    val activity = (context as? Activity) ?: (lifecycleOwner as? Activity)
+                    if (activity != null) {
+                        SecurityUtils.showMigrationBottomSheet(activity, listOf(file)) {
+                            notifyDataSetChanged()
+                        }
+                    }
+                }
+                return
+            }
+
             when (fileType) {
                 FileManager.FileType.AUDIO -> openAudioFile(file)
                 FileManager.FileType.NOTE -> openNoteFile(file)
@@ -336,38 +354,29 @@ class FileAdapter(
                             val hiddenFile =
                                 hiddenFileRepository.getHiddenFileByPath(file.absolutePath)
                             if (hiddenFile?.isEncrypted == true || file.extension == FileManager.ENCRYPTED_EXTENSION) {
-                                if (file.extension == FileManager.ENCRYPTED_EXTENSION && !SecurityUtils.isNewFormat(file)) {
-                                    val activity = (context as? Activity) ?: (lifecycleOwner as? Activity)
-                                    if (activity != null) {
-                                        SecurityUtils.showMigrationBottomSheet(activity, listOf(file)) {
-                                            notifyDataSetChanged()
-                                        }
-                                    }
-                                } else {
-                                    // Use the cached preview if available
-                                    val tempFile = withContext(Dispatchers.IO) {
-                                        if (hiddenFile != null) {
-                                            SecurityUtils.getDecryptedPreviewFile(context, hiddenFile)
-                                        } else {
-                                            val tmp = File(context.cacheDir, "preview_${file.name}")
-                                            if (SecurityUtils.decryptFile(context, file, tmp)) tmp else null
-                                        }
-                                    }
-
-                                    if (tempFile != null && tempFile.exists() && tempFile.length() > 0) {
-                                        val fileTypeString = if (fileType == FileManager.FileType.IMAGE) context.getString(R.string.image) else context.getString(R.string.video)
-                                        val intent = Intent(context, PreviewActivity::class.java).apply {
-                                            putExtra("type", fileTypeString)
-                                            putExtra("folder", currentFolder.toString())
-                                            putExtra("position", bindingAdapterPosition)
-                                            putExtra("isEncrypted", true)
-                                            putExtra("tempFile", tempFile.absolutePath)
-                                        }
-                                        context.startActivity(intent)
+                                // Use the cached preview if available
+                                val tempFile = withContext(Dispatchers.IO) {
+                                    if (hiddenFile != null) {
+                                        SecurityUtils.getDecryptedPreviewFile(context, hiddenFile)
                                     } else {
-                                        Toast.makeText(context,
-                                            context.getString(R.string.failed_to_decrypt_file_for_preview), Toast.LENGTH_SHORT).show()
+                                        val tmp = File(context.cacheDir, "preview_${file.name}")
+                                        if (SecurityUtils.decryptFile(context, file, tmp)) tmp else null
                                     }
+                                }
+
+                                if (tempFile != null && tempFile.exists() && tempFile.length() > 0) {
+                                    val fileTypeString = if (fileType == FileManager.FileType.IMAGE) context.getString(R.string.image) else context.getString(R.string.video)
+                                    val intent = Intent(context, PreviewActivity::class.java).apply {
+                                        putExtra("type", fileTypeString)
+                                        putExtra("folder", currentFolder.toString())
+                                        putExtra("position", bindingAdapterPosition)
+                                        putExtra("isEncrypted", true)
+                                        putExtra("tempFile", tempFile.absolutePath)
+                                    }
+                                    context.startActivity(intent)
+                                } else {
+                                    Toast.makeText(context,
+                                        context.getString(R.string.failed_to_decrypt_file_for_preview), Toast.LENGTH_SHORT).show()
                                 }
                             } else {
                                 openInPreview(fileType)
@@ -408,6 +417,19 @@ class FileAdapter(
             checkboxes.forEach { it.setOnCheckedChangeListener(mutualExclusiveListener) }
 
             sheetBinding.btnConfirmDecrypt.setOnClickListener {
+                if (sheetBinding.checkboxOther.isChecked) {
+                    val extension = sheetBinding.editExtension.text?.toString()?.trim() ?: ""
+                    if (extension.isEmpty()) {
+                        sheetBinding.editExtension.error = context.getString(R.string.please_enter_a_file_extension)
+                        return@setOnClickListener
+                    }
+                    val regex = Regex("""\.\w+""")
+                    if (!regex.matches(extension)) {
+                        sheetBinding.editExtension.error = context.getString(R.string.invalid_extension_format)
+                        return@setOnClickListener
+                    }
+                }
+
                 val selectedType = when {
                     sheetBinding.checkboxImage.isChecked -> FileManager.FileType.IMAGE
                     sheetBinding.checkboxVideo.isChecked -> FileManager.FileType.VIDEO
@@ -415,8 +437,9 @@ class FileAdapter(
                     sheetBinding.checkboxOther.isChecked -> FileManager.FileType.DOCUMENT
                     else -> return@setOnClickListener
                 }
+                val customExt = if (sheetBinding.checkboxOther.isChecked) sheetBinding.editExtension.text?.toString()?.trim() else null
                 bottomSheet.dismiss()
-                performDecryptionWithType(file, selectedType)
+                performDecryptionWithType(file, selectedType, customExt)
             }
 
             sheetBinding.btnCancelDecrypt.setOnClickListener {
@@ -541,10 +564,14 @@ class FileAdapter(
             notifyItemChanged(position)
         }
 
-        private fun performDecryptionWithType(file: File, fileType: FileManager.FileType) {
+        private fun performDecryptionWithType(
+            file: File,
+            fileType: FileManager.FileType,
+            customExtension: String? = null
+        ) {
             lifecycleOwner.lifecycleScope.launch {
                 try {
-                    val extension = when (fileType) {
+                    val extension = customExtension ?: when (fileType) {
                         FileManager.FileType.IMAGE -> ".jpg"
                         FileManager.FileType.VIDEO -> ".mp4"
                         FileManager.FileType.AUDIO -> ".mp3"
@@ -569,6 +596,8 @@ class FileAdapter(
                                 isEncrypted = false
                             )
                         )
+                        file.delete()
+                        filesOperationCallback?.get()?.onRefreshNeeded()
                         when (fileType) {
                             FileManager.FileType.IMAGE, FileManager.FileType.VIDEO -> {
                                 val intent = Intent(context, PreviewActivity::class.java).apply {
@@ -585,13 +614,12 @@ class FileAdapter(
                             FileManager.FileType.PDF -> openDocumentFile(decryptedFile)
                             else -> openDocumentFile(decryptedFile)
                         }
-                        file.delete()
                     } else {
-                        decryptedFile.delete()
-                        Toast.makeText(context, "Failed to decrypt file", Toast.LENGTH_SHORT).show()
+                        if (decryptedFile.exists()) decryptedFile.delete()
+                        Toast.makeText(context, context.getString(R.string.failed_to_decrypt_file_for_preview), Toast.LENGTH_SHORT).show()
                     }
                 } catch (_: Exception) {
-                    Toast.makeText(context, "Error decrypting file", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(context, context.getString(R.string.failed_to_decrypt_file_for_preview), Toast.LENGTH_SHORT).show()
                 }
             }
         }
@@ -726,8 +754,19 @@ class FileAdapter(
         val selectedFiles = getSelectedItems()
         if (selectedFiles.isEmpty()) return
 
-        val legacyFiles = selectedFiles.filter { it.name.endsWith(FileManager.ENCRYPTED_EXTENSION) && !SecurityUtils.isNewFormat(it) }
         val activity = (context as? Activity) ?: (lifecycleOwner as? Activity)
+        val legacyFilesWithoutMeta = selectedFiles.filter {
+            it.name.endsWith(FileManager.ENCRYPTED_EXTENSION) &&
+            !SecurityUtils.isNewFormat(it) &&
+            runBlocking(Dispatchers.IO) { hiddenFileRepository.getHiddenFileByPath(it.absolutePath) == null }
+        }
+
+        if (legacyFilesWithoutMeta.isNotEmpty() && activity is devs.org.calculator.activities.ViewFolderActivity) {
+            activity.showDecryptionTypeDialog(selectedFiles)
+            return
+        }
+
+        val legacyFiles = selectedFiles.filter { it.name.endsWith(FileManager.ENCRYPTED_EXTENSION) && !SecurityUtils.isNewFormat(it) }
 
         if (legacyFiles.isNotEmpty() && activity != null) {
             SecurityUtils.showMigrationBottomSheet(activity, legacyFiles) {

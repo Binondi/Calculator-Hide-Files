@@ -20,6 +20,7 @@ import devs.org.calculator.databinding.ActivitySettingsBinding
 import devs.org.calculator.databinding.MigrationProgressDialogBinding
 import devs.org.calculator.utils.DialogUtil
 import devs.org.calculator.utils.FileManager
+import devs.org.calculator.utils.PrefsUtil
 import devs.org.calculator.utils.SecurityUtils
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -68,6 +69,13 @@ class SettingsActivity : BaseActivity() {
         } else {
             getString(R.string.no_key_configured)
         }
+
+        val hideAction = prefs.getHideFileAction()
+        binding.hideFileActionSummaryText.text = when (hideAction) {
+            PrefsUtil.HIDE_ACTION_MOVE -> getString(R.string.hide_file_action_move)
+            PrefsUtil.HIDE_ACTION_COPY -> getString(R.string.hide_file_action_copy)
+            else -> getString(R.string.hide_file_action_ask)
+        }
         binding.screenshotRestrictionSwitch.isChecked = prefs.getBoolean("screenshot_restriction", true)
         binding.encryptionSwitch.isChecked = prefs.getBoolean("encryption", false) && hasKey
         binding.gotomain.isChecked = prefs.getBoolean("is_vault_enabled", true)
@@ -81,6 +89,7 @@ class SettingsActivity : BaseActivity() {
         updateShakeSensitivityLabel(sensitivity)
 
         binding.shakeVibrateSwitch.isChecked = prefs.isShakeVibrateEnabled()
+        updateUI()
     }
 
     private fun updateShakeSensitivityLabel(level: Int) {
@@ -205,6 +214,29 @@ class SettingsActivity : BaseActivity() {
         binding.layoutCalenVault.setOnClickListener {
             DialogUtil.showCalenVaultPromoBottomSheet(this, showNeverShowAgain = false)
         }
+
+        binding.layoutHideFileAction.setOnClickListener {
+            showHideFileActionDialog()
+        }
+    }
+
+    private fun showHideFileActionDialog() {
+        val items = arrayOf(
+            getString(R.string.hide_file_action_ask),
+            getString(R.string.hide_file_action_move),
+            getString(R.string.hide_file_action_copy)
+        )
+        val currentAction = prefs.getHideFileAction()
+
+        MaterialAlertDialogBuilder(this)
+            .setTitle(getString(R.string.hide_file_action_title))
+            .setSingleChoiceItems(items, currentAction) { dialog, which ->
+                prefs.setHideFileAction(which)
+                updateUI()
+                dialog.dismiss()
+            }
+            .setNegativeButton(getString(R.string.cancel), null)
+            .show()
     }
 
     private fun enableScreenshotRestriction() {
@@ -230,6 +262,13 @@ class SettingsActivity : BaseActivity() {
             getString(R.string.key_configured_subtitle)
         } else {
             getString(R.string.no_key_configured)
+        }
+
+        val hideAction = prefs.getHideFileAction()
+        binding.hideFileActionSummaryText.text = when (hideAction) {
+            PrefsUtil.HIDE_ACTION_MOVE -> getString(R.string.hide_file_action_move)
+            PrefsUtil.HIDE_ACTION_COPY -> getString(R.string.hide_file_action_copy)
+            else -> getString(R.string.hide_file_action_ask)
         }
     }
 }

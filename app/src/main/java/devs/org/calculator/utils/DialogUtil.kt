@@ -19,6 +19,7 @@ import devs.org.calculator.R
 import devs.org.calculator.databinding.BottomSheetConfirmationBinding
 import devs.org.calculator.databinding.BottomSheetCalenvaultPromoBinding
 import devs.org.calculator.databinding.BottomSheetDonateBinding
+import devs.org.calculator.databinding.BottomSheetHideFileActionBinding
 import devs.org.calculator.databinding.BottomSheetInputBinding
 import devs.org.calculator.databinding.BottomSheetPasswordBackupBinding
 import devs.org.calculator.databinding.BottomSheetShakeFeatureBinding
@@ -402,6 +403,84 @@ class DialogUtil(private val context: Context) {
 
             bottomSheet.setOnDismissListener {
                 onConfirmed()
+            }
+
+            bottomSheet.show()
+            return bottomSheet
+        }
+
+        fun showHideFileActionBottomSheet(
+            activity: Activity,
+            onActionSelected: (deleteOriginal: Boolean) -> Unit,
+            onDismissed: () -> Unit = {}
+        ): BottomSheetDialog? {
+            if (activity.isFinishing || activity.isDestroyed) {
+                return null
+            }
+
+            val bottomSheet = BottomSheetDialog(activity)
+            bottomSheet.expandFully()
+            val binding = BottomSheetHideFileActionBinding.inflate(activity.layoutInflater)
+            bottomSheet.setContentView(binding.root)
+
+            var isMoveSelected = true
+            var isConfirmed = false
+
+            fun updateSelectionUI() {
+                val typedValuePrimary = TypedValue()
+                val typedValueOutline = TypedValue()
+                activity.theme.resolveAttribute(androidx.appcompat.R.attr.colorPrimary, typedValuePrimary, true)
+                activity.theme.resolveAttribute(com.google.android.material.R.attr.colorOutlineVariant, typedValueOutline, true)
+
+                if (isMoveSelected) {
+                    binding.cardMove.strokeColor = typedValuePrimary.data
+                    binding.cardMove.strokeWidth = (2 * activity.resources.displayMetrics.density).toInt()
+                    binding.ivRadioMove.visibility = View.VISIBLE
+
+                    binding.cardCopy.strokeColor = typedValueOutline.data
+                    binding.cardCopy.strokeWidth = (1 * activity.resources.displayMetrics.density).toInt()
+                    binding.ivRadioCopy.visibility = View.GONE
+                } else {
+                    binding.cardCopy.strokeColor = typedValuePrimary.data
+                    binding.cardCopy.strokeWidth = (2 * activity.resources.displayMetrics.density).toInt()
+                    binding.ivRadioCopy.visibility = View.VISIBLE
+
+                    binding.cardMove.strokeColor = typedValueOutline.data
+                    binding.cardMove.strokeWidth = (1 * activity.resources.displayMetrics.density).toInt()
+                    binding.ivRadioMove.visibility = View.GONE
+                }
+            }
+
+            binding.cardMove.setOnClickListener {
+                isMoveSelected = true
+                updateSelectionUI()
+            }
+
+            binding.cardCopy.setOnClickListener {
+                isMoveSelected = false
+                updateSelectionUI()
+            }
+
+            binding.btnConfirmAction.setOnClickListener {
+                isConfirmed = true
+                val prefsUtil = PrefsUtil(activity)
+                if (binding.cbRememberChoice.isChecked) {
+                    prefsUtil.setHideFileAction(
+                        if (isMoveSelected) PrefsUtil.HIDE_ACTION_MOVE else PrefsUtil.HIDE_ACTION_COPY
+                    )
+                }
+                bottomSheet.dismiss()
+                onActionSelected(isMoveSelected)
+            }
+
+            binding.btnCancelAction.setOnClickListener {
+                bottomSheet.dismiss()
+            }
+
+            bottomSheet.setOnDismissListener {
+                if (!isConfirmed) {
+                    onDismissed()
+                }
             }
 
             bottomSheet.show()

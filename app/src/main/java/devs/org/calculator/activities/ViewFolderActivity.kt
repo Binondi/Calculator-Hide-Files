@@ -53,6 +53,7 @@ import devs.org.calculator.utils.FileManager
 import devs.org.calculator.utils.FileManager.Companion.ENCRYPTED_EXTENSION
 import devs.org.calculator.utils.FileManager.Companion.HIDDEN_DIR
 import devs.org.calculator.utils.FolderManager
+import devs.org.calculator.utils.PrefsUtil
 import devs.org.calculator.utils.SecurityUtils
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -197,7 +198,7 @@ class ViewFolderActivity : BaseActivity() {
     }
 
 
-    private fun processSelectedFiles(uriList: List<Uri>) {
+    private fun processSelectedFiles(uriList: List<Uri>, isFromCamera: Boolean = false) {
         val wantsEncryption = prefs.getBoolean("encryption", false)
         if (wantsEncryption && !SecurityUtils.hasCustomKey(this)) {
             SecurityUtils.showSetKeyBottomSheet(
@@ -205,7 +206,7 @@ class ViewFolderActivity : BaseActivity() {
                 title = getString(R.string.encryption_key_required_title),
                 subtitle = getString(R.string.encryption_key_required_message),
                 onKeySet = {
-                    executeProcessSelectedFiles(uriList)
+                    determineHideActionAndProcess(uriList, isFromCamera)
                 },
                 onDismissed = {
                     Toast.makeText(this, getString(R.string.encryption_key_required_title), Toast.LENGTH_SHORT).show()
@@ -213,10 +214,34 @@ class ViewFolderActivity : BaseActivity() {
             )
             return
         }
-        executeProcessSelectedFiles(uriList)
+        determineHideActionAndProcess(uriList, isFromCamera)
     }
 
-    private fun executeProcessSelectedFiles(uriList: List<Uri>) {
+    private fun determineHideActionAndProcess(uriList: List<Uri>, isFromCamera: Boolean) {
+        if (isFromCamera) {
+            executeProcessSelectedFiles(uriList, deleteOriginal = true)
+            return
+        }
+
+        val prefsUtil = PrefsUtil(this)
+        when (prefsUtil.getHideFileAction()) {
+            PrefsUtil.HIDE_ACTION_MOVE -> {
+                executeProcessSelectedFiles(uriList, deleteOriginal = true)
+            }
+            PrefsUtil.HIDE_ACTION_COPY -> {
+                executeProcessSelectedFiles(uriList, deleteOriginal = false)
+            }
+            else -> {
+                DialogUtil.showHideFileActionBottomSheet(this,
+                    onActionSelected = { deleteOriginal ->
+                        executeProcessSelectedFiles(uriList, deleteOriginal = deleteOriginal)
+                    }
+                )
+            }
+        }
+    }
+
+    private fun executeProcessSelectedFiles(uriList: List<Uri>, deleteOriginal: Boolean = true) {
         val targetFolder = currentFolder ?: hiddenDir
         if (!targetFolder.exists()) {
             targetFolder.mkdirs()
@@ -289,7 +314,8 @@ class ViewFolderActivity : BaseActivity() {
                                 dismissCustomDialog()
                             }
                         }
-                    })
+                    },
+                    deleteOriginal = deleteOriginal)
             } catch (e: Exception) {
                 mainHandler.post {
                     Toast.makeText(
@@ -553,15 +579,14 @@ class ViewFolderActivity : BaseActivity() {
                 sheetBinding.rowDecrypt.setOnClickListener {
                     bottomSheet.dismiss()
                     lifecycleScope.launch {
-                        val legacyFiles = selectedFiles.filter { file ->
-                            file.name.endsWith(ENCRYPTED_EXTENSION) && !SecurityUtils.isNewFormat(file)
+                        val legacyFilesWithoutMeta = selectedFiles.filter { file ->
+                            file.name.endsWith(ENCRYPTED_EXTENSION) &&
+                            !SecurityUtils.isNewFormat(file) &&
+                            fileAdapter?.hiddenFileRepository?.getHiddenFileByPath(file.absolutePath) == null
                         }
 
-                        if (legacyFiles.isNotEmpty()) {
-                            SecurityUtils.showMigrationBottomSheet(this@ViewFolderActivity, legacyFiles) {
-                                refreshCurrentFolder()
-                                fileAdapter?.exitSelectionMode()
-                            }
+                        if (legacyFilesWithoutMeta.isNotEmpty()) {
+                            showDecryptionTypeDialog(selectedFiles)
                         } else {
                             fileAdapter?.decryptSelectedFiles()
                         }
@@ -575,7 +600,7 @@ class ViewFolderActivity : BaseActivity() {
         }
     }
 
-    private fun showDecryptionTypeDialog(selectedFiles: List<File>) {
+    fun showDecryptionTypeDialog(selectedFiles: List<File>) {
         val bottomSheet = BottomSheetDialog(this)
         bottomSheet.expandFully()
         val sheetBinding = BottomSheetFileTypeBinding.inflate(layoutInflater)
@@ -892,7 +917,7 @@ class ViewFolderActivity : BaseActivity() {
                     "devs.org.calculator.fileprovider",
                     file
                 )
-                processSelectedFiles(listOf(uri))
+                processSelectedFiles(listOf(uri), isFromCamera = true)
             }
         }
     }

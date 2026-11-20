@@ -505,4 +505,23 @@
     <string name="calenvault_settings_title">Try Our New App: CalenVault</string>
     <string name="calenvault_settings_summary">Next-gen vault disguised as a functional calendar</string>
     <string name="calenvault_github_url">https://github.com/Binondi/CalenVault</string>
+    <string name="migration_required_before_key_title">Migration Required First</string>
+    <string name="migration_required_before_key_desc">You have older encrypted files that must be migrated to the new format before setting or changing an encryption password. Please migrate your files first.</string>
+    <string name="migrate_old_files_now">Migrate Old Files Now</string>
+
+    <!-- Hide File Action (Move vs Copy) -->
+    <string name="hide_file_action_title">Original Files Action</string>
+    <string name="hide_file_action_summary">Choose whether to delete or keep original files when hiding</string>
+    <string name="hide_file_action_ask">Ask every time</string>
+    <string name="hide_file_action_move">Move (Delete original from gallery)</string>
+    <string name="hide_file_action_copy">Copy (Keep original in gallery)</string>
+    <string name="hide_action_dialog_title">Hiding Files</string>
+    <string name="hide_action_dialog_desc">Choose whether to delete the original files from your device/gallery, or keep them as a copy in your storage.</string>
+    <string name="hide_action_move_title">Move to Vault</string>
+    <string name="hide_action_move_desc">Delete original files from gallery/storage. Only the hidden vault copy will remain.</string>
+    <string name="hide_action_copy_title">Copy to Vault</string>
+    <string name="hide_action_copy_desc">Leave original files untouched in your gallery/storage and keep a duplicate inside the vault.</string>
+    <string name="remember_my_choice">Remember my choice</string>
+    <string name="remember_choice_hint">You can change this anytime in Vault Settings</string>
+    <string name="continue_action">Continue</string>
 </resources>

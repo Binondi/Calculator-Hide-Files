@@ -33,6 +33,118 @@
             android:paddingHorizontal="16dp"
             android:paddingBottom="32dp">
 
+            <!-- Featured Promo: Try Our New App (CalenVault) -->
+            <com.google.android.material.card.MaterialCardView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="12dp"
+                android:layout_marginBottom="8dp"
+                app:cardCornerRadius="18dp"
+                app:cardElevation="0dp"
+                app:strokeWidth="1dp"
+                app:strokeColor="?attr/colorOutlineVariant"
+                app:cardBackgroundColor="?attr/colorSurface">
+
+                <androidx.constraintlayout.widget.ConstraintLayout
+                    android:id="@+id/layoutCalenVault"
+                    style="@style/optionLayout"
+                    android:background="?attr/selectableItemBackground"
+                    android:clickable="true"
+                    android:focusable="true"
+                    android:padding="16dp">
+
+                    <com.google.android.material.card.MaterialCardView
+                        android:id="@+id/calenVaultIconBg"
+                        android:layout_width="40dp"
+                        android:layout_height="40dp"
+                        app:cardCornerRadius="20dp"
+                        app:cardElevation="0dp"
+                        app:strokeWidth="0dp"
+                        app:cardBackgroundColor="?attr/colorPrimaryContainer"
+                        app:layout_constraintBottom_toBottomOf="parent"
+                        app:layout_constraintStart_toStartOf="parent"
+                        app:layout_constraintTop_toTopOf="parent">
+
+                        <androidx.appcompat.widget.AppCompatImageView
+                            android:layout_width="22dp"
+                            android:layout_height="22dp"
+                            android:layout_gravity="center"
+                            app:tint="?attr/colorOnPrimaryContainer"
+                            app:srcCompat="@drawable/ic_calenvault_logo" />
+                    </com.google.android.material.card.MaterialCardView>
+
+                    <LinearLayout
+                        android:id="@+id/calenVaultTitleLayout"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="14dp"
+                        android:orientation="vertical"
+                        app:layout_constraintEnd_toStartOf="@id/calenVaultChevron"
+                        app:layout_constraintStart_toEndOf="@id/calenVaultIconBg"
+                        app:layout_constraintTop_toTopOf="parent">
+
+                        <com.google.android.material.card.MaterialCardView
+                            android:id="@+id/cardNewAppTag"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            app:cardBackgroundColor="?attr/colorTertiaryContainer"
+                            app:cardCornerRadius="6dp"
+                            app:cardElevation="0dp"
+                            app:strokeWidth="0dp">
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:paddingHorizontal="6dp"
+                                android:paddingVertical="2dp"
+                                android:text="@string/calenvault_badge"
+                                android:textColor="?attr/colorOnTertiaryContainer"
+                                android:textSize="10sp"
+                                android:textStyle="bold" />
+                        </com.google.android.material.card.MaterialCardView>
+
+                        <TextView
+                            android:id="@+id/calenVaultTitleText"
+                            style="@style/optionTitleText"
+                            android:layout_marginStart="0dp"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="0dp"
+                            android:text="@string/calenvault_settings_title"
+                            android:textSize="16sp"
+                            android:textStyle="bold" />
+
+                        <!-- New App Tag -->
+
+                    </LinearLayout>
+
+                    <TextView
+                        style="@style/optionDescriptionText"
+                        android:layout_marginStart="14dp"
+                        android:layout_marginTop="2dp"
+                        android:layout_marginBottom="0dp"
+                        android:ellipsize="end"
+                        android:maxLines="2"
+                        android:text="@string/calenvault_settings_summary"
+                        android:textSize="13sp"
+                        app:layout_constraintBottom_toBottomOf="parent"
+                        app:layout_constraintEnd_toStartOf="@id/calenVaultChevron"
+                        app:layout_constraintStart_toEndOf="@id/calenVaultIconBg"
+                        app:layout_constraintTop_toBottomOf="@id/calenVaultTitleLayout" />
+
+                    <ImageView
+                        android:id="@+id/calenVaultChevron"
+                        android:layout_width="20dp"
+                        android:layout_height="20dp"
+                        android:alpha="0.4"
+                        android:src="@drawable/ic_arrow_forward"
+                        app:layout_constraintBottom_toBottomOf="parent"
+                        app:layout_constraintEnd_toEndOf="parent"
+                        app:layout_constraintTop_toTopOf="parent"
+                        app:tint="?attr/colorOnSurface" />
+                </androidx.constraintlayout.widget.ConstraintLayout>
+            </com.google.android.material.card.MaterialCardView>
+
             <!-- Section 1: Security Settings -->
             <TextView
                 style="@style/sectionText"
@@ -305,6 +417,78 @@
 
                         <androidx.appcompat.widget.AppCompatImageView
                             android:id="@+id/migrateArrow"
+                            android:layout_width="24dp"
+                            android:layout_height="24dp"
+                            app:tint="?attr/colorOnSurfaceVariant"
+                            app:srcCompat="@drawable/ic_arrow_forward"
+                            app:layout_constraintBottom_toBottomOf="parent"
+                            app:layout_constraintEnd_toEndOf="parent"
+                            app:layout_constraintTop_toTopOf="parent" />
+                    </androidx.constraintlayout.widget.ConstraintLayout>
+
+                    <View
+                        android:layout_width="match_parent"
+                        android:layout_height="1dp"
+                        android:layout_marginStart="68dp"
+                        android:background="?attr/colorOutlineVariant" />
+
+                    <!-- Option 3c: Original Files Action (Move vs Copy) -->
+                    <androidx.constraintlayout.widget.ConstraintLayout
+                        android:id="@+id/layoutHideFileAction"
+                        style="@style/optionLayout"
+                        android:background="?attr/selectableItemBackground"
+                        android:clickable="true"
+                        android:focusable="true"
+                        android:padding="16dp">
+
+                        <com.google.android.material.card.MaterialCardView
+                            android:id="@+id/hideFileActionIconBg"
+                            android:layout_width="40dp"
+                            android:layout_height="40dp"
+                            app:cardCornerRadius="20dp"
+                            app:cardElevation="0dp"
+                            app:strokeWidth="0dp"
+                            app:cardBackgroundColor="?attr/colorPrimaryContainer"
+                            app:layout_constraintBottom_toBottomOf="parent"
+                            app:layout_constraintStart_toStartOf="parent"
+                            app:layout_constraintTop_toTopOf="parent">
+
+                            <androidx.appcompat.widget.AppCompatImageView
+                                android:id="@+id/hideFileActionImage"
+                                android:layout_width="22dp"
+                                android:layout_height="22dp"
+                                android:layout_gravity="center"
+                                app:tint="?attr/colorOnPrimaryContainer"
+                                app:srcCompat="@drawable/ic_copy" />
+                        </com.google.android.material.card.MaterialCardView>
+
+                        <TextView
+                            android:id="@+id/hideFileActionTitleText"
+                            style="@style/optionTitleText"
+                            android:layout_marginStart="14dp"
+                            android:layout_marginTop="0dp"
+                            android:textSize="16sp"
+                            android:textStyle="bold"
+                            android:text="@string/hide_file_action_title"
+                            app:layout_constraintEnd_toStartOf="@id/hideFileActionArrow"
+                            app:layout_constraintStart_toEndOf="@id/hideFileActionIconBg"
+                            app:layout_constraintTop_toTopOf="parent" />
+
+                        <TextView
+                            android:id="@+id/hideFileActionSummaryText"
+                            style="@style/optionDescriptionText"
+                            android:layout_marginStart="14dp"
+                            android:layout_marginTop="2dp"
+                            android:layout_marginBottom="0dp"
+                            android:textSize="13sp"
+                            android:text="@string/hide_file_action_ask"
+                            app:layout_constraintBottom_toBottomOf="parent"
+                            app:layout_constraintEnd_toStartOf="@id/hideFileActionArrow"
+                            app:layout_constraintStart_toEndOf="@id/hideFileActionIconBg"
+                            app:layout_constraintTop_toBottomOf="@id/hideFileActionTitleText" />
+
+                        <androidx.appcompat.widget.AppCompatImageView
+                            android:id="@+id/hideFileActionArrow"
                             android:layout_width="24dp"
                             android:layout_height="24dp"
                             app:tint="?attr/colorOnSurfaceVariant"
@@ -917,79 +1101,6 @@
 
                         <ImageView
                             android:id="@+id/donateChevron"
-                            android:layout_width="20dp"
-                            android:layout_height="20dp"
-                            android:alpha="0.4"
-                            android:src="@drawable/ic_arrow_forward"
-                            app:tint="?attr/colorOnSurface"
-                            app:layout_constraintBottom_toBottomOf="parent"
-                            app:layout_constraintEnd_toEndOf="parent"
-                            app:layout_constraintTop_toTopOf="parent" />
-                    </androidx.constraintlayout.widget.ConstraintLayout>
-
-                    <!-- Divider -->
-                    <com.google.android.material.divider.MaterialDivider
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:layout_marginStart="70dp" />
-
-                    <!-- Option 4: Try CalenVault (New App) -->
-                    <androidx.constraintlayout.widget.ConstraintLayout
-                        android:id="@+id/layoutCalenVault"
-                        style="@style/optionLayout"
-                        android:background="?attr/selectableItemBackground"
-                        android:clickable="true"
-                        android:focusable="true"
-                        android:padding="16dp">
-
-                        <com.google.android.material.card.MaterialCardView
-                            android:id="@+id/calenVaultIconBg"
-                            android:layout_width="40dp"
-                            android:layout_height="40dp"
-                            app:cardCornerRadius="20dp"
-                            app:cardElevation="0dp"
-                            app:strokeWidth="0dp"
-                            app:cardBackgroundColor="?attr/colorPrimaryContainer"
-                            app:layout_constraintBottom_toBottomOf="parent"
-                            app:layout_constraintStart_toStartOf="parent"
-                            app:layout_constraintTop_toTopOf="parent">
-
-                            <androidx.appcompat.widget.AppCompatImageView
-                                android:layout_width="22dp"
-                                android:layout_height="22dp"
-                                android:layout_gravity="center"
-                                app:tint="?attr/colorOnPrimaryContainer"
-                                app:srcCompat="@drawable/ic_calendar" />
-                        </com.google.android.material.card.MaterialCardView>
-
-                        <TextView
-                            android:id="@+id/calenVaultTitleText"
-                            style="@style/optionTitleText"
-                            android:layout_marginStart="14dp"
-                            android:layout_marginTop="0dp"
-                            android:textSize="16sp"
-                            android:textStyle="bold"
-                            android:text="@string/calenvault_settings_title"
-                            app:layout_constraintEnd_toStartOf="@id/calenVaultChevron"
-                            app:layout_constraintStart_toEndOf="@id/calenVaultIconBg"
-                            app:layout_constraintTop_toTopOf="parent" />
-
-                        <TextView
-                            style="@style/optionDescriptionText"
-                            android:layout_marginStart="14dp"
-                            android:layout_marginTop="2dp"
-                            android:layout_marginBottom="0dp"
-                            android:textSize="13sp"
-                            android:text="@string/calenvault_settings_summary"
-                            android:maxLines="2"
-                            android:ellipsize="end"
-                            app:layout_constraintBottom_toBottomOf="parent"
-                            app:layout_constraintEnd_toStartOf="@id/calenVaultChevron"
-                            app:layout_constraintStart_toEndOf="@id/calenVaultIconBg"
-                            app:layout_constraintTop_toBottomOf="@id/calenVaultTitleText" />
-
-                        <ImageView
-                            android:id="@+id/calenVaultChevron"
                             android:layout_width="20dp"
                             android:layout_height="20dp"
                             android:alpha="0.4"

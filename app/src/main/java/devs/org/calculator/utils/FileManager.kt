@@ -102,7 +102,12 @@ class FileManager(private val context: Context, private val lifecycleOwner: Life
         return typeDir.listFiles()?.filterNotNull()?.filter { it.name != ".nomedia" } ?: emptyList()
     }
 
-    private fun copyFileToHiddenDir(uri: Uri, folderName: File, currentDir: File? = null): File? {
+    private fun copyFileToHiddenDir(
+        uri: Uri,
+        folderName: File,
+        currentDir: File? = null,
+        deleteOriginal: Boolean = true
+    ): File? {
         return try {
             val contentResolver = context.contentResolver
 
@@ -145,8 +150,11 @@ class FileManager(private val context: Context, private val lifecycleOwner: Life
             val mediaScanIntent = Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE)
             mediaScanIntent.data = Uri.fromFile(targetDir)
             context.sendBroadcast(mediaScanIntent)
-            lifecycleOwner.lifecycleScope.launch {
-                deletePhotoFromExternalStorage(uri)
+
+            if (deleteOriginal) {
+                lifecycleOwner.lifecycleScope.launch {
+                    deletePhotoFromExternalStorage(uri)
+                }
             }
             targetFile
         } catch (e: Exception) {
@@ -185,6 +193,7 @@ class FileManager(private val context: Context, private val lifecycleOwner: Life
             val mediaScanIntent = Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE)
             mediaScanIntent.data = Uri.fromFile(targetDir)
             context.sendBroadcast(mediaScanIntent)
+
             lifecycleOwner.lifecycleScope.launch {
                 deletePhotoFromExternalStorage(uri)
             }
@@ -319,13 +328,14 @@ class FileManager(private val context: Context, private val lifecycleOwner: Life
         uriList: List<Uri>,
         targetFolder: File,
         callback: FileProcessCallback,
-        currentDir: File? = null
+        currentDir: File? = null,
+        deleteOriginal: Boolean = true
     ) {
         withContext(Dispatchers.IO) {
             val copiedFiles = mutableListOf<File>()
             for (uri in uriList) {
                 try {
-                    val file = copyFileToHiddenDir(uri, targetFolder, currentDir)
+                    val file = copyFileToHiddenDir(uri, targetFolder, currentDir, deleteOriginal)
                     file?.let { copiedFiles.add(it) }
                 } catch (e: Exception) {
                     e.printStackTrace()

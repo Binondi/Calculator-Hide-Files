@@ -134,7 +134,20 @@ class PrefsUtil(context: Context) {
         setBoolean(PREF_CALENVAULT_PROMO_NEVER_SHOW_AGAIN, neverShow)
     }
 
+    fun getHideFileAction(): Int {
+        return getInt(PREF_HIDE_FILE_ACTION, HIDE_ACTION_ASK)
+    }
+
+    fun setHideFileAction(action: Int) {
+        setInt(PREF_HIDE_FILE_ACTION, action)
+    }
+
     companion object {
+        const val PREF_HIDE_FILE_ACTION = "hide_file_action"
+        const val HIDE_ACTION_ASK = 0
+        const val HIDE_ACTION_MOVE = 1
+        const val HIDE_ACTION_COPY = 2
+
         const val PREF_HAS_SEEN_ONBOARDING = "has_seen_onboarding"
         const val PREF_DONATE_NEVER_SHOW_AGAIN = "donate_never_show_again"
         const val PREF_DONATE_SHOWN_FIRST_TIME = "donate_shown_first_time"
